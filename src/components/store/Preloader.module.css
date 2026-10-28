@@ -1,0 +1,64 @@
+/* Home loading curtain (see Preloader.tsx). --fill (0 → 1) is the water level inside the wordmark. */
+
+.curtain {
+  position: fixed; inset: 0; z-index: 100;
+  display: grid; place-items: center;
+  background: radial-gradient(120% 90% at 50% 110%, var(--color-stage) 0%, var(--color-stage-deep) 62%);
+  color: var(--color-mist);
+  will-change: transform;
+}
+/* without JS nothing would ever lift it */
+:global(html:not(.js)) .curtain { display: none; }
+/* the page can't be scrolled behind it, even before hydration */
+:global(html):has(.curtain) { overflow: hidden; }
+
+.pattern { position: absolute; inset: 0; opacity: .12; pointer-events: none; }
+
+.inner { position: relative; width: min(78vw, 680px); }
+
+/* the wordmark, cut out of the layers inside it: an empty glass, then the water rising */
+.mark {
+  position: relative; width: 100%; aspect-ratio: 3485 / 390; overflow: hidden;
+  background: rgb(240 242 247 / .1);
+  -webkit-mask: url(/brand/logo.svg) center / contain no-repeat;
+  mask: url(/brand/logo.svg) center / contain no-repeat;
+}
+.water {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, var(--color-glacier) 0%, var(--color-clearwater) 100%);
+  /* 122% so the wave crests sit fully below the mark at 0 */
+  transform: translate3d(0, calc((1 - var(--fill, 0)) * 122%), 0);
+}
+/* two crests riding the surface at different speeds, one behind and a shade deeper */
+.wave {
+  position: absolute; bottom: calc(100% - 1px); left: 0; width: 200%; height: 22%;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M0 6Q25 0 50 6T100 6V10H0Z' fill='%2325FFE8'/%3E%3C/svg%3E") repeat-x;
+  background-size: 50% 100%;
+  animation: drift 2.2s linear infinite;
+}
+.back {
+  z-index: -1; bottom: calc(100% + 1px); opacity: .55;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M0 4Q25 10 50 4T100 4V10H0Z' fill='%2343D2FA'/%3E%3C/svg%3E");
+  animation-duration: 3.4s; animation-direction: reverse;
+}
+@keyframes drift { to { transform: translate3d(-50%, 0, 0); } }
+
+.meta {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+  margin-top: clamp(16px, 2.4vw, 28px);
+  padding-top: clamp(12px, 1.6vw, 18px);
+  border-top: 1px solid rgb(240 242 247 / .16);
+}
+.tagline { font-family: var(--font-sans); font-size: clamp(13px, 1.3vw, 15px); font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: rgb(240 242 247 / .62); }
+.tagline em { font-family: var(--font-serif); font-size: 1.2em; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--color-glacier); }
+.count { font-family: var(--font-sans); font-size: clamp(14px, 1.4vw, 16px); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: .08em; color: var(--color-mist); }
+
+/* the bowed bottom edge the curtain trails as it lifts */
+.edge {
+  position: absolute; top: calc(100% - 1px); left: -10%; width: 120%; height: 16vh;
+  background: var(--color-stage);
+  border-radius: 0 0 50% 50%;
+  transform: scaleY(0); transform-origin: 50% 0;
+}
+
+@media (prefers-reduced-motion: reduce) { .wave { animation: none; } }

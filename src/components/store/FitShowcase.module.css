@@ -1,0 +1,151 @@
+/* 03 · Find the right fit (see FitShowcase.tsx). Stacked by default; on desktop the script adds .h, which
+   turns the section into a tall track with a sticky stage: intro held at the top, products sliding in a row.
+   Each product takes one brand colour (.glacier / .flash / .volt) for its disc. */
+.section { --hdr: 68px; position: relative; overflow-x: clip; padding-block: clamp(64px, 8vw, 96px); }
+@media (min-width: 1024px) { .section { --hdr: 76px; } }
+
+/* ── Intro ─────────────────────────────────────────────────────────────── */
+.head { display: flex; flex-direction: column; align-items: flex-start; gap: 28px; margin-bottom: clamp(48px, 7vw, 112px); }
+/* the line sits beside the headline, on its baseline, set off by a short rule in the lockup's blue */
+.head .intro { max-width: 25em; margin: 0; padding-left: 22px; border-left: 2px solid var(--color-deep-current);
+  font-family: var(--font-serif); font-style: italic; font-size: clamp(19px, 1.6vw, 24px); line-height: 1.38; color: var(--color-ink); }
+@media (min-width: 1024px) { .head { flex-direction: row; align-items: flex-end; gap: clamp(40px, 4vw, 64px); } .head .intro { margin-bottom: .5em; } }
+
+/* ── Panels (stacked) ──────────────────────────────────────────────────── */
+.track { list-style: none; margin: 0; padding: 0; }
+.panel + .panel .row { border-top: 1px solid var(--color-line); }
+.row { position: relative; display: grid; align-items: center; gap: clamp(28px, 5vw, 96px); padding-block: clamp(56px, 8vw, 120px); isolation: isolate; }
+@media (min-width: 1024px) {
+  .row { grid-template-columns: 1.05fr 1fr; }
+  .flip { grid-template-columns: 1fr 1.05fr; }
+  .flip .media { order: 2; }
+}
+.glacier { --disc: var(--color-glacier); --sq: var(--color-deep-current); }
+.flash { --disc: var(--color-flash); --sq: var(--color-voltage); }
+.volt { --disc: var(--color-voltage); --sq: var(--color-deep-current); }
+
+/* the product's name, huge and faded behind the panel (the footer's watermark wordmark) */
+/* centred by flex (not translate) so the scroll drift can own the transform; overflow spills evenly both sides */
+.mark { position: absolute; z-index: -1; left: 0; right: 0; bottom: -.06em; display: flex; justify-content: center; pointer-events: none; user-select: none; white-space: nowrap;
+  font-family: var(--font-sans); font-weight: 800; font-size: clamp(140px, 27vw, 420px); line-height: .8; letter-spacing: -.07em;
+  color: rgb(4 111 237 / .045); -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent 92%); mask-image: linear-gradient(to bottom, #000 40%, transparent 92%); }
+@media (max-width: 1023px) { .mark { display: none; } }
+
+/* ── Product ───────────────────────────────────────────────────────────── */
+.media { position: relative; display: block; width: min(100%, 600px); aspect-ratio: 1; justify-self: center; }
+.disc { position: absolute; z-index: 1; inset: 6%; border-radius: 50%; overflow: hidden; background: var(--disc); isolation: isolate;
+  box-shadow: inset 0 -30px 60px -30px rgb(4 22 74 / .25); }
+.pattern { position: absolute; inset: -18%; opacity: .32; mix-blend-mode: multiply; animation: drift 14s ease-in-out infinite alternate; }
+/* the contour lines keep flowing slowly across the disc (the layer is oversized so its edges never show) */
+@keyframes drift { from { translate: -7% 3%; rotate: -2deg; } to { translate: 7% -3%; rotate: 2deg; } }
+/* the squiggle sits behind the disc; a front copy, cut off above the tail, lays the rest of the line over it */
+.squiggle { position: absolute; z-index: 0; overflow: visible; width: 44%; top: -5%; right: -4%; color: var(--sq); pointer-events: none; }
+.flip .squiggle { right: auto; left: -4%; scale: -1 1; }
+.front { z-index: 2; -webkit-mask-image: linear-gradient(#000 92%, transparent 92%); mask-image: linear-gradient(#000 92%, transparent 92%); }
+/* the product: the photo fills the disc until the cutout is in; the cutout stands on the disc and
+   rises a little past its top edge, bobbing gently over a contact shadow */
+.product { position: absolute; inset: 0; display: block; }
+.photo { object-fit: cover; }
+.media > .product { z-index: 3; inset: -2% 15% 9%; }
+/* each cutout framed to the same presence on its disc: the counter machine fills it, the tall floor unit
+   rises a little past its top, and the bottle stands at the hero's lean (about 24°; the photo has it at
+   about 50°, so it is turned back 26°) and is centred on the disc */
+.glacier .media > .product { inset: 1% 14% 9%; }
+.volt .media > .product { inset: -3% 18% 9%; }
+.flash .media > .product { inset: 0 6% 6%; }
+.flash .cutout { rotate: -26deg; object-position: 50% 50%; }
+.cutout { object-fit: contain; object-position: 50% 100%; filter: drop-shadow(0 26px 24px rgb(4 22 74 / .32)); animation: bob 5.5s ease-in-out infinite; }
+.shadow { position: absolute; left: 24%; right: 24%; bottom: -1%; height: 7%; border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(4 22 74 / .42), transparent); animation: shadow 5.5s ease-in-out infinite; }
+@keyframes bob { 50% { translate: 0 -12px; } }
+@keyframes shadow { 50% { scale: .82; opacity: .65; } }
+.media .product > * { transition: scale .9s cubic-bezier(.22,1,.36,1); }
+.media:hover .product > img { scale: 1.035; }
+.sticker { position: absolute; z-index: 4; font-size: clamp(18px, 2vw, 26px); --dc-rot: -9deg; }
+/* on the disc's edge, low on its outer side (the circle meets x = 12% at y = 72%), mostly outside it
+   so only the sticker's inner edge overlaps the circle */
+.sticker { left: 12%; top: 72%; translate: -78% -50%; }
+.flip .sticker { left: auto; right: 12%; translate: 78% -50%; --dc-rot: 8deg; }
+/* phones have no room outside the disc: the sticker starts at the screen edge instead */
+@media (max-width: 639px) { .sticker { left: 0; translate: 0 -50%; } .flip .sticker { left: auto; right: 0; translate: 0 -50%; } }
+/* sticker colours: Sip Check in ink on a Flash edge, Main Character in Deep Current on a Voltage edge */
+.row.flash .sticker { --dc-fg: var(--color-ink); --dc-edge: var(--color-flash); }
+.row.volt .sticker { --dc-fg: var(--color-deep-current); --dc-edge: var(--color-voltage); }
+
+/* ── Copy ──────────────────────────────────────────────────────────────── */
+.copy { display: flex; flex-direction: column; align-items: flex-start; max-width: 600px; }
+.flip .copy { justify-self: end; }
+@media (max-width: 1023px) { .flip .copy { justify-self: start; } }
+/* heading reveal, as the hero's descriptor tag (see openUp in FitShowcase.tsx): at --open 0 both pins sit at
+   the centre of their lines with the blocks and words shut between them; as it rises to 1 the pins slide
+   apart and the blocks and words open out with them. 1 at rest, so without the script it is simply shown. */
+.open { --open: 1; }
+.open > span::before { clip-path: inset(0 calc(50% * (1 - var(--open)))); }
+.open :global(.lk-ink), .open :global(.lk-txt) { display: inline-block; clip-path: inset(-40% calc((50% + .2em) * (1 - var(--open)) - .2em)); }
+.open :global(.lk-top)::after { left: calc(-6px + 50% * (1 - var(--open))); }
+.open :global(.lk-bot)::after { right: calc(-6px + 50% * (1 - var(--open))); }
+.heading :global(.lk-top) { font-size: clamp(42px, 5.2vw, 84px); }
+.heading :global(.lk-bot) { font-size: clamp(62px, 8vw, 128px); }
+/* Titan's long italic line ("For larger spaces") would cover most of the name, so there the name sits lower and
+   the italic only grazes its top; Crystal and Hyper keep the lockup's overlap, italic over the bold */
+.volt .heading :global(.lk-bot) { margin-top: -.2em; }
+.body { margin-top: 34px; font-family: var(--font-serif); font-style: italic; font-size: clamp(22px, 2vw, 28px); line-height: 1.3; letter-spacing: -.01em; color: var(--color-ink); text-wrap: pretty; }
+.word { display: inline; }
+
+.facts { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; margin: 30px 0 0; font-family: var(--font-sans); }
+.facts > div { padding: 14px 16px 0 0; border-top: 2px solid var(--color-ink); }
+.facts > div + div { padding-left: 16px; border-left: 1px solid var(--color-line); }
+.facts dt { font-size: 14.5px; font-weight: 600; line-height: 1.25; color: var(--color-ink); letter-spacing: -.01em; }
+.facts dd { margin: 4px 0 0; font-size: 13px; line-height: 1.35; color: var(--color-muted); }
+@media (max-width: 519px) {
+  .facts { grid-template-columns: 1fr; }
+  .facts > div, .facts > div + div { padding: 12px 0; border-left: 0; border-top: 1px solid var(--color-line); }
+  .facts > div:first-child { border-top: 2px solid var(--color-ink); }
+}
+.cta { margin-top: 34px; }
+
+/* shop button: a pill in the product's colour with the ink arrow chip on the left. On hover the chip rides
+   across to the right (the label slides over to make room) and the colours swap: ink pill, coloured label
+   and chip, ink arrow. Width never changes, since the padding just trades sides. */
+.glacier .cta, .volt .cta, .flash .cta { --accent: var(--disc); }
+.cta { --ride: .6s cubic-bezier(.76,0,.24,1); position: relative; display: inline-flex; align-items: center; min-height: 54px; padding: 6px 26px 6px 64px; border-radius: 999px;
+  background: var(--accent); color: var(--color-ink); font-family: var(--font-sans); font-size: 15.5px; font-weight: 600; letter-spacing: -.01em; white-space: nowrap;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .45), inset 0 -1px 0 rgb(4 22 74 / .12);
+  transition: padding var(--ride), background-color .45s, color .45s, box-shadow .45s; }
+.cta:hover { padding: 6px 64px 6px 26px; background: var(--color-ink); color: var(--accent); box-shadow: inset 0 1px 0 rgb(255 255 255 / .12); }
+.chip { position: absolute; top: 6px; left: 6px; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; overflow: hidden;
+  background: var(--color-ink); color: var(--accent); transition: left var(--ride), background-color .45s, color .45s; }
+.cta:hover .chip { left: calc(100% - 48px); background: var(--accent); color: var(--color-ink); }
+.chip svg { grid-area: 1 / 1; width: 17px; height: 17px; }
+
+/* ── Desktop: pinned stage, products in a row ──────────────────────────── */
+.h { height: 390svh; padding-block: 0; }
+/* the stage is one screen; the rail inside holds the intro over a full-height viewport and lifts by the
+   intro's height once pinned, so each product gets the whole stage */
+.h .stage { position: sticky; top: var(--hdr); height: calc(100svh - var(--hdr)); overflow: clip; }
+.h .rail { padding-top: clamp(20px, 4svh, 48px); will-change: transform; }
+.h .viewport { height: calc(100svh - var(--hdr)); }
+.title :global(.lk-top) { font-size: clamp(54px, 7vw, 116px); }
+.title :global(.lk-bot) { font-size: clamp(48px, 6.2vw, 102px); }
+.h .viewport { overflow-x: clip; }
+.h .track { display: flex; height: 100%; will-change: transform; }
+.h .panel { flex: 0 0 100%; height: 100%; }
+.h .panel + .panel .row { border-top: 0; }
+.h .row { height: 100%; padding-block: clamp(24px, 5svh, 56px); }
+/* the copy is narrower than its half, which left the pair hugging the left edge: give the product the
+   wider column so the disc moves in and the copy starts further right */
+.h .row:not(.flip) { grid-template-columns: 1.2fr .85fr; }
+.h .media { width: auto; height: min(100%, 680px); max-width: 100%; }
+.h .mark { font-size: min(27vw, 46svh); bottom: -.06em; }
+/* type follows the screen height so a whole panel always fits under the intro */
+.h .heading :global(.lk-top) { font-size: clamp(40px, min(5.2vw, 8svh), 84px); }
+.h .heading :global(.lk-bot) { font-size: clamp(58px, min(8vw, 12.5svh), 128px); }
+.h .body { margin-top: clamp(18px, 3svh, 34px); font-size: clamp(20px, min(1.9vw, 3svh), 28px); }
+.h .facts { margin-top: clamp(16px, 2.8svh, 30px); }
+.h .cta { margin-top: clamp(18px, 3svh, 34px); }
+@media (max-height: 760px) { .h .facts { display: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cutout, .shadow, .pattern { animation: none; }
+  .media .product > *, .cta, .chip { transition: none; }
+}

@@ -1,0 +1,86 @@
+/* 04 · See what happens inside: a tall track with a sticky full-bleed stage. Scrolling the track scrubs the
+   inside-the-machine clip and hands the copy from step to step (see InsideScroll.tsx). */
+.track { --hdr: 68px; position: relative; height: 520svh; }
+@media (min-width: 1024px) { .track { --hdr: 76px; } }
+.stage { position: sticky; top: var(--hdr); height: calc(100svh - var(--hdr)); min-height: 540px; overflow: hidden; isolation: isolate;
+  background: var(--color-stage-deep); color: #fff; }
+
+/* the clip fills the stage; the action is framed in its middle third, so a phone's centre crop keeps it */
+.media { position: absolute; inset: 0; transform-origin: 50% 45%; }
+/* the closing push-in (ZOOM in InsideScroll.tsx) is anchored low, so the top of the control head leaves the frame */
+.video { width: 100%; height: 100%; object-fit: cover; transform-origin: 50% 70%; }
+/* pulls the charcoal studio toward the stage colour without touching the white cartridges much */
+.tint { position: absolute; inset: 0; background: var(--color-deep-current); mix-blend-mode: soft-light; opacity: .12; }
+/* vignette: the top and sides fade into the stage, with a deeper lift under the copy */
+.shade { position: absolute; inset: 0; background:
+  linear-gradient(180deg, rgb(3 14 54 / .85) 0%, rgb(3 14 54 / .35) 20%, rgb(3 14 54 / 0) 34%),
+  linear-gradient(0deg, rgb(3 14 54 / .95) 0%, rgb(3 14 54 / .8) 30%, rgb(3 14 54 / 0) 58%),
+  radial-gradient(130% 95% at 50% 52%, rgb(3 14 54 / 0) 48%, rgb(3 14 54 / .85) 100%); }
+@media (min-width: 1024px) {
+  .shade { background:
+    linear-gradient(180deg, rgb(3 14 54 / .8) 0%, rgb(3 14 54 / .3) 18%, rgb(3 14 54 / 0) 32%),
+    linear-gradient(0deg, rgb(3 14 54 / .6) 0%, rgb(3 14 54 / 0) 28%),
+    linear-gradient(90deg, rgb(3 14 54 / .92) 0%, rgb(3 14 54 / .55) 24%, rgb(3 14 54 / 0) 40%, rgb(3 14 54 / 0) 62%, rgb(3 14 54 / .5) 78%, rgb(3 14 54 / .9) 100%),
+    radial-gradient(120% 100% at 50% 50%, rgb(3 14 54 / 0) 55%, rgb(3 14 54 / .7) 100%); }
+}
+
+/* headline top left, as every home section; the steps sit beside the subject in the middle of the frame */
+.content { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column;
+  padding-block: clamp(24px, 4.5svh, 52px) calc(var(--action-bar, 0px) + clamp(26px, 5svh, 48px)); }
+@media (min-width: 1024px) { .content { padding-bottom: clamp(48px, 8svh, 88px); } }
+.heading { align-self: flex-start; }
+.middle { flex: 1; display: grid; align-items: end; gap: 24px; padding-top: 24px; }
+/* wide screens: copy on the left and the figure on the right, both level with the subject; the bottom
+   padding above also keeps them clear of the chat button in the bottom-right corner */
+@media (min-width: 1024px) {
+  .middle { grid-template-columns: minmax(0, 410px) 1fr minmax(0, 330px); align-items: center; }
+  .facts { grid-column: 3; }
+}
+
+/* lockup reveal, as the collection's (see FitShowcase.module.css): the pins start together at the centre and
+   slide apart, opening the blocks and words with them. 1 at rest, so without the script it is simply shown. */
+.open { --open: 1; }
+.open > span::before { clip-path: inset(0 calc(50% * (1 - var(--open)))); }
+.open :global(.lk-ink), .open :global(.lk-txt) { display: inline-block; clip-path: inset(-40% calc((50% + .2em) * (1 - var(--open)) - .2em)); }
+.open :global(.lk-top)::after { left: calc(-6px + 50% * (1 - var(--open))); }
+.open :global(.lk-bot)::after { right: calc(-6px + 50% * (1 - var(--open))); }
+
+/* the three steps share one cell and hand over in place; until the script runs only the first shows */
+.steps { display: grid; margin: 0; padding: 0; list-style: none; }
+.step, .fact { grid-area: 1 / 1; }
+.step:not(:first-child), .fact:not(:first-child) { visibility: hidden; opacity: 0; }
+
+/* the step title as a pinned Voltage block (brand book label device) */
+.title { position: relative; width: fit-content; margin-top: 14px; }
+/* a one-line lockup only carries the bottom-right pin, so the top-left one is added here (as .lk-top::after);
+   it rides --open with the other pin */
+.title::before { content: ""; position: absolute; z-index: 1; left: calc(-6px + 50% * (1 - var(--open))); top: -14px; bottom: 0; width: 12px; pointer-events: none;
+  background: radial-gradient(circle at 6px 6px, var(--lk-pin) 5.5px, transparent 6px), linear-gradient(var(--lk-pin), var(--lk-pin)) 5px 6px / 2px 100% no-repeat; }
+.body { margin-top: 22px; max-width: 34ch; font-size: clamp(16px, 1.3vw, 20px); line-height: 1.55; color: #F0F2F7; text-wrap: pretty; }
+.word { display: inline; }
+/* phones: the description stays out of the chat button's column on the right */
+@media (max-width: 1023px) { .body { max-width: min(36ch, calc(100% - 64px)); } }
+/* the CTA pill from "Find the right fit" (as the help-choosing cards use it), in Crystal's Glacier */
+.action { --accent: var(--color-glacier); margin-top: 26px; }
+.action > a { margin-top: 0; }
+
+/* the figure opposite the copy: heavy sans in Glacier over a Garamond italic note */
+.facts { display: none; }
+@media (min-width: 1024px) { .facts { display: grid; text-align: right; } }
+.fact { margin: 0; display: flex; flex-direction: column; align-items: flex-end; }
+.figure { overflow: hidden; padding-bottom: .05em; font-family: var(--font-sans); font-weight: 800; font-size: clamp(44px, 5vw, 82px);
+  line-height: .95; letter-spacing: -.045em; color: var(--color-glacier); white-space: nowrap; }
+.figure > span { display: inline-block; }
+.note { margin-top: 10px; font-family: var(--font-serif); font-style: italic; font-size: clamp(18px, 1.5vw, 24px); line-height: 1.2; color: rgb(240 242 247 / .8); }
+
+/* no scrubbing: one framed screen with the first frame and all three steps listed */
+@media (prefers-reduced-motion: reduce) {
+  .track { height: auto; }
+  .stage { position: relative; top: 0; height: auto; min-height: calc(100svh - var(--hdr)); }
+  .content { min-height: inherit; gap: 48px; }
+  .steps { gap: 36px; }
+  .step { grid-area: auto; }
+  .step:not(:first-child) { visibility: visible; opacity: 1; }
+  .facts { display: none; }
+  @media (min-width: 1024px) { .middle { grid-template-columns: 1fr; } .steps { grid-template-columns: repeat(3, 1fr); gap: 40px; } }
+}

@@ -1,0 +1,162 @@
+.hero { position: relative; margin: 6px 10px 10px; height: calc(100svh - 76px - 16px); min-height: 600px; border-radius: 30px; overflow: hidden; isolation: isolate;
+  background: radial-gradient(70% 80% at 62% 55%, #0B3FA8 0%, #082A7E 40%, #061C5E 72%, #04134A 100%); color: #fff; }
+.canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; cursor: grab; z-index: 0; }
+.canvas:active { cursor: grabbing; }
+.slides { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.slide { position: absolute; inset: 0; visibility: hidden; --pad: clamp(18px, 3.4vw, 52px); }
+.active, .leaving { visibility: visible; }
+.slide a, .slide button { pointer-events: auto; }
+
+/* Per-product highlight-block colours for the descriptor (brand book "Headline" device). Each slide
+   uses one accent only (tag, button, icons, squiggle); pins are white so no two accents meet. */
+.slide { --pin: #fff; --em: 2.44; --cw: 46%; } /* --em: advance width of the longest name ("Crystal"), so all names share one size */
+.hyper { --tag-bg: var(--color-flash); --tag-fg: #fff; --tag-em: var(--color-voltage); }
+.crystal { --tag-bg: var(--color-glacier); --tag-fg: var(--color-ink); --tag-em: var(--color-deep-current); }
+.titan { --tag-bg: var(--color-voltage); --tag-fg: var(--color-ink); --tag-em: var(--color-deep-current); }
+
+.copy { position: absolute; left: var(--pad); right: var(--pad); top: 40px; container-type: inline-size; }
+.head { display: flex; flex-direction: column; align-items: flex-start; gap: clamp(14px, 2vh, 24px); margin: 0; }
+.name { font-family: var(--font-sans); font-weight: 650; font-size: min(calc(98cqi / var(--em)), 26vw); line-height: .8; letter-spacing: -.06em; margin-left: -.04em; padding-bottom: .06em; }
+
+/* descriptor: Garamond italic on an accent block, pinned at two corners. Entrance: the two pin lines start
+   together at the centre and slide apart, opening the block (clipped .tag) and revealing the text. --open: 0..1 */
+@property --open { syntax: "<number>"; inherits: true; initial-value: 1; }
+.slide .desc { --gap: calc(50% * (1 - var(--open))); position: relative; display: inline-flex; margin-left: 2px;
+  color: var(--tag-fg); font-family: var(--font-serif); font-style: italic; font-size: clamp(17px, 4.6vw, 22px); line-height: 1; letter-spacing: 0; white-space: nowrap; }
+.tag { display: inline-flex; gap: .26em; align-items: baseline; padding: .2em .42em .14em; background: var(--tag-bg); clip-path: inset(-2px var(--gap)); }
+.desc em { color: var(--tag-em); }
+.desc::before, .desc::after { content: ""; position: absolute; width: 1.5px; height: calc(100% + 12px); background: var(--pin); }
+.desc::before { left: var(--gap); top: -12px; }
+.desc::after { right: var(--gap); bottom: -12px; }
+.desc i { position: absolute; width: 9px; height: 9px; border-radius: 50%; background: var(--pin); }
+.desc i:first-of-type { left: calc(var(--gap) - 3.75px); top: -17px; }
+.desc i:last-of-type { right: calc(var(--gap) - 3.75px); bottom: -17px; }
+.active .desc.f { animation: fallIn 1s cubic-bezier(.22,.9,.32,1.12) 420ms both, tagOpen 1s cubic-bezier(.76,0,.24,1) 900ms both; }
+@keyframes tagOpen { from { --open: 0; } to { --open: 1; } }
+
+.body { display: flex; flex-direction: column; }
+.lede { margin: 18px 0 0; font-size: 16.5px; line-height: 1.5; color: rgb(240 242 247 / .84); max-width: 26em; }
+.ctas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.ctas { align-items: center; }
+
+/* Hero buttons (no outer glow): the same shop pill as "Find the right fit" (accent pill, ink arrow chip on the
+   left; on hover the chip rides across to the right and the colours swap; width never changes), and a frosted ghost pill */
+.cta { position: relative; display: inline-flex; align-items: center; min-height: 52px; border-radius: 999px; font-family: var(--font-sans); font-size: 15.5px; font-weight: 600; letter-spacing: -.01em; white-space: nowrap;
+  transition: transform .45s cubic-bezier(.22,1,.36,1), background-color .45s, color .45s, box-shadow .45s, border-color .35s; }
+.primary { --ride: .6s cubic-bezier(.76,0,.24,1); padding: 6px 26px 6px 64px; background: var(--accent); color: var(--color-ink);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .45), inset 0 -1px 0 rgb(4 22 74 / .12);
+  transition: padding var(--ride), background-color .45s, color .45s, box-shadow .45s; }
+.primary:hover { padding: 6px 64px 6px 26px; background: var(--color-ink); color: var(--accent); box-shadow: inset 0 1px 0 rgb(255 255 255 / .12); }
+.chip { position: absolute; top: 50%; left: 6px; translate: 0 -50%; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; overflow: hidden;
+  background: var(--color-ink); color: var(--accent); transition: left var(--ride), background-color .45s, color .45s; }
+.primary:hover .chip { left: calc(100% - 48px); background: var(--accent); color: var(--color-ink); }
+.chip svg { grid-area: 1 / 1; width: 17px; height: 17px; }
+/* secondary: frosted-glass pill, no outline: a translucent sheen, background blur, a light top edge and a soft drop shadow */
+.ghost { padding: 6px 28px; color: #fff; border: 0;
+  background: linear-gradient(180deg, rgb(255 255 255 / .2), rgb(255 255 255 / .06));
+  -webkit-backdrop-filter: blur(18px) saturate(170%); backdrop-filter: blur(18px) saturate(170%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .38), inset 0 -1px 0 rgb(255 255 255 / .06), 0 10px 28px -14px rgb(2 8 30 / .7); }
+.ghost:hover { background: linear-gradient(180deg, rgb(255 255 255 / .3), rgb(255 255 255 / .12)); transform: translateY(-2px); }
+.feats { display: none; list-style: none; margin: 0; padding: 0; }
+.feat { display: flex; align-items: center; gap: 16px; font-family: var(--font-sans); }
+.feat svg { width: 40px; height: 40px; flex: none; color: var(--accent); }
+.feat b { display: block; font-size: 15px; font-weight: 600; }
+.feat span { display: block; font-size: 13px; line-height: 1.35; color: rgb(240 242 247 / .66); margin-top: 3px; }
+
+
+/* Feature icons (parts from FeatIcon.tsx). Entrance: starts just after the feature lands, each part staggered
+   by its --o. Loop: wrapper groups start a quiet cycle once the entrance is done (--loop), phased by --l.
+   Without .active everything sits in its final, static state. */
+.ic { --t0: calc(var(--i, 0) * 75ms + 1050ms); --loop: calc(var(--t0) + 1.6s); overflow: visible; }
+.ic * { transform-box: fill-box; transform-origin: center; }
+.active .ic :is(.pop, .rise, .grow, .draw, .fall, .spin) { animation-fill-mode: both; animation-delay: calc(var(--t0) + var(--o, 0) * 110ms); }
+.active .ic .pop { animation-name: icPop; animation-duration: .4s; animation-timing-function: cubic-bezier(.34,1.7,.64,1); }
+.active .ic .rise { animation-name: icRise; animation-duration: .7s; animation-timing-function: cubic-bezier(.22,1,.36,1); }
+.active .ic .grow { animation-name: icGrow; animation-duration: .45s; animation-timing-function: cubic-bezier(.34,1.5,.64,1); }
+.active .ic .draw { stroke-dasharray: 1; animation-name: icDraw; animation-duration: .8s; animation-timing-function: cubic-bezier(.6,.1,.2,1); }
+.active .ic .fall { animation-name: icFall; animation-duration: .75s; animation-timing-function: cubic-bezier(.3,1.4,.5,1); }
+.active .ic .spin { animation-name: icSpin; animation-duration: 1s; animation-timing-function: cubic-bezier(.22,1,.36,1); }
+/* the SmartFlow graph draws in, then keeps redrawing: in from the left, out to the right */
+.active .ic .graph { stroke-dasharray: 1; animation: icDraw .8s cubic-bezier(.6,.1,.2,1) calc(var(--t0) + var(--o, 0) * 110ms) both, icGraph 3.2s cubic-bezier(.6,.1,.3,1) var(--loop) infinite; }
+@keyframes icPop { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: none; } }
+@keyframes icRise { from { opacity: 0; transform: translateY(6px) scale(.4); } to { opacity: 1; transform: none; } }
+@keyframes icGrow { from { opacity: 0; transform: scaleY(0); } to { opacity: 1; transform: none; } }
+@keyframes icDraw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes icFall { 0% { opacity: 0; transform: translateY(-9px) scale(.85, 1.1); } 60% { opacity: 1; transform: translateY(0) scale(1.1, .88); } 100% { transform: none; } }
+@keyframes icSpin { from { opacity: 0; transform: rotate(-120deg) scale(.7); } to { opacity: 1; transform: none; } }
+@keyframes icGraph { 0%, 30% { stroke-dashoffset: 0; } 55% { stroke-dashoffset: -1; } 56% { stroke-dashoffset: 1; } 85%, 100% { stroke-dashoffset: 0; } }
+
+.active .ic :is(.charge, .float, .stream, .current, .turn, .beat, .bob) { animation-iteration-count: infinite; }
+/* battery: bars drain one by one, then charge back up one by one */
+.active .ic .charge { animation: icCharge 3.2s linear calc(var(--loop) + var(--l) * 240ms) infinite; }
+@keyframes icCharge { 0%, 55% { opacity: 1; } 62%, 80% { opacity: 0; } 84%, 100% { opacity: 1; } }
+/* bubbles drift up and down, out of step */
+.active .ic .float { animation: icFloat 2.8s ease-in-out calc(var(--loop) + var(--l) * -700ms) infinite; }
+@keyframes icFloat { 0%, 100% { transform: none; } 50% { transform: translateY(-1.6px); } }
+/* chamber: micro-bubbles stream upward and fade at the top */
+.active .ic .stream { animation: icStream 2.2s linear calc(var(--loop) + var(--l) * -730ms) infinite; }
+@keyframes icStream { 0% { opacity: 0; transform: translateY(3px); } 20%, 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(-3px); } }
+/* plates: a pulse of current runs across them */
+.active .ic .current { animation: icCurrent 2.4s ease-in-out calc(var(--loop) + var(--l) * 600ms) infinite; }
+@keyframes icCurrent { 0%, 30%, 100% { transform: none; opacity: 1; } 15% { transform: scaleY(.55); opacity: .55; } }
+/* water modes: the dotted ring turns slowly; the four mode dots light up in turn */
+.active .ic .turn { animation: icTurn 14s linear var(--loop) infinite; }
+@keyframes icTurn { to { transform: rotate(360deg); } }
+.active .ic .beat { animation: icBeat 4s ease-in-out calc(var(--loop) + var(--l) * 1s) infinite; }
+@keyframes icBeat { 0%, 30%, 100% { transform: none; } 12% { transform: scale(1.5); } }
+/* drop: a gentle bob with a soft squash */
+.active .ic .bob { animation: icBob 3s ease-in-out var(--loop) infinite; }
+@keyframes icBob { 0%, 100% { transform: none; } 45% { transform: translateY(-1.4px) scale(.97, 1.03); } 70% { transform: translateY(.4px) scale(1.03, .97); } }
+
+.kb { position: absolute; z-index: 6; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; }
+.kb button { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); border: 0; padding: 0; }
+.kb button:focus-visible { position: static; width: auto; height: 36px; clip: auto; padding: 0 14px; border-radius: 999px; background: rgb(3 14 54 / .85); border: 1px solid rgb(195 229 245 / .2); font-family: var(--font-sans); font-size: 13px; color: #fff; }
+
+.f { opacity: 0; }
+.active .f { animation: fallIn 1s cubic-bezier(.22,.9,.32,1.12) both; animation-delay: calc(var(--i, 0) * 75ms + 420ms); }
+.leaving .f { animation: fallOut .42s cubic-bezier(.5,0,.9,.4) both; animation-delay: calc(var(--i, 0) * 30ms); }
+@keyframes fallIn { 0% { opacity: 0; transform: translateY(-60px); } 55% { opacity: 1; } 100% { opacity: 1; transform: none; } }
+@keyframes lineIn { from { transform: scaleX(0); } to { transform: none; } }
+@keyframes lineOut { to { opacity: 0; } }
+@keyframes fallOut { 0% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(46px); } }
+
+.loading { position: absolute; z-index: 1; left: 62%; top: 52%; transform: translate(-50%, -50%); font-family: var(--font-sans); font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: rgb(240 242 247 / .6); transition: opacity .5s; }
+.done { opacity: 0; }
+
+/* Desktop: one layout for every product. Copy column on the left (descriptor, name, lede, CTAs, then the
+   feature row along the bottom edge), the product on the right with its squiggle behind it (drawn in stage.ts). */
+@media (min-width: 900px) {
+  .copy { top: var(--pad); bottom: var(--pad); right: auto; width: var(--cw); display: flex; flex-direction: column; justify-content: center; }
+  .name { font-size: min(calc(90cqi / var(--em)), 30vh); }
+  .slide .desc { font-size: clamp(22px, min(2.1vw, 3.8vh), 36px); }
+  .body { margin-top: clamp(16px, 2.6vh, 28px); }
+  .lede { margin-top: 0; font-size: clamp(17px, min(1.35vw, 2.5vh), 21px); max-width: 28em; }
+  .ctas { margin-top: clamp(20px, 3.2vh, 32px); gap: 12px; }
+  .cta { min-height: 56px; font-size: 16px; }
+  .feats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(16px, 2vw, 32px); margin-top: clamp(28px, 4.5vh, 44px); padding-top: clamp(16px, 2.4vh, 24px); position: relative; }
+  /* divider animates with the slide (draws in, fades out fast), so two slides' lines never show at once */
+  .feats::before { content: ""; position: absolute; inset: 0 0 auto; height: 1px; background: rgb(195 229 245 / .16); transform-origin: left; }
+  .active .feats::before { animation: lineIn 1s cubic-bezier(.22,1,.36,1) 720ms both; }
+  .leaving .feats::before { animation: lineOut .2s ease-out both; }
+  .feat { flex-direction: row; align-items: center; gap: 12px; }
+  .feat svg { width: 30px; height: 30px; }
+  .feat b { font-size: 14.5px; }
+}
+
+@media (min-width: 900px) and (max-height: 820px) {
+  .name { font-size: min(calc(90cqi / var(--em)), 28vh); }
+  .lede { font-size: clamp(16.5px, 2.5vh, 19px); }
+  .feat span { display: none; }
+}
+@media (min-width: 900px) and (max-height: 640px) { .feats { display: none !important; } }
+@media (max-width: 899px) {
+  .hero { margin: 4px 8px 8px; height: var(--mh, calc(100svh - 68px - 12px)); border-radius: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .active .f { animation: none; opacity: 1; }
+  .active .ic * { animation: none !important; }
+  .active .desc.f { animation: none; opacity: 1; }
+  .active .feats::before { animation: none; }
+  .leaving .feats::before { animation: none; opacity: 0; }
+  .leaving .f { animation: none; opacity: 0; }
+}

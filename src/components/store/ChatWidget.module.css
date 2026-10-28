@@ -1,0 +1,119 @@
+.root {
+  --ease: cubic-bezier(0.34, 1.56, 0.64, 1); /* slight overshoot */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ───────────── Launcher ───────────── */
+
+.launcher {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  cursor: pointer;
+  background: var(--color-deep-current);
+  /* glossy rim: light arc top-left + bottom-right, plus brand glow */
+  box-shadow:
+    inset 1.5px 1.5px 1px rgba(255, 255, 255, 0.45),
+    inset -1.5px -1.5px 1px rgba(255, 255, 255, 0.28),
+    0 14px 40px -10px rgba(4, 111, 237, 0.8);
+  transition: transform 0.35s var(--ease), opacity 0.25s ease, box-shadow 0.3s ease;
+}
+
+/* soft sheen across the top */
+.launcher::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(120% 80% at 30% 0%, rgba(255, 255, 255, 0.22), transparent 55%);
+  pointer-events: none;
+}
+
+.launcher:hover,
+.launcher:focus-visible {
+  transform: scale(1.08);
+  box-shadow:
+    inset 1.5px 1.5px 1px rgba(255, 255, 255, 0.55),
+    inset -1.5px -1.5px 1px rgba(255, 255, 255, 0.35),
+    0 18px 44px -10px rgba(4, 111, 237, 0.9);
+}
+
+.launcher:active { transform: scale(0.96); }
+
+.launcher:focus-visible { outline-offset: 4px; border-radius: 50%; }
+
+.icon {
+  width: 56%;
+  height: 56%;
+  overflow: visible;
+  filter: drop-shadow(0 2px 3px rgba(4, 22, 74, 0.3));
+}
+
+/* lines → sparkles morph */
+.lines, .sparkles, .starBig, .starSmall {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.lines { transition: opacity 0.2s ease, transform 0.3s var(--ease-out); }
+
+.sparkles {
+  opacity: 0;
+  transform: scale(0.4) rotate(-45deg);
+  transition: opacity 0.25s ease 0.05s, transform 0.45s var(--ease) 0.05s;
+}
+
+.launcher:hover .lines,
+.launcher:focus-visible .lines { opacity: 0; transform: scale(0.5); }
+
+.launcher:hover .sparkles,
+.launcher:focus-visible .sparkles { opacity: 1; transform: scale(1) rotate(0deg); }
+
+.launcher:hover .starBig,
+.launcher:focus-visible .starBig { animation: twinkle 1.6s ease-in-out 0.4s infinite; }
+.launcher:hover .starSmall,
+.launcher:focus-visible .starSmall { animation: twinkle 1.6s ease-in-out 0.8s infinite; }
+
+@keyframes twinkle {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.7); opacity: 0.55; }
+}
+
+/* open: launcher shrinks away */
+.root[data-open="true"] .launcher {
+  transform: scale(0.5);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ───────────── Panel ───────────── */
+
+/* grows out of the button's corner */
+.panel {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  transform-origin: bottom right;
+  transform: scale(0.15);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.3s var(--ease-out), opacity 0.2s ease;
+}
+
+.root[data-open="true"] .panel {
+  transform: scale(1);
+  opacity: 1;
+  pointer-events: auto;
+  transition: transform 0.45s var(--ease-out) 0.12s, opacity 0.25s ease 0.12s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .launcher, .panel, .lines, .sparkles {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+  .starBig, .starSmall { animation: none !important; }
+}

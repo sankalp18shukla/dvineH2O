@@ -1,0 +1,56 @@
+/* 05 · A few details can help you choose (see HelpChoosing.tsx). Three photo cards side by side by default;
+   with motion the script adds .on, which turns the section into a tall track with a sticky stage where the
+   cards stack into a 3D deck. Each option takes its product's colour (.glacier / .flash / .volt). */
+.section { --hdr: 68px; position: relative; overflow-x: clip; padding-block: clamp(64px, 8vw, 96px); }
+@media (min-width: 1024px) { .section { --hdr: 76px; } }
+
+.glacier { --accent: var(--color-glacier); --tag-bg: var(--color-glacier); --tag-fg: var(--color-deep-current); --pin: var(--color-voltage); }
+.flash { --accent: var(--color-flash); --tag-bg: var(--color-flash); --tag-fg: var(--color-voltage); --pin: var(--color-deep-current); }
+.volt { --accent: var(--color-voltage); --tag-bg: var(--color-voltage); --tag-fg: var(--color-deep-current); --pin: var(--color-deep-current); }
+
+/* ── Intro ─────────────────────────────────────────────────────────────── */
+.head { display: grid; gap: 24px 64px; margin-bottom: clamp(40px, 6vw, 64px); }
+.intro { max-width: 28em; margin: 0; font-size: clamp(18px, 1.5vw, 21px); line-height: 1.45; color: var(--color-muted); }
+@media (min-width: 1024px) { .head { grid-template-columns: auto 1fr; align-items: end; } .intro { justify-self: end; } }
+
+/* ── Cards ─────────────────────────────────────────────────────────────── */
+.deck { display: grid; gap: 24px; list-style: none; }
+@media (min-width: 768px) { .deck { grid-template-columns: repeat(3, 1fr); } }
+.card { position: relative; aspect-ratio: 1122 / 1402; border-radius: 28px; overflow: hidden; isolation: isolate; background: var(--color-stage-deep);
+  box-shadow: 0 40px 80px -40px rgb(4 22 74 / .55), 0 0 0 1px rgb(4 22 74 / .06); }
+.photo { object-fit: cover; }
+.shade { position: absolute; inset: 0; background: linear-gradient(to top, rgb(3 14 54 / .88) 0%, rgb(3 14 54 / .35) 38%, transparent 62%); }
+/* washes a card out as it sinks back into the deck */
+.veil { position: absolute; inset: 0; z-index: 2; background: var(--color-paper); opacity: 0; pointer-events: none; }
+/* own layers, so fading the veil and the copy never repaints the photo underneath */
+.on .veil, .on .info { will-change: opacity; }
+
+.info { position: absolute; z-index: 1; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 12px;
+  padding: clamp(20px, 2.6vw, 34px); color: #fff; }
+/* the pinned tag in the product colour; it wipes open left to right */
+.card .tag { min-height: 1.2em; background: var(--tag-bg); color: var(--tag-fg); font-size: clamp(32px, 3.4vw, 52px); white-space: nowrap; }
+/* the corner pins sit just outside the box, each touching its corner, rather than straddling or covering it */
+.card .tag::after { inset: -8px; }
+.text { display: inline-block; }
+.desc { margin: 0; font-family: var(--font-sans); font-size: 14.5px; font-weight: 500; letter-spacing: -.01em; color: rgb(255 255 255 / .85); }
+.info .go { margin-top: 8px; }
+
+/* ── With motion: sticky stage, cards stacked into a deck ──────────────── */
+/* the heading stays in the page flow and scrolls away; the track under it holds the sticky stage, which the deck fills */
+.on { padding-bottom: 0; }
+.on .head { margin-bottom: 0; }
+.on .track { height: 520svh; }
+.on .stage { position: sticky; top: var(--hdr); height: calc(100svh - var(--hdr)); display: grid; padding-block: clamp(14px, 2.5svh, 28px); }
+.on .deck { display: grid; grid-template-columns: none; place-items: center; min-height: 0; }
+/* every card in the same grid cell, centred, as tall as the stage at the photos' own shape (1122 × 1402),
+   so the whole picture shows; the script owns their transforms */
+.on .card { grid-area: 1 / 1; height: 100%; aspect-ratio: 1122 / 1402; max-width: 100%; will-change: transform; }
+.on .card .tag { font-size: clamp(32px, min(3.6vw, 6svh), 56px); }
+/* phones: the card sits a little right of centre so the deck shows behind it, clear of the bottom action bar.
+   It stands taller than the photos' own shape (cropped by cover) so the deck fills the phone's height
+   instead of floating as a small box in the middle */
+@media (max-width: 767px) {
+  .on .stage { padding-bottom: 92px; }
+  .on .card { justify-self: end; width: 86%; height: min(100%, 152vw); aspect-ratio: auto; max-height: 100%; }
+}
+

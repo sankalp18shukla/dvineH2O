@@ -1,0 +1,311 @@
+@import "tailwindcss";
+
+/* ───────────── DVINE H2O brand tokens (from the brand book swatches) ───────────── */
+@theme {
+  --color-deep-current: #046FED;
+  --color-glacier: #25FFE8;
+  --color-clearwater: #43D2FA;
+  --color-flash: #FF2E9C;
+  --color-voltage: #F0FF00;
+  --color-ultra: #5B00FF;
+  --color-pulse: #FF0401;
+  --color-mist: #F0F2F7;
+  --color-fog: #C3E5F5;
+  --color-splash: #06BFEA;
+  --color-deep-dive: #2D4AA0;
+
+  --color-ink: #04164A;           /* primary text on light, button text on bright accents */
+  --color-stage: #06195A;         /* deep brand surface */
+  --color-stage-deep: #030E36;
+  --color-paper: #F6F8FC;         /* light page background */
+  --color-line: #D8E0EE;
+  --color-muted: #52607E;         /* 6.3:1 on paper */
+
+  --font-serif: var(--font-garamond), "Apple Garamond", Garamond, Georgia, serif;
+  --font-sans: var(--font-bricolage), "DX Figgle", system-ui, sans-serif;
+
+  --radius-card: 22px;
+  --ease-out-soft: cubic-bezier(.2, .7, .1, 1);
+}
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 88px; }
+  @media (min-width: 1024px) { html { scroll-padding-top: 124px; } }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { @apply bg-paper text-ink font-serif antialiased; font-size: 18px; line-height: 1.55; }
+  h1, h2, h3, h4 { @apply font-sans text-balance; letter-spacing: -0.02em; }
+  :focus-visible { outline: 2px solid var(--color-deep-current); outline-offset: 3px; border-radius: 6px; }
+  .on-dark :focus-visible { outline-color: var(--color-voltage); }
+  ::selection { background: var(--color-glacier); color: var(--color-ink); }
+  input, select, textarea, button { font: inherit; }
+}
+
+@layer components {
+  .container-x { @apply mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-10; }
+  /* lines content up with the inner text column of the home hero card (card margin + card padding) */
+  .frame-x { padding-inline: calc(8px + clamp(18px, 3.4vw, 52px)); }
+  @media (min-width: 900px) { .frame-x { padding-inline: calc(10px + clamp(18px, 3.4vw, 52px)); } }
+  .section { @apply py-16 sm:py-24; }
+  .eyebrow { @apply font-sans text-[12px] font-semibold uppercase tracking-[0.18em] text-muted; }
+  .on-dark .eyebrow { color: rgb(240 242 247 / .66); }
+  .h-display { @apply font-sans font-extrabold leading-[.92]; letter-spacing: -0.045em; font-size: clamp(44px, 6.4vw, 92px); }
+  .h-section { @apply font-sans font-bold leading-[1.02]; letter-spacing: -0.035em; font-size: clamp(32px, 4vw, 56px); }
+  .h-card { @apply font-sans text-xl font-semibold leading-tight; }
+  .lede { @apply text-[19px] leading-relaxed text-muted sm:text-xl; }
+  .on-dark .lede { color: rgb(240 242 247 / .8); }
+  .serif-accent { @apply font-serif font-normal italic; letter-spacing: -0.01em; }
+
+  .btn { @apply inline-flex min-h-12 items-center justify-center gap-2.5 rounded-full px-6 font-sans text-[15px] font-semibold whitespace-nowrap transition duration-300 disabled:cursor-not-allowed disabled:opacity-50; }
+  /* hover inverts each variant: background and text colour swap (see .btn-roll below for the label slide) */
+  .btn-primary { @apply bg-deep-current text-white hover:-translate-y-0.5 hover:bg-white hover:text-deep-current hover:shadow-[inset_0_0_0_1.5px_var(--color-deep-current),0_14px_36px_-14px_var(--color-deep-current)]; }
+  .btn-volt { @apply bg-voltage text-ink hover:-translate-y-0.5 hover:bg-ink hover:text-voltage hover:shadow-[0_14px_36px_-14px_rgba(240,255,0,.7)]; }
+  .btn-glacier { @apply bg-glacier text-ink hover:-translate-y-0.5 hover:bg-ink hover:text-glacier; }
+  .btn-red { @apply bg-pulse text-white hover:-translate-y-0.5 hover:bg-white hover:text-pulse hover:shadow-[inset_0_0_0_1.5px_var(--color-pulse)]; }
+  .btn-outline { @apply border border-ink/25 text-ink hover:border-ink hover:bg-ink hover:text-white; }
+  .on-dark .btn-outline { @apply border-white/35 text-white hover:border-white hover:bg-white hover:text-ink; }
+  .btn-sm { @apply min-h-10 px-4 text-sm; }
+  .btn-ghost { @apply text-deep-current hover:bg-deep-current hover:text-white; }
+  .btn:disabled { @apply translate-y-0 shadow-none; }
+
+  /* label roll: ButtonRoll clones the label into two copies; on hover both slide one width right,
+     so the label leaves to the right while the same label arrives from the left */
+  .btn.is-rolled { @apply relative; -webkit-text-fill-color: transparent; }
+  .btn.is-rolled > :not(.btn-roll) { visibility: hidden; }
+  .btn-roll { @apply pointer-events-none absolute inset-0 flex flex-row-reverse overflow-hidden; border-radius: inherit; -webkit-text-fill-color: currentColor; }
+  .btn-roll-copy { @apply flex shrink-0 basis-full items-center justify-center; gap: calc(var(--spacing) * 2.5); transition: translate .6s cubic-bezier(.76, 0, .24, 1); }
+  .btn.is-rolled:hover:not(:disabled) .btn-roll-copy { translate: 100% 0; }
+  .btn-roll-init .btn-roll-copy { transition: none !important; translate: 0 0 !important; }
+  @media (prefers-reduced-motion: reduce) { .btn-roll-copy { transition: none; translate: 0 0 !important; } }
+  .link { @apply font-sans font-semibold text-deep-current underline decoration-deep-current/30 underline-offset-4 hover:decoration-deep-current; }
+
+  .card { @apply rounded-[var(--radius-card)] border border-line bg-white; }
+  .card-dark { @apply rounded-[var(--radius-card)] border border-white/12 bg-white/[.04]; }
+  .pill { @apply inline-flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1 font-sans text-[13px] font-medium; }
+  .badge { @apply inline-flex items-center rounded-full px-2.5 py-0.5 font-sans text-[12px] font-semibold; }
+
+  .field { @apply flex flex-col gap-1.5; }
+  .label { @apply font-sans text-sm font-semibold text-ink; }
+  .hint { @apply font-sans text-[13px] text-muted; }
+  .error-text { @apply font-sans text-[13px] font-medium text-[#C2001B]; }
+  .input { @apply min-h-12 w-full rounded-xl border border-line bg-white px-4 font-sans text-[16px] text-ink placeholder:text-[#7B87A3] transition focus:border-deep-current focus:ring-4 focus:ring-deep-current/15 focus:outline-none aria-[invalid=true]:border-[#C2001B]; }
+  textarea.input { @apply min-h-32 py-3; }
+  select.input { @apply appearance-none bg-no-repeat pr-10; background-position: right 16px center; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath stroke='%2304164A' stroke-width='1.6' d='m1 1 5 5 5-5'/%3E%3C/svg%3E"); }
+  .check { @apply mt-1 size-[18px] shrink-0 accent-deep-current; }
+
+  .stage { background: radial-gradient(80% 90% at 70% 40%, #0B3FA8 0%, #082A7E 40%, #06195A 72%, #030E36 100%); @apply text-white; }
+
+  /* ── Brand book elements ─────────────────────────────────────────────── */
+  /* Brand pattern: the wavy contour lines (light lines on dark/blue grounds, blue lines on light grounds) */
+  .wave-lines { background: url(/brand/pattern-light.svg) center / cover no-repeat; opacity: .8; }
+  .wave-lines-blue { background: url(/brand/pattern-blue.svg) center / cover no-repeat; }
+  /* Brand grounds: Deep Current and Glacier Pop, each carrying the pattern */
+  .surface-blue { @apply relative isolate bg-deep-current text-white; }
+  .surface-blue::before { content: ""; position: absolute; inset: 0; z-index: -1; background: url(/brand/pattern-light.svg) center / cover no-repeat; opacity: .9; pointer-events: none; }
+  .surface-glacier { @apply relative isolate bg-glacier text-ink; }
+  .surface-glacier::before { content: ""; position: absolute; inset: 0; z-index: -1; background: url(/brand/pattern-blue.svg) center / cover no-repeat; opacity: .45; pointer-events: none; }
+  .surface-glacier .lede { color: rgb(4 22 74 / .78); }
+
+  /* Label box: Garamond italic on a highlight block, pinned at two corners (brand book "Headline / Sub Copy" device) */
+  .label-box { @apply relative inline-flex items-center self-start bg-voltage px-3 pt-1.5 pb-1 font-serif text-[19px] leading-none text-ink italic; letter-spacing: 0; }
+  .label-box::before, .label-box::after { content: ""; position: absolute; width: 1.5px; height: calc(100% + 10px); background: currentColor; opacity: .85; }
+  .label-box::before { left: 0; top: -10px; }
+  .label-box::after { right: 0; bottom: -10px; }
+  .label-box > .pin, .label-box > .pin-end { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--pin, var(--color-deep-current)); }
+  .label-box > .pin { left: -3.25px; top: -14px; }
+  .label-box > .pin-end { right: -3.25px; bottom: -14px; }
+  .label-box { --lb-bg: var(--color-voltage); }
+  .label-box.is-glacier { @apply bg-glacier; --pin: var(--color-flash); --lb-bg: var(--color-glacier); }
+  .label-box.is-blue { @apply bg-deep-current text-voltage; --pin: var(--color-glacier); --lb-bg: var(--color-deep-current); }
+  .label-box.is-ultra { @apply bg-ultra text-voltage; --pin: var(--color-glacier); --lb-bg: var(--color-ultra); }
+  .label-box.is-flash { @apply bg-flash text-voltage; --pin: var(--color-voltage); --lb-bg: var(--color-flash); }
+
+  /* Lockup: the italic Garamond phrase inside a heavy sans headline */
+  .lockup { @apply font-serif font-normal italic; font-size: 1.07em; letter-spacing: -0.015em; }
+  .tag-highlight { @apply relative inline-block bg-voltage px-3 py-1 font-serif text-[18px] italic leading-none text-ink; }
+
+  /* Photo frame (brand book imagery page): a thin rule on all four sides, with a solid square sitting
+     just outside each corner so its inner corner meets the rules */
+  .pin-frame { position: relative; --pin-sq: clamp(11px, 1.6vw, 18px); --pin-line: 1px;
+    /* reveal (PinFrames.tsx scrubs --open 0 → 1): the four squares start together as one block at the centre
+       and slide out to their corners; the rule and the photo open with them, always meeting the squares'
+       inner corners. 1 at rest, so without the script the frame is simply shown. */
+    --open: 1; --shut: calc(1 - var(--open));
+    --near: calc(50% * var(--shut) - var(--pin-sq) * var(--shut) / 2);
+    --far: calc(100% - 50% * var(--shut) + var(--pin-sq) * var(--shut) / 2); }
+  .pin-frame::before { content: ""; position: absolute; inset: calc(50% * var(--shut)); pointer-events: none; z-index: 2;
+    border: var(--pin-line) solid var(--pin, var(--color-flash)); opacity: min(1, calc(var(--open) * 8)); }
+  .pin-frame::after { content: ""; position: absolute; inset: calc(-1 * var(--pin-sq)); pointer-events: none; z-index: 2;
+    background:
+      linear-gradient(var(--pin, var(--color-flash)) 0 0) var(--near) var(--near) / var(--pin-sq) var(--pin-sq) no-repeat,
+      linear-gradient(var(--pin, var(--color-flash)) 0 0) var(--far) var(--near) / var(--pin-sq) var(--pin-sq) no-repeat,
+      linear-gradient(var(--pin, var(--color-flash)) 0 0) var(--near) var(--far) / var(--pin-sq) var(--pin-sq) no-repeat,
+      linear-gradient(var(--pin, var(--color-flash)) 0 0) var(--far) var(--far) / var(--pin-sq) var(--pin-sq) no-repeat; }
+  /* only while opening, so stickers hanging off the frame aren't cut off at rest */
+  .pin-frame.is-opening > :not(.diecut) { clip-path: inset(calc(50% * var(--shut))); }
+  /* caption panel inside the frame, under the photo: Garamond italic on a highlight block */
+  .pin-caption { @apply bg-voltage px-6 py-7 text-center font-serif text-[clamp(18px,1.7vw,24px)] leading-snug text-ink italic sm:px-10; }
+
+  /* Headline lockup (brand book p. 4–16): italic line over heavy sans line, stepped blocks, two pins */
+  .lk { @apply flex flex-col items-start text-balance; isolation: isolate; color: var(--lk-fg); letter-spacing: 0;
+    --lk-bg: var(--color-voltage); --lk-fg: var(--color-deep-current); --lk-pin: var(--color-deep-current); }
+  .lk.is-glacier { --lk-bg: var(--color-glacier); --lk-fg: var(--color-deep-current); --lk-pin: var(--color-voltage); }
+  .lk.is-blue { --lk-bg: var(--color-deep-current); --lk-fg: var(--color-voltage); --lk-pin: var(--color-glacier); }
+  .lk.is-flash { --lk-bg: var(--color-flash); --lk-fg: var(--color-voltage); --lk-pin: var(--color-deep-current); }
+  .lk.is-ultra { --lk-bg: var(--color-ultra); --lk-fg: var(--color-glacier); --lk-pin: var(--color-glacier); }
+  .lk > span { position: relative; max-width: 100%; }
+  .lk > span::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--lk-bg); }
+  .lk-top { font-family: var(--font-serif); font-style: italic; font-weight: 400; font-size: clamp(40px, 5vw, 76px); line-height: 1.04; letter-spacing: -0.025em; padding: .1em .3em .02em .16em; }
+  .lk-bot { font-family: var(--font-sans); font-weight: 800; font-size: clamp(42px, 5.5vw, 84px); line-height: .98; letter-spacing: -0.045em; padding: .06em .22em .12em .2em; margin: -.4em 0 0 clamp(20px, 3.4vw, 56px); }
+  /* the italic sits over the sans line, cut out of it by a stroke in the block colour (brand book p. 4–16);
+     z-index lifts only the glyphs, the block backgrounds stay at -1 so neither covers the other's text */
+  .lk-ink { position: relative; z-index: 1; -webkit-text-stroke: .11em var(--lk-bg); paint-order: stroke fill; }
+  .lk > span:only-child { margin: 0; }
+  /* pins: a thin line with a round head, up from the top-left corner and down from the bottom-right corner */
+  .lk-top::after, .lk-bot::after { content: ""; position: absolute; width: 12px; pointer-events: none; }
+  .lk-top::after { left: -6px; top: -14px; bottom: 0;
+    background: radial-gradient(circle at 6px 6px, var(--lk-pin) 5.5px, transparent 6px), linear-gradient(var(--lk-pin), var(--lk-pin)) 5px 6px / 2px 100% no-repeat; }
+  .lk-bot::after { right: -6px; top: 0; bottom: -14px;
+    background: radial-gradient(circle at 6px calc(100% - 6px), var(--lk-pin) 5.5px, transparent 6px), linear-gradient(var(--lk-pin), var(--lk-pin)) 5px 0 / 2px calc(100% - 6px) no-repeat; }
+  .lk.is-center { align-items: center; text-align: center; }
+  .lk.is-center .lk-bot { margin-left: 0; translate: clamp(14px, 2.4vw, 40px) 0; }
+  /* inner-page sizes: same lockup, scaled for longer lines */
+  .lk.is-md .lk-top { font-size: clamp(32px, 3.7vw, 58px); }
+  .lk.is-md .lk-bot { font-size: clamp(34px, 4.1vw, 64px); }
+  .lk.is-sm .lk-top { font-size: clamp(26px, 2.6vw, 40px); }
+  .lk.is-sm .lk-bot { font-size: clamp(28px, 3vw, 46px); }
+  /* italic last ("Check the fit. *Know what comes with it.*"): sans line on top, italic hanging under it and
+     over its bottom edge; the pins swap so they still mark the first line's top-left and the last line's bottom-right */
+  .lk.is-tail .lk-bot { margin: 0; }
+  .lk.is-tail .lk-top { margin: -.3em 0 0 clamp(20px, 3.4vw, 56px); }
+  .lk.is-tail .lk-bot::after { left: -6px; right: auto; top: -14px; bottom: 0;
+    background: radial-gradient(circle at 6px 6px, var(--lk-pin) 5.5px, transparent 6px), linear-gradient(var(--lk-pin), var(--lk-pin)) 5px 6px / 2px 100% no-repeat; }
+  .lk.is-tail .lk-top::after { left: auto; right: -6px; top: 0; bottom: -14px;
+    background: radial-gradient(circle at 6px calc(100% - 6px), var(--lk-pin) 5.5px, transparent 6px), linear-gradient(var(--lk-pin), var(--lk-pin)) 5px 0 / 2px calc(100% - 6px) no-repeat; }
+  .lk.is-tail.is-center .lk-top { margin-left: 0; translate: clamp(14px, 2.4vw, 40px) 0; }
+  .lk.is-tail.is-center .lk-bot { translate: none; }
+
+  /* Fact rows (as the home collection's feature row): an ink rule over each item, thin dividers between */
+  .facts { display: grid; gap: 0; margin: 0; font-family: var(--font-sans); }
+  .facts > div { padding: 18px 20px 4px 0; border-top: 2px solid currentColor; }
+  .facts dt { font-size: 17px; font-weight: 600; line-height: 1.25; letter-spacing: -.01em; }
+  .facts dd { margin: 6px 0 0; font-family: var(--font-serif); font-size: 16.5px; line-height: 1.45; color: var(--color-muted); }
+  .facts .fact-icon { display: block; width: 26px; height: 26px; margin-bottom: 14px; color: var(--color-deep-current); }
+  .on-dark .facts dd { color: rgb(240 242 247 / .75); }
+  .on-dark .facts .fact-icon { color: var(--color-voltage); }
+  @media (min-width: 640px) {
+    .facts.is-2, .facts.is-4 { grid-template-columns: repeat(2, 1fr); }
+    .facts.is-3 { grid-template-columns: repeat(3, 1fr); }
+    .facts > div + div { padding-left: 20px; border-left: 1px solid var(--color-line); }
+    .on-dark .facts > div + div { border-left-color: rgb(255 255 255 / .15); }
+    .facts.is-2 > div:nth-child(2n + 1), .facts.is-4 > div:nth-child(2n + 1) { padding-left: 0; border-left: 0; }
+    .facts.is-2 > div:nth-child(n + 3), .facts.is-4 > div:nth-child(n + 3) { margin-top: 28px; }
+  }
+  @media (min-width: 1024px) {
+    .facts.is-4 { grid-template-columns: repeat(4, 1fr); }
+    .facts.is-4 > div:nth-child(n) { margin-top: 0; }
+    .facts.is-4 > div:nth-child(n + 2) { padding-left: 20px; border-left: 1px solid var(--color-line); }
+  }
+  @media (max-width: 639px) { .facts > div + div { margin-top: 22px; } }
+
+  /* Inset card, framed like the home hero and water-testing cards (same margins and radius) */
+  .frame-card { position: relative; margin: 6px 10px 10px; border-radius: 30px; overflow: hidden; isolation: isolate; }
+
+  /* "The [sticker] BRAND" band (brand book p. 3) */
+  .band-lk { @apply relative inline-flex flex-wrap items-center justify-center text-deep-current; isolation: isolate; font-size: clamp(52px, 9vw, 136px); line-height: 1; letter-spacing: 0; padding-inline: .14em; column-gap: .1em; }
+  .band-bg { position: absolute; inset: .2em 0 .18em; z-index: -1; background: var(--color-voltage); }
+  .band-bg::before, .band-bg::after { content: ""; position: absolute; width: 12px; }
+  .band-bg::before { left: -6px; top: -18px; bottom: 0; background: radial-gradient(circle at 6px 6px, var(--color-deep-current) 5.5px, transparent 6px), linear-gradient(var(--color-deep-current), var(--color-deep-current)) 5px 6px / 2px 100% no-repeat; }
+  .band-bg::after { right: -6px; top: 0; bottom: -18px; background: radial-gradient(circle at 6px calc(100% - 6px), var(--color-deep-current) 5.5px, transparent 6px), linear-gradient(var(--color-deep-current), var(--color-deep-current)) 5px 0 / 2px calc(100% - 6px) no-repeat; }
+  .band-it { font-family: var(--font-serif); font-style: italic; font-weight: 400; letter-spacing: -0.03em; }
+  .band-sans { font-family: var(--font-sans); font-weight: 800; letter-spacing: -0.05em; font-size: .9em; }
+  .band-st { width: 1.32em; height: 1.32em; margin-block: -.12em; object-fit: contain; }
+
+  /* Pinned-text reveal, as the "Find the right fit." heading (TagReveal.tsx scrubs --open 0 → 1 and sets
+     .is-opening meanwhile): both pins start together at the centre and slide apart in opposite directions,
+     opening the highlight block and revealing the words between them. Nothing applies at rest. */
+  .is-opening { --shut: calc(1 - var(--open, 1)); }
+  .lk.is-opening > span::before { clip-path: inset(0 calc(50% * var(--shut))); }
+  .lk.is-opening .lk-ink, .lk.is-opening .lk-txt { display: inline-block; clip-path: inset(-40% calc((50% + .2em) * var(--shut) - .2em)); }
+  .lk.is-opening .lk-top::after { left: calc(-6px + 50% * var(--shut)); }
+  .lk.is-opening .lk-bot::after { right: calc(-6px + 50% * var(--shut)); }
+  .lk.is-tail.is-opening .lk-bot::after { left: calc(-6px + 50% * var(--shut)); right: auto; }
+  .lk.is-tail.is-opening .lk-top::after { right: calc(-6px + 50% * var(--shut)); left: auto; }
+  .label-box.is-opening { background: linear-gradient(var(--lb-bg) 0 0) center / calc(100% * var(--open)) 100% no-repeat; }
+  .label-box.is-opening::before { left: calc(50% * var(--shut)); }
+  .label-box.is-opening::after { right: calc(50% * var(--shut)); }
+  .label-box.is-opening > .pin { left: calc(-3.25px + 50% * var(--shut)); }
+  .label-box.is-opening > .pin-end { right: calc(-3.25px + 50% * var(--shut)); }
+  .label-box.is-opening > .lb-txt { clip-path: inset(-40% calc((50% + .75rem) * var(--shut) - .75rem)); }
+  /* the band's block narrows to the centre, carrying its pins; the words are cut just outside the pins */
+  .band-lk.is-opening .band-bg { left: calc(50% * var(--shut)); right: calc(50% * var(--shut)); }
+  .band-lk.is-opening { clip-path: inset(-40% calc(50% * var(--shut) - 8px)); }
+  /* only "Meet … DVINE" opens; the "water as intended" sticker is then slapped on: it drops in large and
+     tilted with a lifted shadow, presses down past flat, and settles stuck to the band */
+  .band-lk.is-opening .band-st { opacity: 0; }
+  .band-lk.is-stuck .band-st { animation: sticker-slap .75s .12s cubic-bezier(.2, .9, .3, 1) both; }
+  @keyframes sticker-slap {
+    0%   { opacity: 0; transform: translateY(-38%) scale(1.75) rotate(-26deg); filter: drop-shadow(0 46px 30px rgb(2 26 92 / .22)); }
+    45%  { opacity: 1; transform: translateY(2%) scale(.9) rotate(5deg); filter: drop-shadow(0 4px 5px rgb(2 26 92 / .3)); }
+    68%  { transform: translateY(0) scale(1.05) rotate(-3deg); }
+    84%  { transform: scale(.98) rotate(1deg); }
+    100% { opacity: 1; transform: none; filter: drop-shadow(0 10px 14px rgb(2 26 92 / .18)); }
+  }
+
+  .water-sticker { display: block; overflow: visible; filter: drop-shadow(0 10px 14px rgb(2 26 92 / .18)); }
+
+  /* Die-cut phrase stickers: heavy rounded type, white cut line, coloured outer edge */
+  .diecut { @apply pointer-events-none relative inline-block text-center font-sans font-extrabold; isolation: isolate; white-space: pre-line; line-height: .92; letter-spacing: -.035em;
+    color: var(--dc-fg); -webkit-text-stroke: .3em #fff; paint-order: stroke fill; rotate: var(--dc-rot, -8deg);
+    filter: drop-shadow(0 8px 10px rgb(3 14 54 / .3)); --dc-fg: var(--color-deep-current); --dc-edge: #8FD3F7; }
+  .diecut::before { content: attr(data-text); position: absolute; inset: 0; z-index: -1; color: var(--dc-edge); -webkit-text-stroke: .52em var(--dc-edge); paint-order: stroke fill; }
+  .diecut.is-red { --dc-fg: #E8392F; --dc-edge: #F7A49C; }
+  .diecut.is-orange { --dc-fg: #F28A1A; --dc-edge: #FFD08A; }
+
+  /* Yellow tape */
+  .tape { @apply pointer-events-none absolute z-[3] block h-9 w-32; background: linear-gradient(100deg, rgb(240 255 0 / .82), rgb(226 240 20 / .9) 45%, rgb(240 255 0 / .78)); box-shadow: 0 3px 8px -3px rgb(3 14 54 / .35);
+    clip-path: polygon(0 8%, 4% 0, 8% 10%, 12% 2%, 100% 0, 97% 25%, 100% 50%, 96% 76%, 100% 100%, 6% 100%, 2% 90%, 5% 70%, 0 52%, 3% 30%); }
+
+  /* Pinned tag box with square corner markers (brand personality / values boxes, p. 7–8) */
+  .tag-box { @apply relative inline-block bg-flash px-4 pt-1.5 pb-2 font-serif italic leading-none text-voltage; letter-spacing: -.01em; }
+  .tag-box::after { content: ""; position: absolute; inset: -4px; pointer-events: none;
+    background:
+      linear-gradient(var(--pin, var(--color-glacier)) 0 0) top left / 8px 8px no-repeat,
+      linear-gradient(var(--pin, var(--color-glacier)) 0 0) top right / 8px 8px no-repeat,
+      linear-gradient(var(--pin, var(--color-glacier)) 0 0) bottom left / 8px 8px no-repeat,
+      linear-gradient(var(--pin, var(--color-glacier)) 0 0) bottom right / 8px 8px no-repeat; }
+
+  .prose-dvine p { @apply mb-4; }
+  .prose-dvine h2 { @apply mt-10 mb-3 text-2xl font-bold; }
+
+  /* data table (admin + account) */
+  .table { @apply w-full border-collapse font-sans text-sm; }
+  .table th { @apply border-b border-line px-3 py-2.5 text-left text-[12px] font-semibold uppercase tracking-wider text-muted whitespace-nowrap; }
+  .table td { @apply border-b border-line/70 px-3 py-3 align-top; }
+  .table tr:hover td { @apply bg-paper; }
+}
+
+@keyframes drawerIn { from { transform: translateX(100%); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { [style*="drawerIn"] { animation: none !important; } }
+
+/* Curtain-reveal footer: the page is a card with rounded bottom corners lying over the footer. The footer is
+   static (tucked under the corners) until FooterReveal adds .footer-reveal, then it is fixed to the bottom and
+   the card's bottom margin gives the scroll room that uncovers it. No card z-index, so no stacking context:
+   menus inside the page still sit above the chat button and drawer. */
+:root { --card-r: clamp(24px, 2.2vw, 32px); }
+.page-card { position: relative; background: var(--color-paper); border-radius: 0 0 var(--card-r) var(--card-r); overflow: clip; }
+.site-footer { position: relative; z-index: -1; margin-top: calc(-1 * var(--card-r)); padding-top: var(--card-r);
+  padding-bottom: var(--action-bar, 0px); transition: padding-bottom .3s; }  /* clears the mobile ActionBar */
+.footer-reveal .page-card { margin-bottom: var(--footer-h, 0px); }
+/* keeps padding-top so the fixed footer still reaches up under the card's corners once fully scrolled */
+.footer-reveal .site-footer { position: fixed; inset: auto 0 0; margin-top: 0; }
+
+/* reveal-on-scroll (progressive: content is visible without JS) */
+.js [data-reveal] { opacity: 0; transform: translateY(22px); transition: opacity .9s var(--ease-out-soft), transform .9s var(--ease-out-soft); }
+.js [data-reveal].in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .js [data-reveal] { opacity: 1; transform: none; transition: none; } }
+
+@media print {
+  .no-print { display: none !important; }
+  .page-card { margin-bottom: 0 !important; border-radius: 0; }
+  body { background: #fff; font-size: 12px; }
+}
