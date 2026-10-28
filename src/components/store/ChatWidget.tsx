@@ -7,7 +7,7 @@ import styles from './ChatWidget.module.css';
 
 type Msg = { from: 'user' | 'bot' | 'agent'; text: string; at: string; links?: { href: string; label: string }[] };
 const KEY = 'dvine_chat';
-const hello: Msg = { from: 'bot', text: 'Hi, I’m the DVINE assistant. Ask about products, delivery, installation, water testing or an order.', at: '' };
+const hello: Msg = { from: 'bot', text: 'Hey. Ask me anything.', at: '' };
 const QUICK = ['Track my order', 'Book a water test', 'Installation', 'Talk to a person'];
 
 // 4-point sparkle star, concave sides
@@ -79,42 +79,53 @@ export function ChatWidget({ whatsapp }: { whatsapp: string | null }) {
 
   return (
     <div data-open={open} className={`${styles.root} no-print fixed right-4 bottom-[calc(16px+var(--action-bar,0px))] z-40 font-sans transition-[bottom] duration-300 sm:right-6 sm:bottom-[calc(24px+var(--action-bar,0px))]`}>
-      <div role="dialog" aria-label="Chat with DVINE H2O" aria-hidden={!open} inert={!open} className={`${styles.panel} flex h-[min(560px,calc(100svh-120px))] w-[min(380px,calc(100vw-32px))] flex-col overflow-hidden rounded-3xl border border-line bg-white shadow-[0_30px_80px_-20px_rgba(4,22,74,.45)]`}>
-          <div className="stage on-dark flex items-center gap-3 px-5 py-4">
-            <span className="grid size-9 place-items-center rounded-full bg-glacier text-ink"><Icon name="drop" className="size-5" /></span>
-            <div className="flex-1"><p className="font-semibold">DVINE H2O</p><p className="text-[12px] text-white/70">{live ? `Connected to our team · ${live.ref}` : 'Assistant · usually replies instantly'}</p></div>
-            <button className="grid size-10 place-items-center rounded-full hover:bg-white/10" aria-label="Close chat" onClick={() => setOpen(false)}><Icon name="close" /></button>
+      <div role="dialog" aria-label="Chat with DVINE H2O" aria-hidden={!open} inert={!open} className={`${styles.panel} flex h-[min(600px,calc(100svh-120px))] w-[min(380px,calc(100vw-32px))] flex-col overflow-hidden text-white`}>
+          <div className={styles.orbs} aria-hidden="true"><i /><i /><i /></div>
+          <div className="flex items-center gap-2.5 px-4 pt-4 pb-2">
+            <span className={styles.avatar}><Icon name="drop" className="size-[18px]" strokeWidth={2} /></span>
+            <p className="flex-1 text-[14px] font-semibold tracking-tight">DVINE H2O{live && <span className="ml-2 font-normal text-white/60">#{live.ref}</span>}</p>
+            <button className={`${styles.glass} ${styles.round}`} aria-label="Close chat" onClick={() => setOpen(false)}><Icon name="close" className="size-4" strokeWidth={2} /></button>
           </div>
-          <div ref={list} className="flex-1 space-y-3 overflow-y-auto bg-paper p-4" aria-live="polite">
-            {msgs.map((m, i) => (
-              <div key={i} className={`flex ${m.from === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-[14.5px] leading-snug ${m.from === 'user' ? 'rounded-br-md bg-deep-current text-white' : m.from === 'agent' ? 'rounded-bl-md bg-[#E8E4FF] text-ink' : 'rounded-bl-md bg-white text-ink shadow-sm'}`}>
-                  {m.from === 'agent' && <p className="mb-0.5 text-[11px] font-semibold text-[#3A1DB3]">DVINE team</p>}
-                  <p className="whitespace-pre-line">{m.text}</p>
-                  {m.links && <div className="mt-2 flex flex-wrap gap-1.5">{m.links.map(l => <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className="rounded-full bg-paper px-3 py-1 text-[12.5px] font-semibold text-deep-current hover:bg-fog">{l.label}</Link>)}</div>}
+          <div ref={list} className={`${styles.list} flex-1 overflow-y-auto px-4 py-3`} aria-live="polite">
+            {msgs.map((m, i) => {
+              const mine = m.from === 'user';
+              const first = i === 0 || msgs[i - 1].from !== m.from;
+              return (
+                <div key={i} className={`${styles.msg} flex ${mine ? 'justify-end' : 'justify-start'} ${first ? 'mt-3 first:mt-0' : 'mt-1'}`}>
+                  <div className={`${styles.bubble} ${mine ? styles.mine : m.from === 'agent' ? styles.agent : styles.bot}`}>
+                    {m.from === 'agent' && first && <p className="mb-0.5 text-[11px] font-semibold text-glacier">DVINE team</p>}
+                    <p className="whitespace-pre-line">{m.text}</p>
+                    {m.links && <div className="mt-2.5 flex flex-wrap gap-1.5">{m.links.map(l => <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className={`${styles.glass} ${styles.pill}`}>{l.label}<Icon name="arrow" className="size-3.5" strokeWidth={2} /></Link>)}</div>}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
+            {busy && !live && !handover && <div className={`${styles.msg} mt-3 flex`} aria-label="Assistant is typing"><div className={`${styles.bubble} ${styles.bot} ${styles.typing}`}><i /><i /><i /></div></div>}
             {handover && (
-              <form onSubmit={startLive} className="space-y-2 rounded-2xl bg-white p-4 shadow-sm">
-                <p className="text-[14px] font-semibold">Share your details and our team will reply here.</p>
+              <form onSubmit={startLive} className={`${styles.msg} ${styles.glass} ${styles.card} mt-4 space-y-2`}>
+                <p className="pb-1 text-[14px] font-semibold">Leave your number, we’ll reply here.</p>
                 <label className="sr-only" htmlFor="chat-name">Name</label>
-                <input id="chat-name" className="input min-h-11 text-[15px]" placeholder="Your name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value, error: '' }))} required minLength={2} />
+                <input id="chat-name" className={styles.field} placeholder="Name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value, error: '' }))} required minLength={2} />
                 <label className="sr-only" htmlFor="chat-phone">Mobile number</label>
-                <input id="chat-phone" className="input min-h-11 text-[15px]" placeholder="Mobile number" inputMode="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value, error: '' }))} required />
-                {form.error && <p className="error-text">{form.error}</p>}
-                <p className="text-[12px] text-muted">By continuing you agree to our <Link href="/policies/privacy" className="underline">privacy policy</Link>.</p>
-                <div className="flex gap-2"><button className="btn btn-primary btn-sm" disabled={busy}>Connect me</button><button type="button" className="btn btn-ghost btn-sm" onClick={() => setHandover(false)}>Cancel</button></div>
+                <input id="chat-phone" className={styles.field} placeholder="Mobile" inputMode="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value, error: '' }))} required />
+                {form.error && <p className="text-[13px] font-medium text-flash">{form.error}</p>}
+                <p className="text-[11.5px] text-white/55">Agreeing to our <Link href="/policies/privacy" className="underline">privacy policy</Link>.</p>
+                <div className="flex gap-2 pt-1">
+                  <button className={`${styles.cta} flex-1`} disabled={busy}>Connect</button>
+                  <button type="button" className={`${styles.glass} ${styles.pill} justify-center px-4`} onClick={() => setHandover(false)}>Cancel</button>
+                </div>
               </form>
             )}
           </div>
-          {!live && !handover && <div className="flex gap-1.5 overflow-x-auto border-t border-line px-3 py-2">{QUICK.map(q => <button key={q} onClick={() => send(q)} className="shrink-0 rounded-full border border-line px-3 py-1.5 text-[12.5px] font-medium hover:border-deep-current">{q}</button>)}</div>}
-          <form onSubmit={e => { e.preventDefault(); send(text); }} className="flex items-center gap-2 border-t border-line p-3">
-            <label htmlFor="chat-input" className="sr-only">Message</label>
-            <input id="chat-input" value={text} onChange={e => setText(e.target.value)} placeholder="Type your question" className="input min-h-11 flex-1 text-[15px]" maxLength={600} autoComplete="off" />
-            <button className="grid size-11 place-items-center rounded-full bg-deep-current text-white disabled:opacity-50" disabled={busy || !text.trim()} aria-label="Send"><Icon name="arrow" className="size-5" /></button>
-          </form>
-          {whatsapp && <a href={`https://wa.me/${whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent('Hi DVINE H2O, I have a question.')}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 border-t border-line py-2.5 text-[13px] font-semibold text-[#0B7A3E] hover:bg-paper"><Icon name="whatsapp" className="size-4" /> Continue on WhatsApp</a>}
+          {!live && !handover && <div className={`${styles.chips} flex gap-1.5 overflow-x-auto px-4 pb-2.5`}>{QUICK.map((q, i) => <button key={q} onClick={() => send(q)} className={`${styles.glass} ${styles.pill}`} style={{ '--i': i } as React.CSSProperties}>{q}</button>)}</div>}
+          <div className="flex items-center gap-2 px-3 pb-3">
+            <form onSubmit={e => { e.preventDefault(); send(text); }} className={`${styles.glass} ${styles.composer}`}>
+              <label htmlFor="chat-input" className="sr-only">Message</label>
+              <input id="chat-input" value={text} onChange={e => setText(e.target.value)} placeholder="Ask anything" className="min-h-11 min-w-0 flex-1 bg-transparent pl-4 text-[15px] text-white placeholder:text-white/55 focus:outline-none" maxLength={600} autoComplete="off" />
+              <button className={styles.send} data-ready={!!text.trim() && !busy} disabled={busy || !text.trim()} aria-label="Send"><Icon name="arrow" className="size-[18px]" strokeWidth={2.2} /></button>
+            </form>
+            {whatsapp && <a href={`https://wa.me/${whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent('Hi DVINE H2O, I have a question.')}`} target="_blank" rel="noopener noreferrer" aria-label="Continue on WhatsApp" className={`${styles.glass} ${styles.round} ${styles.wa}`}><Icon name="whatsapp" className="size-[18px]" /></a>}
+          </div>
         </div>
       <button onClick={() => setOpen(true)} className={styles.launcher} aria-label="Chat with us" aria-expanded={open} tabIndex={open ? -1 : 0}>
         <svg viewBox="0 0 48 48" className={styles.icon} aria-hidden="true">

@@ -1,0 +1,16 @@
+/* 07 · Assistance (AssistBand.tsx) */
+/* "Questions" over "before you order?": the second line never breaks */
+.title :global(.lk-bot) { white-space: nowrap; }
+@media (max-width: 639px) { .title :global(.lk-bot) { font-size: clamp(28px, 8.6vw, 42px); } }
+/* the photo fills the frame; on wide screens it takes only the free space right of the copy, its left edge
+   fading into the photo's own sky (sampled from its left edge) */
+.sky { background: linear-gradient(180deg, #0267b4, #0a78bc 40%, #2f89c5 72%, #5f8fb8); }
+.photo { position: absolute; inset: 0; }
+@media (min-width: 1024px) {
+  .photo { left: auto; width: 46%; -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%); mask-image: linear-gradient(90deg, transparent, #000 22%); }
+}
+/* a light shade from the left under the copy, so it reads on the sky; the photo stays clear on the right */
+.scrim { position: absolute; inset: 0; background: linear-gradient(90deg, rgb(3 14 54 / .45) 0%, rgb(3 14 54 / .2) 45%, rgb(3 14 54 / 0) 70%); }
+@media (max-width: 1023px) { .scrim { background: rgb(3 14 54 / .4); } }
+.btns { margin-top: 36px; }
+.word { display: inline; }

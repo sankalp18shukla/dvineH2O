@@ -104,7 +104,7 @@ export function HeroShowcase({ slides }: { slides: Slide[] }) {
                   <p className={`${s.lede} ${s.f}`} style={{ ['--i' as string]: 2 }}>{sl.lede}</p>
                   <div className={`${s.ctas} ${s.f}`} style={{ ['--i' as string]: 3 }}>
                     {sl.ctas.map(c => (
-                      <Link key={c.href} href={c.href} tabIndex={i === current ? 0 : -1} className={`${s.cta} ${c.primary ? s.primary : s.ghost}`}>
+                      <Link key={c.href} href={c.href} tabIndex={i === current ? 0 : -1} className={`${s.cta} ${c.primary ? s.primary : `${s.ghost} glare`}`}>
                         {c.primary && <span className={s.chip} aria-hidden="true"><Icon name="arrow" /></span>}
                         <span>{c.label}</span>
                       </Link>

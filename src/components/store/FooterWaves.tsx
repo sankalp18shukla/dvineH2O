@@ -5,13 +5,14 @@ const VB_W = 1440, VB_H = 900; // pattern-light.svg viewBox, drawn with "slice" 
 const SWELL = 12;              // px (viewBox units) of the slow travelling swell
 const SIGMA = 90;              // px size of the opening around the pointer, in screen space
 const SPREAD = 0.35;           // how far lines part: peak shift is SPREAD * SIGMA * 0.6 (kept < 2.2 so lines never cross)
-const ALPHA = 0.06;
+const ALPHA = 0.06;           // stroke opacity
+// SWELL, SPREAD and ALPHA are the footer's; the `swell`, `spread` and `alpha` props override them (e.g. calmer, over a photo)
 
 /**
  * The brand wave pattern (pattern-light.svg) on a canvas: it flows slowly, and around the pointer the lines ease
  * apart, so the gaps between them open up. Static under prefers-reduced-motion; paused while off screen.
  */
-export function FooterWaves({ className = '' }: { className?: string }) {
+export function FooterWaves({ className = '', alpha = ALPHA, swell = SWELL, spread = SPREAD }: { className?: string; alpha?: number; swell?: number; spread?: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -31,17 +32,17 @@ export function FooterWaves({ className = '' }: { className?: string }) {
       ptr.x += (ptr.tx - ptr.x) * 0.07;
       ptr.y += (ptr.ty - ptr.y) * 0.07;
       ptr.on += (ptr.target - ptr.on) * 0.03;
-      const a = SPREAD * ptr.on, s2 = 2 * SIGMA * SIGMA;
-      ctx.strokeStyle = `rgba(255,255,255,${ALPHA})`;
+      const a = spread * ptr.on, s2 = 2 * SIGMA * SIGMA;
+      ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
       ctx.lineWidth = 1.6 * Math.max(scale, 0.6);
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.beginPath();
       lines.forEach((pts, i) => {
         for (let k = 0; k < pts.length; k += 2) {
-          const swell = reduced ? 0 : SWELL * Math.sin(pts[k] * 0.004 - t * 0.0016 + i * 0.1);
+          const sw = reduced ? 0 : swell * Math.sin(pts[k] * 0.004 - t * 0.0016 + i * 0.1);
           const sx = ox + pts[k] * scale;
-          let sy = oy + (pts[k + 1] + swell) * scale;
+          let sy = oy + (pts[k + 1] + sw) * scale;
           if (a > 0.001) {
             // smooth vertical stretch centred on the pointer: lines above rise, lines below sink, gaps widen
             const dx = sx - ptr.x, dy = sy - ptr.y;
@@ -103,7 +104,7 @@ export function FooterWaves({ className = '' }: { className?: string }) {
       window.removeEventListener('pointermove', onMove);
       document.documentElement.removeEventListener('pointerleave', onLeave);
     };
-  }, []);
+  }, [alpha, swell, spread]);
 
   return <canvas ref={ref} className={className} aria-hidden="true" />;
 }

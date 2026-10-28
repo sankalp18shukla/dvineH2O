@@ -22,7 +22,7 @@ export function Footer() {
             <ul className="mt-7 flex gap-3" aria-label="DVINE H2O on social media">
               {SOCIAL.map(s => (
                 <li key={s.key}>
-                  <a href={s.href} aria-label={`DVINE H2O on ${s.label}`} className="grid size-11 place-items-center rounded-full bg-gradient-to-br from-white/[0.16] to-white/[0.04] text-white/85 shadow-[0_8px_24px_-8px_rgb(0_0_0/0.5)] backdrop-blur-md transition-[background-color,color,transform] duration-300 hover:-translate-y-0.5 hover:bg-white/10 hover:text-white">
+                  <a href={s.href} aria-label={`DVINE H2O on ${s.label}`} className="glare grid size-11 place-items-center rounded-full bg-gradient-to-br from-white/[0.16] to-white/[0.04] text-white/85 shadow-[0_8px_24px_-8px_rgb(0_0_0/0.5)] backdrop-blur-md transition-[background-color,color,transform] duration-300 hover:-translate-y-0.5 hover:bg-white/10 hover:text-white">
                     <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{SOCIAL_ICON[s.key]}</svg>
                   </a>
                 </li>

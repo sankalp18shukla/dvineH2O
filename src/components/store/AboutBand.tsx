@@ -76,7 +76,7 @@ export function AboutBand({ lead, tail, body }: { lead: string; tail: string; bo
                 <span className={hero.chip} aria-hidden="true"><Icon name="arrow" /></span>
                 <span>Meet the Products</span>
               </a>
-              <Link href="/support#contact" className={`${hero.cta} ${hero.ghost} ${s.glass}`}>Ask Us a Question</Link>
+              <Link href="/support#contact" className={`${hero.cta} ${hero.ghost} ${s.glass} glare`}>Ask Us a Question</Link>
             </div>
           </div>
         </div>

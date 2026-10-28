@@ -9,14 +9,14 @@ gsap.registerPlugin(ScrollTrigger);
 /**
  * Opens every .pin-frame with the scroll: its four corner squares start together at the centre and slide
  * out to the corners, opening the photo between them (--open, 0 → 1, drives the CSS in globals.css).
- * Reduced motion keeps the frames open.
+ * Frames inside [data-own-motion] are opened by their section. Reduced motion keeps the frames open.
  */
 export function PinFrames() {
   const path = usePathname();
   useEffect(() => {
     const mm = gsap.matchMedia();
     mm.add('(prefers-reduced-motion: no-preference)', () => {
-      const frames = gsap.utils.toArray<HTMLElement>('.pin-frame');
+      const frames = gsap.utils.toArray<HTMLElement>('.pin-frame').filter(f => !f.closest('[data-own-motion]'));
       // --open is written straight to the element (see setOpen in FitShowcase.tsx for why)
       const set = (f: HTMLElement, v: number) => {
         f.style.setProperty('--open', String(v));

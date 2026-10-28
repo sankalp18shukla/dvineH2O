@@ -5,8 +5,8 @@ const GAP = 17;      // px between neighbouring lines, roughly the brand pattern
 const ALPHA = 0.16;  // pattern-light.svg's stroke opacity
 const STEP = 12;     // px between sampled points along a line
 const SIGMA = 110;   // px size of the swell around the pointer (interactive bands)
-const SPREAD = 0.4;  // how far lines part around the pointer; kept small so the mapping stays monotonic (no crossings)
-const SCROLL = 0.0022; // wave phase per px the band moves on screen (interactive bands)
+const SPREAD = 0.22; // how far lines part around the pointer; kept small so the mapping stays monotonic (no crossings)
+const SCROLL = 0.001;  // wave phase per px the band moves on screen (interactive bands)
 
 /**
  * The dark band behind a section, drawn as the brand wave pattern: a family of lines that never cross, whose first
@@ -35,10 +35,10 @@ export function WaveBand({ tone = 'deep', interactive = false }: { tone?: 'deep'
       const amp = Math.min(56, Math.max(24, w * 0.035));
       const k = (2 * Math.PI) / (w * 1.15);
       if (interactive && !reduced) {
-        ptr.x += (ptr.tx - ptr.x) * 0.08;
-        ptr.y += (ptr.ty - ptr.y) * 0.08;
-        ptr.on += (ptr.target - ptr.on) * 0.04;
-        scroll += (canvas.getBoundingClientRect().top - scroll) * 0.08;
+        ptr.x += (ptr.tx - ptr.x) * 0.05;
+        ptr.y += (ptr.ty - ptr.y) * 0.05;
+        ptr.on += (ptr.target - ptr.on) * 0.03;
+        scroll += (canvas.getBoundingClientRect().top - scroll) * 0.06;
       }
       const s = reduced ? 0 : t * 0.00025 + scroll * SCROLL;
       const a = SPREAD * ptr.on, s2 = 2 * SIGMA * SIGMA;

@@ -31,10 +31,16 @@ type Step = { title: string; body: string; fact: string; note: string };
 
 // --open is written straight to the element (see FitShowcase.tsx for why it isn't tweened as a CSS variable)
 const setOpen = (h: Element, v: number) => (h as HTMLElement).style.setProperty('--open', String(v));
-/** Opens a lockup like the hero's descriptor tag: pins apart, blocks and words revealed between them. */
+/**
+ * Opens a lockup like the hero's descriptor tag: pins apart, blocks and words revealed between them.
+ * The value is written by a setter rather than onUpdate: when the page loads already scrolled past a trigger
+ * (reload with scroll restored), ScrollTrigger jumps the timeline with events suppressed, which skips
+ * onUpdate and left the lockups shut when scrolling back.
+ */
 const openUp = (h: Element, duration = .5) => {
-  const o = { v: 0 };
-  return gsap.to(o, { v: 1, duration, ease: 'power4.inOut', onUpdate: () => setOpen(h, o.v) });
+  let cur = 0;
+  const o = { get v() { return cur; }, set v(x: number) { cur = x; setOpen(h, x); } };
+  return gsap.to(o, { v: 1, duration, ease: 'power4.inOut' });
 };
 
 /**

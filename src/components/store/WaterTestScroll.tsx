@@ -36,13 +36,6 @@ const PICS: Record<string, { src: string; alt: string }> = {
 const LINE_ENDS = new Set(['use', 'available', 'book.']);
 const GLOW = { off: '0 0 0px rgb(37 255 232 / 0), 0 0 0px rgb(37 255 232 / 0)', peak: '0 0 18px rgb(37 255 232 / .85), 0 0 2px rgb(37 255 232 / .7)', rest: '0 0 16px rgb(37 255 232 / .18), 0 0 0px rgb(37 255 232 / 0)' };
 
-/** Moves the ghost button's glare to the pointer. */
-const glare = (e: React.PointerEvent<HTMLElement>) => {
-  const r = e.currentTarget.getBoundingClientRect();
-  e.currentTarget.style.setProperty('--mx', `${e.clientX - r.left}px`);
-  e.currentTarget.style.setProperty('--my', `${e.clientY - r.top}px`);
-};
-
 /**
  * Home section 02. A sticky stage scrubs the water-drop clip with the scroll: the card opens out of a
  * small box as the drop falls, the headline lands with the splash, the body lights up word by word in
@@ -155,7 +148,7 @@ export function WaterTestScroll({ title, body }: { title: string; body: string }
                 Book a Water Test
                 <span className={s.chip} aria-hidden="true"><Icon name="arrow" /><Icon name="arrow" /></span>
               </Link>
-              <Link href="/water-testing#upload" className={`${s.cta} ${s.ghost}`} onPointerMove={glare}>Upload My Report</Link>
+              <Link href="/water-testing#upload" className={`${s.cta} ${s.ghost} glare`}>Upload My Report</Link>
             </div>
           </div>
         </div>
