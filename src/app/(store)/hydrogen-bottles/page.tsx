@@ -19,6 +19,9 @@ import { productJsonLd } from '@/lib/seo';
 import { Facts, Lockup, Squiggle, Steps } from '@/components/ui/Brand';
 import { WaveBand } from '@/components/store/WaveBand';
 
+/** Rendered per request: reads the catalog, which needs a live database. */
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Hyper hydrogen water bottle', description: HYPER.hero.body, alternates: { canonical: '/hydrogen-bottles' } };
 
 export default async function HyperPage() {

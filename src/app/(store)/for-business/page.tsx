@@ -11,6 +11,9 @@ import { getProduct } from '@/lib/catalog';
 import { productJsonLd } from '@/lib/seo';
 import { DieCut, Facts, Lockup, Squiggle, Steps } from '@/components/ui/Brand';
 
+/** Rendered per request: reads the catalog, which needs a live database. */
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Titan 111 for business', description: BUSINESS.hero.body, alternates: { canonical: '/for-business' } };
 
 export default async function BusinessPage() {

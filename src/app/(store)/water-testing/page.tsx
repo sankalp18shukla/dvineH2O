@@ -16,6 +16,9 @@ import { testOptions } from '@/lib/db/schema';
 import { Lockup, Squiggle, Steps } from '@/components/ui/Brand';
 import { WaveBand } from '@/components/store/WaveBand';
 
+/** Rendered per request: reads the catalog, which needs a live database. */
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Water testing', description: WATER_TESTING.hero.body, alternates: { canonical: '/water-testing' } };
 
 export default async function WaterTestingPage({ searchParams }: { searchParams: Promise<{ pin?: string }> }) {

@@ -20,6 +20,9 @@ import { formatINR } from '@/lib/money';
 import { productJsonLd } from '@/lib/seo';
 import { Facts, Lockup, Squiggle } from '@/components/ui/Brand';
 
+/** Rendered per request: reads the catalog, which needs a live database. */
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Crystal home water system', description: CRYSTAL.hero.body, alternates: { canonical: '/home-water-systems' } };
 
 /** Labelled path through Crystal, shown under the demo video (section 04). */

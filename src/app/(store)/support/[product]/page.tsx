@@ -10,6 +10,9 @@ import { CRYSTAL, HYPER, SUPPORT } from '@/lib/content';
 import { getProduct } from '@/lib/catalog';
 import { Lockup, Steps } from '@/components/ui/Brand';
 
+/** Rendered per request: reads the catalog, which needs a live database. */
+export const dynamic = 'force-dynamic';
+
 const GUIDES = {
   crystal: { title: 'Crystal', sub: 'Home water system', image: '/images/crystal.webp', care: ['Use only the drinking-water settings specified in the manual.', 'Replace filters as guided by the touchscreen filter status.', 'Book the annual maintenance visit to keep ionisation plates in condition.', 'Keep the drip tray clean and dry.'], faq: CRYSTAL.faq.items, shop: '/home-water-systems' },
   hyper: { title: 'Hyper', sub: 'Hydrogen water bottle', image: '/images/hyper.webp', care: ['Fill with suitable drinking water only.', 'Run Auto Clean as described in the guide.', 'Charge over USB-C; don’t charge while submerged.', 'Rinse the glass chamber and dry before storing.'], faq: HYPER.faq.items, shop: '/hydrogen-bottles' },
@@ -20,7 +23,6 @@ const GUIDES = {
 const TONE = { crystal: 'glacier', hyper: 'flash', titan: 'volt' } as const;
 const PIN = { crystal: 'var(--color-glacier)', hyper: 'var(--color-flash)', titan: 'var(--color-voltage)' } as const;
 
-export function generateStaticParams() { return Object.keys(GUIDES).map(product => ({ product })); }
 export async function generateMetadata({ params }: { params: Promise<{ product: string }> }): Promise<Metadata> {
   const g = GUIDES[(await params).product as keyof typeof GUIDES]; return { title: g ? `${g.title} guides and care` : 'Support' };
 }
