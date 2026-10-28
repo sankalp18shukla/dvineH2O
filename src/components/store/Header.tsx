@@ -12,7 +12,8 @@ import { HeaderShell } from './HeaderShell';
  * card's inner edge, the primary links sit centred between them.
  */
 export async function Header({ overlay = false, framed = false }: { overlay?: boolean; framed?: boolean }) {
-  const [count, customer] = await Promise.all([cartCount(), getCustomer()]);
+  // No database yet (frontend-only preview): render as a signed-out visitor with an empty cart.
+  const [count, customer] = await Promise.all([cartCount().catch(() => 0), getCustomer().catch(() => null)]);
   const actions = (
     <div className="ml-auto flex items-center gap-1 justify-self-end">
       <Link href="/search" className="grid size-11 place-items-center rounded-full hover:bg-current/10" aria-label="Search"><Icon name="search" /></Link>

@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
     serverActions: { bodySizeLimit: '12mb' }, // report uploads and review photos
   },
   images: { formats: ['image/avif', 'image/webp'] },
+  // The home page checks public/ for product cutouts and section photos at request time.
+  outputFileTracingIncludes: { '/': ['./public/images/*_product.png', './public/images/*_sec.png'] },
   async headers() {
     return [
       {
