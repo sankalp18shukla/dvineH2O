@@ -39,7 +39,7 @@
 /* the heading stays in the page flow and scrolls away; the track under it holds the sticky stage, which the deck fills */
 .on { padding-bottom: 0; }
 .on .head { margin-bottom: 0; }
-.on .track { height: 520svh; }
+.on .track { height: 260svh; }
 .on .stage { position: sticky; top: var(--hdr); height: calc(100svh - var(--hdr)); display: grid; padding-block: clamp(14px, 2.5svh, 28px); }
 .on .deck { display: grid; grid-template-columns: none; place-items: center; min-height: 0; }
 /* every card in the same grid cell, centred, as tall as the stage at the photos' own shape (1122 × 1402),

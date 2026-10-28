@@ -145,8 +145,8 @@ export function WaterTestScroll({ title, body }: { title: string; body: string }
             </p>
             <div className={s.ctas}>
               <Link href="/water-testing#book" className={`${s.cta} ${s.primary}`}>
-                Book a Water Test
-                <span className={s.chip} aria-hidden="true"><Icon name="arrow" /><Icon name="arrow" /></span>
+                <span className={s.chip} aria-hidden="true"><Icon name="arrow" /></span>
+                <span>Book a Water Test</span>
               </Link>
               <Link href="/water-testing#upload" className={`${s.cta} ${s.ghost} glare`}>Upload My Report</Link>
             </div>

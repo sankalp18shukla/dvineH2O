@@ -40,17 +40,17 @@
 
 /* Buttons match the hero's: Glacier pill with an ink arrow chip, and a frosted ghost pill */
 .ctas { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; margin-top: clamp(28px, 4.5svh, 48px); }
-.cta { --accent: var(--color-glacier); position: relative; display: inline-flex; align-items: center; gap: 14px; min-height: 54px; border-radius: 999px;
+.cta { --accent: var(--color-glacier); position: relative; display: inline-flex; align-items: center; min-height: 52px; border-radius: 999px;
   font-family: var(--font-sans); font-size: 15.5px; font-weight: 600; letter-spacing: -.01em; white-space: nowrap;
-  transition: transform .45s cubic-bezier(.22,1,.36,1), background-color .35s, color .35s, box-shadow .45s; }
-.primary { padding: 6px 6px 6px 26px; background: var(--accent); color: var(--color-ink);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / .45), inset 0 -1px 0 rgb(4 22 74 / .12), 0 12px 34px -16px rgb(37 255 232 / .55); }
-.primary:hover { transform: translateY(-2px); }
-.chip { position: relative; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--color-ink); color: var(--accent); overflow: hidden; flex: none; }
-.chip svg { grid-area: 1 / 1; width: 17px; height: 17px; transition: transform .55s cubic-bezier(.76,0,.24,1); }
-.chip svg + svg { transform: translateX(-200%); }
-.primary:hover .chip svg { transform: translateX(200%); }
-.primary:hover .chip svg + svg { transform: none; }
+  transition: transform .45s cubic-bezier(.22,1,.36,1), background-color .45s, color .45s, box-shadow .45s; }
+.primary { --ride: .6s cubic-bezier(.76,0,.24,1); padding: 6px 26px 6px 64px; background: var(--accent); color: var(--color-ink);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .45), inset 0 -1px 0 rgb(4 22 74 / .12);
+  transition: padding var(--ride), background-color .45s, color .45s, box-shadow .45s; }
+.primary:hover { padding: 6px 64px 6px 26px; background: var(--color-ink); color: var(--accent); box-shadow: inset 0 1px 0 rgb(255 255 255 / .12); }
+.chip { position: absolute; top: 50%; left: 6px; translate: 0 -50%; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; overflow: hidden;
+  background: var(--color-ink); color: var(--accent); transition: left var(--ride), background-color .45s, color .45s; }
+.primary:hover .chip { left: calc(100% - 48px); background: var(--accent); color: var(--color-ink); }
+.chip svg { grid-area: 1 / 1; width: 17px; height: 17px; }
 .ghost { padding: 6px 28px; color: #fff;
   background: linear-gradient(180deg, rgb(255 255 255 / .2), rgb(255 255 255 / .06));
   -webkit-backdrop-filter: blur(18px) saturate(170%); backdrop-filter: blur(18px) saturate(170%);
@@ -63,5 +63,5 @@
   .track { height: auto; }
   .stage { position: relative; top: 0; height: auto; }
   .card { height: calc(100svh - var(--hdr) - 16px); }
-  .chip svg { transition: none; }
+  .primary, .chip { transition: none; }
 }

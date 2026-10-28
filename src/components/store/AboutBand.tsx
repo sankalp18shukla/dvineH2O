@@ -11,15 +11,16 @@ import s from './About.module.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-/** Scrubbed timeline units: the band opens, the copy glows up word by word as the squiggles draw, then the buttons. */
-const OPEN = 1, COPY = 1.6, BTNS = .6;
+/** Scrubbed timeline units: the band opens, the copy glows up word by word as the squiggles draw, and the buttons
+ *  rise in over the copy's last stretch so both are in place as the last word lights up. */
+const OPEN = 1, COPY = 1.6, BTNS = .5, BTN_STAGGER = .08;
 
 /**
  * 06 · About: "Meet [water as intended] DVINE." centred over the Glacier wave band (its top and bottom borders are
  * wave lines, which follow the scroll and the pointer), the copy below between two squiggles, then the hero's two
  * buttons. Scrubbed with the scroll: the band's pins slide apart and the sticker slaps on once it is open (as
  * TagReveal does elsewhere), the copy lights up word by word with a soft glow while both squiggles draw themselves,
- * and the buttons rise in last. Reduced motion, or no JS, shows it all.
+ * and the buttons rise in as the copy finishes. Reduced motion, or no JS, shows it all.
  */
 export function AboutBand({ lead, tail, body }: { lead: string; tail: string; body: string }) {
   const root = useRef<HTMLElement>(null);
@@ -47,7 +48,7 @@ export function AboutBand({ lead, tail, body }: { lead: string; tail: string; bo
         .to(o, { v: 1, duration: OPEN, ease: 'power4.inOut', onUpdate: () => open(o.v) }, 0)
         .to(words, { opacity: 1, filter: 'blur(0px)', duration: .4, stagger: (COPY - .4) / Math.max(words.length, 1), ease: 'none' }, OPEN)
         .to(paths, { strokeDashoffset: 0, duration: COPY, ease: 'power1.inOut' }, OPEN)
-        .to(btns, { opacity: 1, y: 0, duration: BTNS, stagger: .15, ease: 'power3.out' }, OPEN + COPY);
+        .to(btns, { opacity: 1, y: 0, duration: BTNS, stagger: BTN_STAGGER, ease: 'power3.out' }, OPEN + COPY - BTNS - BTN_STAGGER);
       return () => {
         tl.scrollTrigger?.kill(); tl.kill();
         band.style.removeProperty('--open'); band.classList.remove('is-opening', 'is-stuck');

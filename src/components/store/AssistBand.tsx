@@ -12,15 +12,15 @@ import s from './Assist.module.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-/** Scrubbed timeline units: the frame opens, the heading opens, the copy lights up, the buttons rise, the sticker slaps on. */
+/** Scrubbed timeline units: the frame opens and the sticker slaps on, the heading opens, the copy lights up, the buttons rise. */
 const FRAME = 1, HEAD = 1, COPY = 1.2, BTNS = .6, STICK = .6;
 
 /**
  * 07 · Assistance: the brand handover photo fills a pinned frame, with the brand wave lines flowing over it
  * (white strokes only, no fill; a slow, shallow swell and a slight parting around the pointer). "Questions / before you order?" with the copy and
  * the hero's two buttons on the sky, the "BRB, Refilling." sticker hanging off the frame. Scrubbed with the scroll:
- * the frame's squares slide out to its corners, the heading's pins slide apart, the copy lights up word by word,
- * the buttons rise in, and last the sticker slaps on. Reduced motion, or no JS, shows it all.
+ * the frame's squares slide out to its corners and the sticker slaps on once it is open, the heading's pins slide
+ * apart, the copy lights up word by word, and the buttons rise in. Reduced motion, or no JS, shows it all.
  */
 export function AssistBand({ title, body }: { title: string; body: string }) {
   const root = useRef<HTMLElement>(null);
@@ -48,7 +48,7 @@ export function AssistBand({ title, body }: { title: string; body: string }) {
         .to(h, { v: 1, duration: HEAD, ease: 'power4.inOut', onUpdate: () => open(heading, h.v) }, at.head)
         .to(words, { opacity: 1, filter: 'blur(0px)', duration: .4, stagger: (COPY - .4) / Math.max(words.length, 1), ease: 'none' }, at.copy)
         .to(btns, { opacity: 1, y: 0, duration: BTNS, stagger: .15, ease: 'power3.out' }, at.copy + COPY)
-        .to(sticker, { scale: 1, rotate: 0, opacity: 1, duration: STICK, ease: 'back.out(2.6)' }, at.copy + COPY + BTNS);
+        .to(sticker, { scale: 1, rotate: 0, opacity: 1, duration: STICK, ease: 'back.out(2.6)' }, FRAME);
       return () => {
         tl.scrollTrigger?.kill(); tl.kill();
         [frame, heading].forEach(t => { t.style.removeProperty('--open'); t.classList.remove('is-opening'); });

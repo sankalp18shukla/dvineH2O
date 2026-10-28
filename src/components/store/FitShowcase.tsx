@@ -12,7 +12,8 @@ gsap.registerPlugin(ScrollTrigger);
 
 export type FitItem = {
   slug: string; href: string; title: string; where: string; desc: string; body: string; cta: string;
-  /** product image: a transparent cutout floats over the disc; until it is in, the photo fills the disc */
+  /** product image: a transparent cutout floats over the disc; until it is in, the photo fills the disc.
+   *  Loaded eagerly: the panels sit off-screen, so lazy loading would start them mid-entrance */
   src: string; cutout: boolean;
   feats: { title: string; sub: string }[];
 };
@@ -177,7 +178,7 @@ export function FitShowcase({ title, body, items }: { title: string; body: strin
                         <span className={`wave-lines-blue ${s.pattern}`} />
                         {!p.cutout && (
                           <span className={s.product}>
-                            <Image src={p.src} alt="" fill sizes="(min-width:1024px) 42vw, 86vw" className={s.photo} />
+                            <Image src={p.src} alt="" fill loading="eager" sizes="(min-width:1024px) 42vw, 86vw" className={s.photo} />
                           </span>
                         )}
                       </span>
@@ -187,7 +188,7 @@ export function FitShowcase({ title, body, items }: { title: string; body: strin
                       {p.cutout && (
                         <span className={s.product}>
                           <span className={s.shadow} />
-                          <Image src={p.src} alt="" fill sizes="(min-width:1024px) 46vw, 92vw" className={s.cutout} />
+                          <Image src={p.src} alt="" fill loading="eager" sizes="(min-width:1024px) 46vw, 92vw" className={s.cutout} />
                         </span>
                       )}
                       <DieCut text={look.sticker} tone={look.sc} className={s.sticker} />

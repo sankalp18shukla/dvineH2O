@@ -65,13 +65,14 @@ export function HelpChoosing({ title, body, options }: { title: string; body: st
       gsap.set(cards.slice(1), { xPercent: 130, rotateY: -38, scale: .92, opacity: 0 });
       // the clip leaves room around the box for its corner pins
       const SHUT = 'inset(-10px 100% -10px -10px)', OPEN = 'inset(-10px -10px -10px -10px)';
-      gsap.set(tags, { clipPath: SHUT });
+      gsap.set(tags, { clipPath: SHUT, autoAlpha: 0 }); // hidden until it opens, so the left pins don't show early
       gsap.set(texts, { xPercent: -8, opacity: 0 });
       gsap.set([...descs, ...btns], { opacity: 0, y: 22 });
 
       // the tag wipes open left to right with its words gliding in behind the edge, then the line and button rise in
       const write = (tl: gsap.core.Timeline, i: number, at: number) => {
-        tl.to(tags[i], { clipPath: OPEN, duration: TYPE, ease: 'power2.inOut' }, at)
+        tl.set(tags[i], { autoAlpha: 1 }, at)
+          .to(tags[i], { clipPath: OPEN, duration: TYPE, ease: 'power2.inOut' }, at)
           .to(texts[i], { xPercent: 0, opacity: 1, duration: TYPE, ease: 'power2.out' }, at + TYPE * .15)
           .to([descs[i], btns[i]], { opacity: 1, y: 0, duration: BTN, stagger: .15, ease: 'power3.out' }, at + TYPE * .7);
       };
@@ -98,11 +99,11 @@ export function HelpChoosing({ title, body, options }: { title: string; body: st
           .to(card, { opacity: 1, duration: MOVE * .25, ease: 'none' }, at);
         write(tl, i, at + MOVE * .7);
       });
-      tl.to({}, { duration: HOLD * 1.5 }); // For My Business rests before the page moves on
+      tl.to({}, { duration: HOLD * .5 }); // a short rest on For My Business before the page moves on
 
       // scrubbed with a soft catch-up so the deck glides after the scroll rather than jumping with it
       ScrollTrigger.create({
-        animation: tl, trigger: track, start: () => `top ${hdr()}px`, end: 'bottom bottom', scrub: 1.6, invalidateOnRefresh: true,
+        animation: tl, trigger: track, start: () => `top ${hdr()}px`, end: 'bottom bottom', scrub: 1, invalidateOnRefresh: true,
       });
       ScrollTrigger.refresh();
 
