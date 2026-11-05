@@ -91,8 +91,27 @@ export function FooterWaves({ className = '', alpha = ALPHA, swell = SWELL, spre
 
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
-    const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; start(); });
+    // The footer is fixed behind the page card, so it always "intersects" the viewport even while the card hides
+    // it completely. Draw only while it is really on show: when the card's bottom edge (a 1px sentinel) has come
+    // into view, or when the footer is not behind the card at all (static footer, or the waves are used elsewhere).
+    let near = false, onScreen = false;
+    const card = canvas.closest('.site-footer') ? document.querySelector<HTMLElement>('.page-card') : null;
+    const sentinel = card ? document.createElement('div') : null;
+    if (card && sentinel) {
+      sentinel.setAttribute('aria-hidden', 'true');
+      sentinel.style.cssText = 'position:absolute;left:0;right:0;bottom:0;height:1px;pointer-events:none;visibility:hidden';
+      card.appendChild(sentinel);
+    }
+    const covered = () => !!card && document.documentElement.classList.contains('footer-reveal');
+    const update = () => { const was = visible; visible = onScreen && (near || !covered()); if (visible && !was) start(); };
+    const io = new IntersectionObserver(es => es.forEach(e => {
+      if (e.target === canvas) onScreen = e.isIntersecting; else near = e.isIntersecting;
+      update();
+    }), { rootMargin: '0px 0px 120px 0px' });
     io.observe(canvas);
+    if (sentinel) io.observe(sentinel);
+    const mo = new MutationObserver(update);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     if (!reduced) {
       window.addEventListener('pointermove', onMove, { passive: true });
       document.documentElement.addEventListener('pointerleave', onLeave);
@@ -100,7 +119,7 @@ export function FooterWaves({ className = '', alpha = ALPHA, swell = SWELL, spre
     return () => {
       dead = true;
       cancelAnimationFrame(raf);
-      ro.disconnect(); io.disconnect();
+      ro.disconnect(); io.disconnect(); mo.disconnect(); sentinel?.remove();
       window.removeEventListener('pointermove', onMove);
       document.documentElement.removeEventListener('pointerleave', onLeave);
     };
