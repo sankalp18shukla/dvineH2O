@@ -51,7 +51,6 @@ export function ScrollCopy() {
       all('[data-speed]').forEach(e => {
         const n = parseFloat(e.dataset.speed || '0') * 12;
         gsap.fromTo(e, { yPercent: n }, { yPercent: -n, ease: 'none', scrollTrigger: { trigger: e, start: 'top bottom', end: 'bottom top', scrub: .4 } });
-        e.style.willChange = 'transform';
       });
 
       all('[data-pop]').forEach(e => {

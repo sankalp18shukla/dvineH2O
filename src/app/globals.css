@@ -337,7 +337,7 @@
   .bubbles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
   .bubbles > i { position: absolute; bottom: -24px; border-radius: 50%; border: 1px solid rgb(240 242 247 / .5);
     background: radial-gradient(circle at 32% 30%, rgb(255 255 255 / .55), rgb(37 255 232 / .08) 45%, transparent 70%);
-    animation: bubble-rise var(--d, 9s) linear var(--delay, 0s) infinite; will-change: transform, opacity; }
+    animation: bubble-rise var(--d, 9s) linear var(--delay, 0s) infinite; }
   @keyframes bubble-rise {
     0% { translate: 0 0; opacity: 0; } 10% { opacity: .9; }
     50% { translate: var(--sway, 14px) -55svh; }
@@ -362,6 +362,8 @@ html:has(.site-ribbon) { --ribbon-h: 34px; }
 .footer-reveal .page-card { margin-bottom: var(--footer-h, 0px); }
 /* keeps padding-top so the fixed footer still reaches up under the card's corners once fully scrolled */
 .footer-reveal .site-footer { position: fixed; inset: auto 0 0; margin-top: 0; }
+/* hidden while the card fully covers it (FooterReveal), so it can't show through the card mid-scroll */
+.footer-reveal.footer-covered .site-footer { visibility: hidden; }
 
 /* reveal-on-scroll (progressive: content is visible without JS) */
 .js [data-reveal] { opacity: 0; transform: translateY(22px); transition: opacity .9s var(--ease-out-soft), transform .9s var(--ease-out-soft); }

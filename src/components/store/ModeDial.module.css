@@ -33,7 +33,7 @@
 .h .dial { width: min(100%, 520px, 62svh); }
 .ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .orbit { position: absolute; inset: 0; rotate: var(--rot, 0deg); transition: rotate .9s cubic-bezier(.22,1,.36,1); }
-.h .orbit { rotate: none; transition: none; will-change: transform; }
+.h .orbit { rotate: none; transition: none; }
 .orb { position: absolute; left: 50%; top: 50%; width: 14%; aspect-ratio: 1; border-radius: 50%; background: var(--c);
   translate: -50% -50%; transform: rotate(var(--a)) translateY(-250%) scale(var(--s, .78)); opacity: .32; transition: opacity .6s, transform .6s; }
 .orb.lit { opacity: 1; --s: 1.18; box-shadow: 0 0 50px var(--c), 0 0 14px var(--c); }
