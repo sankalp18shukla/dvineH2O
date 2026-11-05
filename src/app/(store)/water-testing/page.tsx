@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import { asc, eq } from 'drizzle-orm';
 import { Header } from '@/components/store/Header';
 import { SmoothScroll } from '@/components/store/SmoothScroll';
 import { ActionBar } from '@/components/store/ActionBar';
@@ -14,8 +13,7 @@ import { Icon } from '@/components/ui/Icon';
 import { Cta, CtaChip, Words } from '@/components/ui/Cta';
 import { WATER_TESTING } from '@/lib/content';
 import { formatINR } from '@/lib/money';
-import { db } from '@/lib/db';
-import { testOptions } from '@/lib/db/schema';
+import { getTestOptions } from '@/lib/catalog';
 import { Lockup, Tape, WaterSticker } from '@/components/ui/Brand';
 import { WaveBand } from '@/components/store/WaveBand';
 
@@ -26,7 +24,7 @@ export const metadata: Metadata = { title: 'Water testing', description: WATER_T
 
 export default async function WaterTestingPage({ searchParams }: { searchParams: Promise<{ pin?: string }> }) {
   const { pin = '' } = await searchParams;
-  const options = await db.query.testOptions.findMany({ where: eq(testOptions.active, true), orderBy: asc(testOptions.sort) });
+  const options = await getTestOptions();
   return (
     <>
       <Header framed />
