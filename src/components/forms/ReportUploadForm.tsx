@@ -28,7 +28,7 @@ function Form() {
       <Field name="testDate" label="Test date" type="date" defaultValue={v('testDate')} />
       <TextArea name="message" label="What would you like to understand?" rows={3} defaultValue={v('message')} className="sm:col-span-2" />
       <div className="sm:col-span-2"><Check name="consent" label={<ConsentText />} error={e.consent} /></div>
-      <div className="flex flex-col gap-3 sm:col-span-2"><FormMessage state={state} /><div><SubmitButton pendingLabel="Uploading…">Send My Report</SubmitButton></div></div>
+      <div className="flex flex-col gap-3 sm:col-span-2"><FormMessage state={state} /><div><SubmitButton pendingLabel="Uploading…" cta={{ kind: 'ink', tone: 'glacier' }}>Send My Report</SubmitButton></div></div>
     </form>
   );
 }

@@ -1,0 +1,19 @@
+/* Announcement ribbon: a thin band in the promotion theme above the header (height in --ribbon-h, globals.css) */
+.ribbon { position: relative; z-index: 41; display: block; height: var(--ribbon-h, 38px); overflow: hidden;
+  background: var(--p-bg); color: var(--p-fg); font-family: var(--font-sans); font-size: 13.5px; font-weight: 600; letter-spacing: -.005em;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); }
+.marquee { display: flex; width: max-content; height: 100%; animation: ribbon var(--dur, 36s) linear infinite; }
+.ribbon:hover .marquee, .ribbon:focus-visible .marquee { animation-play-state: paused; }
+.track { display: flex; align-items: center; margin: 0; padding: 0; list-style: none; flex: none; }
+.item { display: flex; align-items: center; gap: 22px; padding-right: 22px; white-space: nowrap; }
+.sep { display: grid; place-items: center; color: var(--p-em); }
+.sep svg { width: 11px; height: 11px; }
+a.ribbon:hover .item > span:first-child { text-decoration: underline; text-underline-offset: 3px; }
+@keyframes ribbon { to { transform: translateX(-50%); } }
+.preview { position: relative; z-index: auto; }
+@media (min-width: 1024px) { .ribbon { font-size: 14px; } .item { gap: 28px; padding-right: 28px; } }
+@media (prefers-reduced-motion: reduce) {
+  .marquee { animation: none; width: auto; justify-content: center; }
+  .track[aria-hidden] { display: none; }
+  .track { overflow: hidden; }
+}

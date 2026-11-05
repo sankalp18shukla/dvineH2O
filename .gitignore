@@ -5,6 +5,7 @@ data/*.db
 data/*.db-*
 data/uploads/*
 !data/uploads/.gitkeep
+data/media/*
 public/uploads/*
 !public/uploads/.gitkeep
 .env

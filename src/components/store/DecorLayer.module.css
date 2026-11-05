@@ -1,0 +1,31 @@
+/* Decorations over a slide or card (DecorLayer.tsx). Each item is centred on its x/y and sized by width. */
+.layer { position: absolute; inset: 0; pointer-events: none; }
+.back { z-index: -1; }
+.front { z-index: 3; }
+.item { position: absolute; translate: -50% -50%; rotate: var(--r); opacity: var(--o, 1); }
+.item img { display: block; width: 100%; height: auto; transform-origin: 50% 0; }
+.desk { display: none; }
+@media (min-width: 900px) { .desk { display: block; } }
+
+/* entrance: drops in with a little overshoot, staggered (--d) */
+.play .item { animation: decorIn .9s cubic-bezier(.22,1.4,.4,1) var(--d) both; }
+@keyframes decorIn { from { opacity: 0; transform: translateY(-24px) scale(.6); } to { opacity: var(--o, 1); transform: none; } }
+
+/* leaving with its slide: gone before the next slide's product rises */
+.out { animation: decorOut .35s ease-in both; }
+@keyframes decorOut { to { opacity: 0; } }
+
+/* loops, phased per item (--p) so a row of diyas doesn't move in step */
+.float { animation: float 4.5s ease-in-out calc(var(--p) * -1) infinite; }
+@keyframes float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6%; } }
+.sway { animation: sway 5s ease-in-out calc(var(--p) * -1) infinite; }
+@keyframes sway { 0%, 100% { rotate: -3deg; } 50% { rotate: 3deg; } }
+.twinkle { animation: twinkle 2.6s ease-in-out calc(var(--p) * -1) infinite; transform-origin: 50% 50%; }
+@keyframes twinkle { 0%, 100% { opacity: 1; scale: 1; } 50% { opacity: .55; scale: .86; } }
+.spin { animation: spin 60s linear infinite; transform-origin: 50% 50%; }
+@keyframes spin { to { rotate: 360deg; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .play .item, .float, .sway, .twinkle, .spin { animation: none; }
+  .out { animation-duration: .01s; }
+}

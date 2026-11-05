@@ -1,7 +1,9 @@
 'use client';
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { HERO_SLIDES } from '@/lib/content';
+import { THEMES, type PromoSlide as Promo } from '@/lib/site-content';
+import { PromoSlide } from './PromoSlide';
 import { Icon } from '@/components/ui/Icon';
 import { FeatIcon } from './FeatIcon';
 import s from './Hero.module.css';
@@ -22,23 +24,39 @@ const PLACEMENT = [
 /** Looping brush line from the brand book's "Brand Elements" page. */
 const SQUIGGLE = 'M150 22c22-14 44 2 36 22-9 22-48 18-70 4-26-16-60-14-80 8-24 26-8 62 26 64 34 2 52-26 82-26 40 0 66 30 58 62-7 30-46 40-70 22-20-15-6-44 22-42 34 2 58 40 48 92';
 
-export function HeroShowcase({ slides }: { slides: Slide[] }) {
+/** Slideshow entries: the three products (drawn by the 3D stage) and any promotion slides from the admin,
+    which sit before or after them and bring their own media. */
+type Entry = { kind: 'product'; idx: number; s: Slide } | { kind: 'promo'; p: Promo };
+
+export function HeroShowcase({ slides, promos = [] }: { slides: Slide[]; promos?: Promo[] }) {
+  const entries = useMemo<Entry[]>(() => [
+    ...promos.filter(p => p.position === 'first').map(p => ({ kind: 'promo' as const, p })),
+    ...slides.map((s, idx) => ({ kind: 'product' as const, idx, s })),
+    ...promos.filter(p => p.position !== 'first').map(p => ({ kind: 'promo' as const, p })),
+  ], [slides, promos]);
+  /** tells the 3D stage what to show for an entry: a product index, or -1 with the promotion's accent */
+  const showOnStage = (n: number) => {
+    const e = entries[n];
+    if (e.kind === 'product') stage.current?.show(e.idx);
+    else stage.current?.show(-1, (THEMES[e.p.theme] ?? THEMES.volt).accent);
+  };
+  const durationOf = (n: number) => { const e = entries[n]; return e?.kind === 'promo' ? e.p.duration * 1000 : AUTOPLAY; };
   const hero = useRef<HTMLElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const [current, setCurrent] = useState(0);
   const [leaving, setLeaving] = useState<number | null>(null);
   const [loaded, setLoaded] = useState(false);
-  const stage = useRef<{ show: (i: number) => void; dragging: () => boolean; dispose: () => void } | null>(null);
+  const stage = useRef<{ show: (i: number, accent?: string) => void; dragging: () => boolean; dispose: () => void } | null>(null);
   const state = useRef({ current: 0, timer: 0, paused: false });
 
   const goTo = (i: number) => {
-    const n = (i + slides.length) % slides.length;
+    const n = (i + entries.length) % entries.length;
     if (n === state.current.current) return;
     const prev = state.current.current;
     state.current.current = n; state.current.timer = 0;
     setLeaving(prev);
     setCurrent(n);
-    stage.current?.show(n);
+    showOnStage(n);
     window.setTimeout(() => setLeaving(l => (l === prev ? null : l)), 900);
   };
 
@@ -51,7 +69,7 @@ export function HeroShowcase({ slides }: { slides: Slide[] }) {
       const d = Math.min(now - last, 100); last = now;
       if (reduce || state.current.paused || document.hidden || stage.current?.dragging()) return;
       state.current.timer += d;
-      if (state.current.timer > AUTOPLAY) goTo(state.current.current + 1);
+      if (state.current.timer > durationOf(state.current.current)) goTo(state.current.current + 1);
     };
     raf = requestAnimationFrame(tick);
     const el = hero.current!;
@@ -76,14 +94,21 @@ export function HeroShowcase({ slides }: { slides: Slide[] }) {
       const mod = await import('./stage');
       if (disposed || !canvas.current || !hero.current) return;
       try {
-        stage.current = await mod.createStage({
+        const first = entries[state.current.current];
+        const st = await mod.createStage({
           canvas: canvas.current, hero: hero.current, models: slides.map(x => x.model), accents: slides.map(x => x.accent), squiggle: SQUIGGLE,
           placement: PLACEMENT, copyFor: i => hero.current!.querySelectorAll<HTMLElement>('[data-copy]')[i],
-          onFirstLoad: () => setLoaded(true), initial: state.current.current,
+          onFirstLoad: () => setLoaded(true), initial: first.kind === 'product' ? first.idx : 0,
         });
+        // unmounted while it was being built (React's dev double-mount, fast refresh): drop it, or two stages
+        // would draw on the one canvas and the orphan's products would show over a promotion slide
+        if (disposed) { st.dispose(); return; }
+        stage.current = st;
+        if (first.kind === 'promo') showOnStage(state.current.current);
       } catch { setLoaded(true); }
     })();
     return () => { disposed = true; stage.current?.dispose(); stage.current = null; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slides]);
 
   return (
@@ -91,10 +116,12 @@ export function HeroShowcase({ slides }: { slides: Slide[] }) {
       <canvas ref={canvas} className={s.canvas} aria-hidden="true" />
       <div className={`${s.loading} ${loaded ? s.done : ''}`} aria-hidden="true">Loading</div>
       <div className={s.slides}>
-        {slides.map((sl, i) => {
+        {entries.map((en, i) => {
           const cls = i === current ? s.active : i === leaving ? s.leaving : '';
+          if (en.kind === 'promo') return <PromoSlide key={en.p.id} p={en.p} cls={cls} active={i === current} leaving={i === leaving} label={`${i + 1} of ${entries.length}: ${en.p.title.replace(/\n/g, ' ') || en.p.tag}`} />;
+          const sl = en.s;
           return (
-            <article key={sl.key} data-slide className={`${s.slide} ${s[sl.key] ?? ''} ${cls}`} style={{ ['--accent' as string]: sl.accent }} aria-roledescription="slide" aria-label={`${i + 1} of ${slides.length}: ${sl.name}`} aria-hidden={i !== current}>
+            <article key={sl.key} data-slide className={`${s.slide} ${s[sl.key] ?? ''} ${cls}`} style={{ ['--accent' as string]: sl.accent }} aria-roledescription="slide" aria-label={`${i + 1} of ${entries.length}: ${sl.name}`} aria-hidden={i !== current}>
               <div className={s.copy} data-copy>
                 <h2 className={s.head}>
                   <span className={`${s.desc} ${s.f}`} style={{ ['--i' as string]: 0 }}><i /><span className={s.tag}><span>{sl.desc[0]}</span><span>{sl.desc[1]}</span><em>{sl.desc[2]}</em></span><i /></span>

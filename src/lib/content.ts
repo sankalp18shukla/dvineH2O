@@ -19,6 +19,7 @@ export const NAV = {
     { href: '/home-water-systems', label: 'Home Water Systems' },
     { href: '/hydrogen-bottles', label: 'Hydrogen Bottles' },
     { href: '/water-testing', label: 'Water Testing' },
+    { href: '/become-a-partner', label: 'Become a Partner' },
   ],
   utility: [
     { href: '/for-business', label: 'For Business' },
@@ -188,8 +189,8 @@ export const CRYSTAL = {
     title: 'Still deciding? *Let’s clear a few things up.*',
     items: [
       { q: 'Will Crystal work with my water supply?', a: 'Suitability depends on your source water and setup. Share those details with our team.' },
-      { q: 'When do filters need replacing?', a: 'Follow the model guidance; usage and water conditions affect replacement needs.' },
       { q: 'Are all modes for drinking?', a: 'Use only the drinking-water settings specified in the manual.' },
+      { q: 'When do filters need replacing?', a: 'Follow the model guidance; usage and water conditions affect replacement needs.' },
     ] as Faq[],
   },
 };
@@ -205,9 +206,10 @@ export const HYPER = {
     title: 'From your desk *to your day out.*',
     body: 'Keep it on your desk, pack it with your gym kit or take it along when you head out. Explore a portable format that fits the way you already carry water.',
     cards: [
-      { title: 'At your desk', body: 'A bottle that sits beside your laptop and your day.', image: '/images/hyper.webp' },
-      { title: 'In your bag', body: 'Packs with your gym kit and goes where you go.', image: '/images/lifestyle-locker.webp' },
-      { title: 'Outdoors', body: 'Rechargeable over USB-C for the day out.', image: '/images/lifestyle-move.webp' },
+      // B05–B07: the card titles are the copy; `alt` follows the photo brief ("Photo: Hyper on a work desk")
+      { title: 'At your desk', alt: 'Hyper on a work desk', image: '/images/hyper.webp' },
+      { title: 'In your bag', alt: 'Hyper in a bag side pocket', image: '/images/lifestyle-locker.webp' },
+      { title: 'Outdoors', alt: 'Hyper hand-held outdoors', image: '/images/lifestyle-move.webp' },
     ],
   },
   how: {
@@ -236,8 +238,8 @@ export const HYPER = {
     title: 'A few things to know *before you buy.*',
     items: [
       { q: 'Does Hyper purify untreated water?', a: 'Do not use it as a substitute for water treatment. Use suitable drinking water as directed.' },
-      { q: 'What is included?', a: 'Check the box-contents section for your selected model.' },
       { q: 'How long does a cycle take?', a: 'Cycle options and times appear in the product specifications and supplied guide.' },
+      { q: 'What is included?', a: 'Check the box-contents section for your selected model.' },
     ] as Faq[],
   },
 };

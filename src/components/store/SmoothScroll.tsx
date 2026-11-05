@@ -11,6 +11,8 @@ gsap.registerPlugin(ScrollTrigger);
 export const READY = 'dvine:ready';
 /** Set on <html> by the Preloader while it covers the page. */
 export const LOADING = 'is-loading';
+/** The running Lenis instance, for components that scroll the page themselves (null on touch or reduced motion). */
+export const smooth: { lenis: Lenis | null } = { lenis: null };
 
 /**
  * Lenis smooth scrolling for the wheel and trackpad (touch keeps the phone's native scroll). Lenis runs on
@@ -30,6 +32,7 @@ export function SmoothScroll() {
       prevent: node => !!node.closest?.('[role="dialog"], .overflow-y-auto, [data-lenis-prevent]'),
     });
 
+    smooth.lenis = lenis;
     lenis.on('scroll', ScrollTrigger.update);
     const raf = (t: number) => lenis.raf(t * 1000);
     gsap.ticker.add(raf);
@@ -43,10 +46,13 @@ export function SmoothScroll() {
     // once the curtain lifts, measure against the final layout (fonts, images and video sizes are in)
     const ready = () => { sync(); lenis.resize(); ScrollTrigger.refresh(); };
     window.addEventListener(READY, ready);
+    // pages without the Preloader: measure again once images and fonts are in
+    if (document.readyState === 'complete') requestAnimationFrame(ready); else window.addEventListener('load', ready, { once: true });
 
     return () => {
       mo.disconnect(); window.removeEventListener(READY, ready);
-      gsap.ticker.remove(raf); gsap.ticker.lagSmoothing(500, 33); lenis.destroy();
+      gsap.ticker.remove(raf); gsap.ticker.lagSmoothing(500, 33); lenis.destroy(); smooth.lenis = null;
+      window.removeEventListener('load', ready);
     };
   }, []);
   return null;

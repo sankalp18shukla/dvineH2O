@@ -21,7 +21,7 @@ const enquirySchema = z.object({
   // business fields
   setting: optional(z.string().max(60)), locations: optional(z.string().max(20)), users: optional(z.string().max(20)), peak: optional(z.string().max(60)),
   waterSource: optional(z.string().max(60)), timeline: optional(z.string().max(60)), quantity: optional(z.string().max(20)), demoMode: optional(z.string().max(40)),
-  territory: optional(z.string().max(120)), gstin: optional(z.string().max(20)),
+  territory: optional(z.string().max(120)), gstin: optional(z.string().max(20)), partnerType: optional(z.string().max(60)),
 });
 
 export async function submitEnquiry(_: FormState, fd: FormData): Promise<FormState> {
@@ -38,7 +38,7 @@ export async function submitEnquiry(_: FormState, fd: FormData): Promise<FormSta
     catch (err) { if (err instanceof UploadError) return { errors: { photos: err.message }, data: o }; throw err; }
   }
   const customer = await getCustomer();
-  const extra = Object.fromEntries(Object.entries({ setting: d.setting, locations: d.locations, users: d.users, peak: d.peak, waterSource: d.waterSource, timeline: d.timeline, quantity: d.quantity, demoMode: d.demoMode, territory: d.territory, gstin: d.gstin }).filter(([, v]) => v));
+  const extra = Object.fromEntries(Object.entries({ setting: d.setting, locations: d.locations, users: d.users, peak: d.peak, waterSource: d.waterSource, timeline: d.timeline, quantity: d.quantity, demoMode: d.demoMode, territory: d.territory, gstin: d.gstin, partnerType: d.partnerType }).filter(([, v]) => v));
   const e = await createEnquiry({
     type: d.type, interest: d.type === 'consultation' ? 'titan' : d.interest, name: d.name, email: d.email, phone: d.phone, city: d.city, pincode: d.pincode,
     company: d.company, message: d.message, preferredAt: d.preferredAt, data: Object.keys(extra).length ? extra : undefined, source: d.source,

@@ -10,6 +10,9 @@ import { AboutBand } from '@/components/store/AboutBand';
 import { AssistBand } from '@/components/store/AssistBand';
 import { SmoothScroll } from '@/components/store/SmoothScroll';
 import { Preloader } from '@/components/store/Preloader';
+import { PromoCards } from '@/components/store/PromoCards';
+import { getContent } from '@/lib/site-content.server';
+import { DEFAULT_CONTENT, isLive, todayIST } from '@/lib/site-content';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -27,18 +30,31 @@ const helpOptions = HOME.helpChoosing.options.map(({ image, fallback, ...o }) =>
 
 const [, aboutLead, aboutTail] = HOME.about.title.match(/^\*([^*]+)\*\s*(.*)$/)!;
 
-export default function Home() {
+/** Rendered per request: the promotions (Admin › Homepage & promotions) run on dates, and staff can preview the draft. */
+export const dynamic = 'force-dynamic';
+
+export default async function Home({ searchParams }: { searchParams: Promise<{ preview?: string }> }) {
+  const c = await getContent((await searchParams).preview);
+  const today = todayIST();
+  const promos = c.slides.filter(x => isLive(x, today) && (x.title || x.tag || x.media?.src));
+  const cards = c.promo.enabled ? c.promo.cards.filter(x => isLive(x, today)) : [];
+  const ribbon = { ...c.ribbon, enabled: c.ribbon.enabled && isLive(c.ribbon, today) };
+  const w = c.water;
   return (
     <>
       <Preloader model={HERO_SLIDES[0].model} />
       <SmoothScroll />
-      <Header framed />
+      <Header framed home ribbon={ribbon} />
       <main id="main">
         <h1 className="sr-only">DVINE H2O — functional hydration for home, on the go and business</h1>
-        <HeroShowcase slides={HERO_SLIDES} />
+        <HeroShowcase slides={HERO_SLIDES} promos={promos} />
+
+        {/* Optional promotion cards (one banner, or two or three cards) */}
+        <PromoCards promo={c.promo} cards={cards} />
 
         {/* 02 · Water testing: scroll-scrubbed water-drop clip, copy lights up in step */}
-        <WaterTestScroll title={HOME.waterTesting.title} body={HOME.waterTesting.body} />
+        <WaterTestScroll title={w.title} body={w.body} pics={w.pics} primary={w.primary} secondary={w.secondary}
+          designed={w.body === DEFAULT_CONTENT.water.body} designedTitle={w.title === DEFAULT_CONTENT.water.title} />
 
         {/* 03 · Collection: one product per row, alternating sides */}
         <FitShowcase title={HOME.collection.title} body={HOME.collection.body} items={fitItems()} />

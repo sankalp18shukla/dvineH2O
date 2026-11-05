@@ -35,7 +35,7 @@ export function WaterTestForm({ options, slots, sources, initialPin = '' }: { op
         <legend className="px-1 font-sans text-lg font-semibold">1. Where is the sample?</legend>
         <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end">
           <Field name="pincode" label="Pincode" inputMode="numeric" maxLength={6} required value={pin} onChange={ev => { setPin(ev.target.value.replace(/\D/g, '').slice(0, 6)); setAvail(null); }} error={e.pincode} className="sm:w-56" />
-          <button type="button" className="btn btn-outline" onClick={() => check()} disabled={pin.length !== 6 || pending}>{pending ? 'Checking…' : 'Check availability'}</button>
+          <button type="button" className="cta cta-glass glare" onClick={() => check()} disabled={pin.length !== 6 || pending}>{pending ? 'Checking…' : 'Check availability'}</button>
         </div>
         {avail && <p role="status" className={`mt-3 font-sans text-sm ${avail.ok ? 'text-[#14532D]' : 'text-[#8A0E18]'}`}>{avail.msg}</p>}
       </fieldset>
@@ -57,9 +57,11 @@ export function WaterTestForm({ options, slots, sources, initialPin = '' }: { op
           ))}
         </div>
         {e.optionId && <p className="error-text mt-2">{e.optionId}</p>}
+        <button type="button" className="cta cta-glass glare mt-5" disabled={!opt}
+          onClick={() => { const d = document.getElementById('wt-details'); d?.scrollIntoView({ behavior: 'smooth', block: 'start' }); d?.querySelector<HTMLElement>('input')?.focus({ preventScroll: true }); }}>Continue</button>
       </fieldset>
 
-      <fieldset className="card grid gap-4 p-5 sm:grid-cols-2 sm:p-6">
+      <fieldset id="wt-details" className="card grid scroll-mt-32 gap-4 p-5 sm:grid-cols-2 sm:p-6">
         <legend className="px-1 font-sans text-lg font-semibold">3. Your details and slot</legend>
         {selected && <p className="sm:col-span-2 -mt-1 rounded-xl bg-paper px-4 py-3 font-sans text-[14px] text-muted">Selected: <b className="text-ink">{selected.name}</b> · {selected.collectionMethod} · report {selected.turnaround.toLowerCase()} · {selected.price ? formatINR(selected.price) : 'Free'}</p>}
         <Field name="name" label="Name" autoComplete="name" required defaultValue={v('name')} error={e.name} />
@@ -78,7 +80,7 @@ export function WaterTestForm({ options, slots, sources, initialPin = '' }: { op
         <div className="space-y-3"><Check name="consent" label={<ConsentText />} error={e.consent} /></div>
         <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
           <p className="font-sans text-sm text-muted">Total <b className="text-xl text-ink">{selected ? (selected.price ? formatINR(selected.price) : 'Free') : '—'}</b></p>
-          <SubmitButton pendingLabel="Booking…">{selected?.price ? 'Confirm and Pay' : 'Confirm Booking'}</SubmitButton>
+          <SubmitButton pendingLabel="Booking…" cta={{ kind: 'ink', tone: 'glacier' }}>{selected?.price ? 'Confirm and Pay' : 'Confirm Booking'}</SubmitButton>
           <p className="font-sans text-[12.5px] text-muted">You can review the booking and cancellation terms before paying.</p>
         </div>
       </div>

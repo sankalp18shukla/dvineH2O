@@ -158,7 +158,7 @@ export async function createStage(o: Opts) {
   const tmp = new THREE.Vector3();
   const updateFocus = (snap = false) => {
     const s = slots[current];
-    if (s.loaded) { tmp.copy(s.pos).project(camera); focusTarget.set((tmp.x + 1) / 2, (tmp.y + 1) / 2); }
+    if (s?.loaded) { tmp.copy(s.pos).project(camera); focusTarget.set((tmp.x + 1) / 2, (tmp.y + 1) / 2); }
     if (snap) focus.copy(focusTarget);
   };
 
@@ -192,7 +192,9 @@ export async function createStage(o: Opts) {
     updateFocus(true);
   };
 
-  const show = (i: number) => {
+  /** i = -1: a promotion slide is showing (its own media covers the card); every product leaves and the
+      backdrop takes the promotion's accent. */
+  const show = (i: number, accent?: string) => {
     current = i;
     const someoneOut = slots.some(s => s.state === 'in' || s.state === 'entering');
     for (const s of slots) {
@@ -200,7 +202,7 @@ export async function createStage(o: Opts) {
       if (s.i === i) { if (s.state !== 'in' && s.state !== 'entering') { s.state = 'entering'; s.t = someoneOut ? -0.32 : 0; s.yawDrag = 0; s.root.visible = true; } }
       else if (s.state === 'in' || s.state === 'entering') { s.state = 'leaving'; s.t = 0; }
     }
-    tintTarget.set(o.accents[i]); updateFocus();
+    tintTarget.set(accent ?? o.accents[i]); updateFocus();
   };
 
   const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
@@ -237,7 +239,7 @@ export async function createStage(o: Opts) {
     if (e.pointerType === 'mouse') mouse.set(e.clientX / innerWidth * 2 - 1, e.clientY / innerHeight * 2 - 1);
     const r = o.canvas.getBoundingClientRect();
     bgU.uMouse.value.set((e.clientX - r.left) / r.width, 1 - (e.clientY - r.top) / r.height);
-    if (dragging) { const dx = e.clientX - lastX; lastX = e.clientX; dragVel = dx * 0.006; slots[current].yawDrag += dragVel; }
+    if (dragging && slots[current]) { const dx = e.clientX - lastX; lastX = e.clientX; dragVel = dx * 0.006; slots[current].yawDrag += dragVel; }
   };
   const onDown = (e: PointerEvent) => { if (e.pointerType !== 'mouse') return; dragging = true; lastX = e.clientX; };
   const onUp = () => { dragging = false; };
@@ -261,7 +263,7 @@ export async function createStage(o: Opts) {
     const dt = Math.min(clock.getDelta(), 0.1); time += dt;
     bgU.uReveal.value = reduce ? 1 : Math.min(1, time / 2.6);
     mouseS.lerp(mouse, 1 - Math.pow(0.001, dt));
-    if (!dragging) { dragVel *= Math.pow(0.04, dt); slots[current].yawDrag += dragVel; }
+    if (!dragging && slots[current]) { dragVel *= Math.pow(0.04, dt); slots[current].yawDrag += dragVel; }
     for (const s of slots) {
       if (!s.loaded || s.state === 'hidden') continue;
       s.t += dt;

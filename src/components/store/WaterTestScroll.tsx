@@ -21,19 +21,15 @@ const SPLASH = 0.85;
  */
 const T = { grow: 2.6, fall: 2.2, open: 2.75, dim: 3.3, words: 4, sweep: 5, ctas: 9.3, end: 12 };
 /**
- * Photos set between the words, after the word given.
- * With LINE_ENDS this gives one photo per desktop line, alternating sides so no two stack:
+ * Photos are set between the words, each after the word given (edited in Admin › Homepage & promotions).
+ * For the designed copy, LINE_ENDS gives one photo per desktop line, alternating sides so no two stack:
  *   Start with a closer look ▢ at the water you use / every day. See which tests are available ▢ /
  *   in your area, ▢ what they include and how to book. / Already have a report? Share it with our team. ▢
+ * Edited copy wraps naturally instead.
  */
-const PICS: Record<string, { src: string; alt: string }> = {
-  'look': { src: '/images/1_2ndsec.png', alt: 'Cupped hands catching clear running water' },
-  'available': { src: '/images/2_2ndsec.png', alt: 'A scientist holding up a sample vial in a lab' },
-  'area,': { src: '/images/3_2ndsec.png', alt: 'A street map of the local area' },
-  'team.': { src: '/images/4_2ndsec.png', alt: 'A drop of water falling into still water' },
-};
-/** Words that end a line on desktop; smaller screens wrap naturally. */
 const LINE_ENDS = new Set(['use', 'available', 'book.']);
+export type WaterPic = { after: string; src: string; alt: string };
+export type WaterLink = { label: string; href: string };
 const GLOW = { off: '0 0 0px rgb(37 255 232 / 0), 0 0 0px rgb(37 255 232 / 0)', peak: '0 0 18px rgb(37 255 232 / .85), 0 0 2px rgb(37 255 232 / .7)', rest: '0 0 16px rgb(37 255 232 / .18), 0 0 0px rgb(37 255 232 / 0)' };
 
 /**
@@ -42,7 +38,19 @@ const GLOW = { off: '0 0 0px rgb(37 255 232 / 0), 0 0 0px rgb(37 255 232 / 0)', 
  * a Glacier glow, then the two actions rise in as the water settles. Reduced motion gets the poster
  * frame with everything shown.
  */
-export function WaterTestScroll({ title, body }: { title: string; body: string }) {
+export function WaterTestScroll({ title, body, pics, primary, secondary, designed = true, designedTitle = true }: {
+  title: string; body: string; pics: WaterPic[]; primary: WaterLink; secondary: WaterLink;
+  /** the copy is the designed text, so the set desktop line breaks apply */ designed?: boolean;
+  /** the heading is the designed one, so its sans line is indented under "do" */ designedTitle?: boolean;
+}) {
+  // each photo goes after the first matching word not already taken
+  const at = new Map<number, WaterPic>();
+  const words = body.split(/\s+/).filter(Boolean);
+  for (const p of pics) {
+    if (!p.src) continue;
+    const i = words.findIndex((w, k) => !at.has(k) && w.toLowerCase() === p.after.trim().toLowerCase());
+    at.set(i >= 0 ? i : words.length - 1, p);
+  }
   const root = useRef<HTMLElement>(null);
   const video = useRef<HTMLVideoElement>(null);
 
@@ -133,23 +141,31 @@ export function WaterTestScroll({ title, body }: { title: string; body: string }
         </div>
         <div className={`frame-x ${s.content}`}>
           <div className={s.copy}>
-            <Lockup id="wt-title" title={title} tone="glacier" className={s.heading} />
-            <p className={s.body}>
-              {body.split(' ').map((w, i) => (
-                <Fragment key={i}>
-                  <span className={s.word}>{w}</span>{' '}
-                  {PICS[w] && <><span className={s.pic}><Image src={PICS[w].src} alt={PICS[w].alt} fill sizes="140px" /></span>{' '}</>}
-                  {LINE_ENDS.has(w) && <br className={s.br} />}
-                </Fragment>
-              ))}
+            <Lockup id="wt-title" title={title} tone="glacier" className={`${s.heading} ${designedTitle ? s.designed : ''}`} />
+            <p className={`${s.body} ${designed ? '' : s.free}`}>
+              {words.map((w, i) => {
+                const pic = at.get(i);
+                return (
+                  <Fragment key={i}>
+                    <span className={s.word}>{w}</span>{' '}
+                    {pic && <><span className={s.pic}>{pic.src.startsWith('/') && !pic.src.startsWith('//')
+                      ? <Image src={pic.src} alt={pic.alt} fill sizes="140px" />
+                      // eslint-disable-next-line @next/next/no-img-element -- hosted URL from the admin
+                      : <img src={pic.src} alt={pic.alt} className="absolute inset-0 size-full" />}</span>{' '}</>}
+                    {designed && LINE_ENDS.has(w) && <br className={s.br} />}
+                  </Fragment>
+                );
+              })}
             </p>
-            <div className={s.ctas}>
-              <Link href="/water-testing#book" className={`${s.cta} ${s.primary}`}>
-                <span className={s.chip} aria-hidden="true"><Icon name="arrow" /></span>
-                <span>Book a Water Test</span>
-              </Link>
-              <Link href="/water-testing#upload" className={`${s.cta} ${s.ghost} glare`}>Upload My Report</Link>
-            </div>
+            {(primary.label || secondary.label) && (
+              <div className={s.ctas}>
+                {primary.label && <Link href={primary.href || '#'} className={`${s.cta} ${s.primary}`}>
+                  <span className={s.chip} aria-hidden="true"><Icon name="arrow" /></span>
+                  <span>{primary.label}</span>
+                </Link>}
+                {secondary.label && <Link href={secondary.href || '#'} className={`${s.cta} ${s.ghost} glare`}>{secondary.label}</Link>}
+              </div>
+            )}
           </div>
         </div>
        </div>

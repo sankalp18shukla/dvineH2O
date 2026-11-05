@@ -1,19 +1,21 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Header } from '@/components/store/Header';
+import { SmoothScroll } from '@/components/store/SmoothScroll';
 import { ProductHero } from '@/components/store/ProductHero';
 import { BuyBox } from '@/components/store/BuyBox';
 import { Specs, BoxContents } from '@/components/store/Specs';
 import { Reviews } from '@/components/store/Reviews';
-import { ModeExplorer } from '@/components/store/ModeExplorer';
+import { ModeDial } from '@/components/store/ModeDial';
+import { GrowVideo } from '@/components/store/GrowVideo';
 import { AddToCart } from '@/components/store/AddToCart';
 import { ActionBar } from '@/components/store/ActionBar';
 import { EnquiryForm } from '@/components/forms/EnquiryForm';
 import { SectionHead } from '@/components/ui/Section';
 import { Faq } from '@/components/ui/Faq';
 import { Icon } from '@/components/ui/Icon';
+import { Cta, Words } from '@/components/ui/Cta';
 import { CRYSTAL } from '@/lib/content';
 import { getProduct } from '@/lib/catalog';
 import { formatINR } from '@/lib/money';
@@ -25,80 +27,107 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = { title: 'Crystal home water system', description: CRYSTAL.hero.body, alternates: { canonical: '/home-water-systems' } };
 
-/** Labelled path through Crystal, shown under the demo video (section 04). */
+/** Labelled path through Crystal, drawn under the demo film (section 04, "labelled filtration and plate illustration"). */
 const FLOW = [
   { icon: 'drop', label: 'Incoming water', body: 'From your kitchen supply' },
-  { icon: 'filter', label: 'PureCore filtration', body: 'Sediment, nano and post-carbon stages' },
+  { icon: 'filter', label: 'PureCore filtration', body: 'Multi-stage filtration' },
   { icon: 'plates5', label: 'Five-plate ionisation', body: 'Platinum-coated titanium plates' },
   { icon: 'screen', label: 'Touchscreen', body: 'Mode, pH, ORP and filter status' },
 ];
+
+/** One feature callout on the Crystal diagram: number, icon, title and line, with a pinned leader line to the machine. */
+function Callout({ c, n, side }: { c: (typeof CRYSTAL.features.cards)[number]; n: number; side: 'l' | 'r' }) {
+  return (
+    <div className={`relative flex flex-col ${side === 'l' ? 'lg:items-end lg:text-right' : 'lg:items-start'}`} data-rise>
+      <div className={`flex items-center gap-3 ${side === 'l' ? 'lg:flex-row-reverse' : ''}`}>
+        <span className="grid size-12 place-items-center rounded-full bg-white text-deep-current shadow-[0_10px_24px_-14px_rgb(4_22_74/.5)]"><Icon name={c.icon} className="size-6" strokeWidth={1.4} /></span>
+        <span className="font-serif text-[22px] italic text-deep-current">0{n}</span>
+      </div>
+      <h3 className="mt-4 font-sans text-[22px] font-bold tracking-[-0.03em] sm:text-[26px]">{c.title}</h3>
+      <p className="mt-2 max-w-[19rem] text-[17px] leading-snug text-ink/75">{c.body}</p>
+      {/* leader line from the copy to the machine, with the brand pin head at the machine end */}
+      <span className={`absolute top-6 hidden h-[2px] w-[clamp(40px,5vw,96px)] bg-ink lg:block ${side === 'l' ? 'left-full ml-5' : 'right-full mr-5'}`} data-draw={side === 'l' ? 'x' : 'x-rev'} aria-hidden="true">
+        <span className={`absolute -top-[5px] size-3 rounded-full bg-deep-current ${side === 'l' ? '-right-1.5' : '-left-1.5'}`} />
+      </span>
+    </div>
+  );
+}
 
 export default async function CrystalPage() {
   const p = await getProduct('crystal');
   if (!p) notFound();
   const guide = p.manualUrl ?? '/support/crystal';
+  const f = CRYSTAL.features.cards;
   return (
     <>
       <Header framed />
+      <SmoothScroll />
       <main id="main">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(p, '/home-water-systems')) }} />
 
-        {/* 01 · Hero: gallery + purchase */}
-        <ProductHero title="Crystal. *Made for your kitchen.*" tone="glacier" sticker={'Soft Launching\n“My Water Era.”'} body={CRYSTAL.hero.body} images={p.images ?? CRYSTAL.hero.gallery} alt="Crystal home water system">
-          <BuyBox p={p} secondary={{ href: '/book-demo?product=crystal', label: 'Book a Demo' }} />
+        {/* 01 · Hero: gallery left, purchase right */}
+        <ProductHero name="Crystal" title="Crystal. *Made for your kitchen.*" tone="glacier" sticker={'Soft Launching\n“My Water Era.”'} body={CRYSTAL.hero.body}
+          cutout="/images/crystal_product.png" images={p.images ?? CRYSTAL.hero.gallery} alt="Crystal home water system">
+          <BuyBox p={p} tone="glacier" secondary={{ href: '/book-demo?product=crystal', label: 'Book a Demo' }} />
         </ProductHero>
 
-        {/* 02 · Key features */}
-        <section id="features" className="surface-glacier section" aria-labelledby="feat-title">
+        {/* 02 · Key features: Crystal in the middle, the four details pinned to it with leader lines that draw in */}
+        <section id="features" className="surface-glacier section relative overflow-hidden" aria-labelledby="feat-title">
           <div className="container-x">
-            <SectionHead id="feat-title" tone="blue" title={CRYSTAL.features.title} />
-            <Facts cols={4} className="text-ink" items={CRYSTAL.features.cards.map(c => ({ title: c.title, body: <span className="text-ink/75">{c.body}</span>, icon: <Icon name={c.icon} className="fact-icon" strokeWidth={1.4} /> }))} />
-            <div className="mt-12" data-reveal><a href="#specs" className="btn btn-primary">See Specifications</a></div>
+            <SectionHead id="feat-title" tone="blue" title={CRYSTAL.features.title} align="center" />
+            <div className="grid items-center gap-12 lg:grid-cols-[1fr_minmax(260px,400px)_1fr] lg:gap-[clamp(64px,7vw,128px)]">
+              <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[0]} n={1} side="l" /><Callout c={f[1]} n={2} side="l" /></div>
+              <div className="relative order-first mx-auto aspect-[4/5] w-full max-w-[400px] lg:order-none" data-speed="-.4">
+                <span className="absolute inset-x-[4%] top-[12%] aspect-square rounded-full bg-white/70 shadow-[inset_0_-30px_60px_-30px_rgb(4_22_74/.18)]" aria-hidden="true" />
+                <Squiggle className="pointer-events-none absolute -top-4 -right-10 w-36 text-deep-current" />
+                <Image src="/images/crystal_product.png" alt="Crystal, front view" fill sizes="400px" className="object-contain object-bottom drop-shadow-[0_30px_30px_rgb(4_22_74/.3)]" />
+              </div>
+              <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[2]} n={3} side="r" /><Callout c={f[3]} n={4} side="r" /></div>
+            </div>
+            <div className="mt-16 flex justify-center" data-rise><Cta href="#specs" kind="ink">See Specifications</Cta></div>
           </div>
         </section>
 
-        {/* 03 · Water modes */}
-        <ModeExplorer title={CRYSTAL.modes.title} items={CRYSTAL.modes.items} note={CRYSTAL.modes.note}>
-          <a href={guide} className="btn btn-glacier">View Operating Guide</a>
-        </ModeExplorer>
+        {/* 03 · Water modes: a dial that turns with the scroll */}
+        <ModeDial title={CRYSTAL.modes.title} items={CRYSTAL.modes.items} note={CRYSTAL.modes.note}>
+          <Cta href={guide} tone="glacier" icon="doc">View Operating Guide</Cta>
+        </ModeDial>
 
-        {/* 04 · Technology and demonstration */}
+        {/* 04 · Technology and demonstration: the film opens out with the scroll, the path through the machine draws in under it */}
         <section id="technology" className="section" aria-labelledby="demo-title">
           <div className="container-x">
-            <div className="grid items-end gap-8 lg:grid-cols-[1fr_auto]" data-reveal>
+            <div className="mb-14 grid items-end gap-8 lg:grid-cols-[1fr_auto]">
               <div>
                 <Lockup id="demo-title" title={CRYSTAL.demo.title} tone="blue" size="md" />
-                <p className="lede mt-9 max-w-2xl">{CRYSTAL.demo.body}</p>
+                <p className="lede mt-9 max-w-2xl" data-words><Words text={CRYSTAL.demo.body} /></p>
               </div>
-              <div className="flex flex-wrap gap-3">
-                <a href="#demo" className="btn btn-primary"><Icon name="play" className="size-4" /> Watch Crystal Demo</a>
-                <Link href="/book-demo?product=crystal" className="btn btn-outline">Request a Demo</Link>
+              <div className="cta-row" data-rise>
+                <Cta href="#demo" tone="glacier" icon="play">Watch Crystal Demo</Cta>
+                <Cta href="/book-demo?product=crystal" kind="glass">Request a Demo</Cta>
               </div>
             </div>
-            <div id="demo" className="pin-frame relative mt-14 aspect-video scroll-mt-32 bg-stage" data-reveal>
-              {p.videoUrl
-                ? <video src={p.videoUrl} controls preload="metadata" playsInline className="size-full object-cover" poster="/images/crystal.webp" aria-label="Crystal demonstration video" />
-                : <>
-                    <Image src="/images/crystal-inside.webp" alt="Inside Crystal: filter cartridges and ionisation chamber" fill sizes="(min-width:1320px) 1240px, 100vw" className="object-cover" />
-                    <div className="absolute inset-0 grid place-items-center bg-stage-deep/30">
-                      <div className="flex flex-col items-center gap-3 text-center text-white">
-                        <span className="grid size-16 place-items-center rounded-full bg-white/15 backdrop-blur"><Icon name="play" className="size-7" /></span>
-                        <p className="rounded-full bg-stage-deep/75 px-4 py-2 font-sans text-sm backdrop-blur">The demo video is on its way. <Link href="/book-demo?product=crystal" className="underline">Book a live demo</Link> in the meantime.</p>
-                      </div>
-                    </div>
-                  </>}
-            </div>
-            <div className="mt-12" aria-label="How water moves through Crystal" role="group" data-reveal>
-              <Facts cols={4} items={FLOW.map((f, i) => ({ title: `0${i + 1} · ${f.label}`, body: f.body, icon: <Icon name={f.icon} className="fact-icon" strokeWidth={1.4} /> }))} />
+            <GrowVideo id="demo" src={p.videoUrl} poster="/videos/inside-poster.jpg" alt="Inside Crystal: filter cartridges and ionisation chamber" label="Watch Crystal Demo" pending="The demonstration film is on its way. Request a live demo in the meantime." />
+            <div className="relative mt-16" role="group" aria-label="How water moves through Crystal">
+              <span className="absolute top-6 right-[12%] left-[12%] hidden h-[2px] bg-ink lg:block" data-draw="x" aria-hidden="true" />
+              <ol className="relative grid gap-10 sm:grid-cols-2 lg:grid-cols-4" data-rise>
+                {FLOW.map((s, i) => (
+                  <li key={s.label} className="flex flex-col items-start lg:items-center lg:text-center">
+                    <span className="grid size-12 place-items-center rounded-full bg-glacier text-ink ring-8 ring-paper"><Icon name={s.icon} className="size-6" strokeWidth={1.4} /></span>
+                    <p className="mt-5 font-serif text-[18px] italic text-deep-current">0{i + 1}</p>
+                    <h3 className="font-sans text-[19px] font-bold tracking-tight">{s.label}</h3>
+                    <p className="mt-1 text-muted">{s.body}</p>
+                  </li>
+                ))}
+              </ol>
             </div>
           </div>
         </section>
 
         {/* 05 · Fit, specifications and box contents */}
-        <section id="specs" className="section" aria-labelledby="spec-title">
+        <section id="specs" className="section pt-0" aria-labelledby="spec-title">
           <div className="container-x">
             <SectionHead id="spec-title" tone="glacier" title={CRYSTAL.fit.title} body={CRYSTAL.fit.body}>
-              <div className="flex flex-wrap gap-3"><a href="#setup" className="btn btn-primary">Check My Setup</a><a href="#full-specs" className="btn btn-outline">View Full Specifications</a></div>
+              <div className="cta-row" data-rise><Cta href="#setup" kind="ink">Check My Setup</Cta><Cta href="#full-specs" kind="glass">View Full Specifications</Cta></div>
             </SectionHead>
             <div className="grid gap-14 lg:grid-cols-[1fr_1.25fr]">
               <div data-reveal>
@@ -108,9 +137,9 @@ export default async function CrystalPage() {
               </div>
               <div data-reveal><h3 className="eyebrow mb-4">Specifications</h3><Specs p={p} initial={5} box={false} /></div>
             </div>
-            <div id="setup" className="pin-frame relative mt-24 scroll-mt-32" style={{ ['--pin' as string]: 'var(--color-glacier)' }} data-reveal>
+            <div id="setup" className="pin-frame relative mt-24 scroll-mt-32" style={{ ['--pin' as string]: 'var(--color-glacier)' }}>
               <div className="relative grid gap-10 bg-white p-6 sm:p-12 lg:grid-cols-[1fr_1.3fr]">
-                <div><Lockup title={CRYSTAL.fit.setup.title} tone="glacier" size="sm" /><p className="lede mt-8">{CRYSTAL.fit.setup.body}</p></div>
+                <div><Lockup title={CRYSTAL.fit.setup.title} tone="glacier" size="sm" /><p className="lede mt-8" data-words><Words text={CRYSTAL.fit.setup.body} /></p></div>
                 <EnquiryForm variant="product" source="/home-water-systems#setup" defaultInterest="crystal" submitLabel="Check My Setup" photos />
               </div>
             </div>
@@ -120,20 +149,20 @@ export default async function CrystalPage() {
         {/* 06 · Delivery and care */}
         <section id="delivery" className="surface-glacier section" aria-labelledby="del-title">
           <div className="container-x grid items-start gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
-            <div data-reveal>
+            <div>
               <Lockup id="del-title" title={CRYSTAL.delivery.title} tone="volt" size="md" />
-              <p className="lede mt-9">{CRYSTAL.delivery.body}</p>
-              <div className="mt-8"><Faq items={CRYSTAL.delivery.items} single /></div>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <a href="#buy" className="btn btn-primary">Check Delivery</a>
-                <Link href="/policies/warranty" className="btn btn-outline">Read Warranty</Link>
-                <Link href="/support/crystal" className="btn btn-outline">Product Care</Link>
+              <p className="lede mt-9" data-words><Words text={CRYSTAL.delivery.body} /></p>
+              <div className="mt-8" data-reveal><Faq items={CRYSTAL.delivery.items} single /></div>
+              <div className="cta-row mt-9" data-rise>
+                <Cta href="#buy" kind="ink" icon="truck">Check Delivery</Cta>
+                <Cta href="/policies/warranty" kind="glass">Read Warranty</Cta>
+                <Cta href="/support/crystal" kind="glass">Product Care</Cta>
               </div>
             </div>
-            <div className="relative lg:sticky lg:top-36" data-reveal>
+            <div className="relative lg:sticky lg:top-36">
               <Squiggle className="pointer-events-none absolute -top-14 -right-10 z-[3] hidden w-44 text-deep-current lg:block" />
               <div className="pin-frame relative aspect-[4/5]" style={{ ['--pin' as string]: 'var(--color-flash)' }}><div className="relative size-full overflow-hidden">
-                <Image src="/images/crystal.webp" alt="Crystal installed on a kitchen counter" fill sizes="(min-width:1024px) 40vw, 100vw" className="object-cover" />
+                <Image src="/images/crystal.webp" alt="Crystal installed on a kitchen counter" fill sizes="(min-width:1024px) 40vw, 100vw" className="scale-[1.14] object-cover" data-speed=".3" />
               </div></div>
             </div>
           </div>
@@ -145,10 +174,10 @@ export default async function CrystalPage() {
         <section id="faq" className="section" aria-labelledby="faq-title">
           <div className="container-x">
             <SectionHead id="faq-title" tone="flash" title={CRYSTAL.faq.title} />
-            <Faq items={CRYSTAL.faq.items} />
-            <div className="mt-12 flex flex-wrap items-center gap-3">
-              <AddToCart productId={p.id} max={Math.min(p.available, p.maxPerOrder)} compact buyNow={false} primary />
-              <Link href="/support#contact" className="btn btn-outline">Talk to DVINE</Link>
+            <div data-reveal><Faq items={CRYSTAL.faq.items} /></div>
+            <div className="cta-row mt-12" data-rise>
+              <AddToCart productId={p.id} max={Math.min(p.available, p.maxPerOrder)} compact buyNow={false} primary tone="glacier" />
+              <Cta href="/support#contact" kind="glass">Talk to DVINE</Cta>
             </div>
           </div>
         </section>

@@ -3,6 +3,7 @@ import { FooterReveal } from '@/components/store/FooterReveal';
 import { Reveal } from '@/components/store/Reveal';
 import { PinFrames } from '@/components/store/PinFrames';
 import { TagReveal } from '@/components/store/TagReveal';
+import { ScrollCopy } from '@/components/store/ScrollCopy';
 import { Glare } from '@/components/store/Glare';
 import { ChatWidget } from '@/components/store/ChatWidget';
 import { CartDrawer } from '@/components/store/CartDrawer';
@@ -19,6 +20,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
       <Reveal />
       <PinFrames />
       <TagReveal />
+      <ScrollCopy />
       <Glare />
     </>
   );

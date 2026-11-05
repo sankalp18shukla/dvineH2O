@@ -22,7 +22,8 @@
 /* the lockup is centred as a whole; the sans line is indented to start under "do" ("What " is 2.57em of the italic) */
 .heading { --top: clamp(34px, 4.9vw, 78px); align-items: flex-start; text-align: left; }
 .heading :global(.lk-top) { font-size: var(--top); }
-.heading :global(.lk-bot) { font-size: clamp(40px, 5.5vw, 88px); margin: -.36em 0 0 calc(var(--top) * 2.57 - .2em); translate: none; }
+.heading :global(.lk-bot) { font-size: clamp(40px, 5.5vw, 88px); margin: -.36em 0 0 clamp(20px, 3.4vw, 56px); translate: none; }
+.heading.designed :global(.lk-bot) { margin: -.36em 0 0 calc(var(--top) * 2.57 - .2em); }
 /* pins ride --gap (0 when open): they start together at the centre and slide out to their corners */
 .heading :global(.lk-top)::after { left: calc(var(--gap, 0px) - 6px); }
 .heading :global(.lk-bot)::after { right: calc(var(--gap, 0px) - 6px); }
@@ -31,7 +32,7 @@
 .word { display: inline; }
 /* set line breaks on desktop (one photo per line); smaller screens wrap and balance naturally */
 .br { display: none; }
-@media (min-width: 1024px) { .body { text-wrap: wrap; line-height: 1.32; } .br { display: inline; } }
+@media (min-width: 1024px) { .body { text-wrap: wrap; line-height: 1.32; } .body.free { text-wrap: balance; } .br { display: inline; } }
 /* photo set into the line, about a cap height plus descender tall */
 .pic { position: relative; display: inline-block; width: 1.9em; height: 1.02em; margin-inline: .04em; vertical-align: -.2em; overflow: hidden; border-radius: .12em; }
 .pic img { object-fit: cover; }

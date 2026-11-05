@@ -1,0 +1,49 @@
+/* Crystal 03 · Water modes (ModeDial.tsx). Stacked by default; on desktop the script adds .h: a tall track
+   with a sticky stage, the ring turning with the scroll. */
+.section { position: relative; overflow: clip; color: #fff; }
+.stage { position: relative; display: flex; align-items: center; padding-block: clamp(96px, 12vw, 160px); }
+.h { height: 320svh; }
+.h .stage { position: sticky; top: 76px; height: calc(100svh - 76px); padding-block: 0; overflow: clip; }
+
+.grid { position: relative; display: grid; gap: clamp(48px, 6vw, 96px); align-items: center; width: 100%; }
+@media (min-width: 1024px) { .grid { grid-template-columns: 1fr 1fr; } }
+
+/* the colour of the selected mode washes the band */
+.wash { position: absolute; inset: 0; pointer-events: none; transition: background 1s cubic-bezier(.22,1,.36,1); }
+
+.list { list-style: none; margin: clamp(28px, 4svh, 44px) 0 0; padding: 0; border-top: 1px solid rgb(255 255 255 / .18); }
+.row { border-bottom: 1px solid rgb(255 255 255 / .18); }
+.tab { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 18px; width: 100%; padding: 16px 0; text-align: left; cursor: pointer; color: rgb(255 255 255 / .5); transition: color .5s; }
+.tab:hover { color: rgb(255 255 255 / .85); }
+.dot { width: 12px; height: 12px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 rgb(0 0 0 / 0); transition: box-shadow .6s, scale .6s; }
+.name { font-family: var(--font-sans); font-weight: 700; font-size: clamp(24px, 2.4vw, 34px); letter-spacing: -.035em; line-height: 1.05; }
+.num { font-family: var(--font-serif); font-style: italic; font-size: 18px; opacity: .7; }
+.on .tab { color: #fff; }
+.on .dot { scale: 1.35; box-shadow: 0 0 18px var(--c), 0 0 4px var(--c); }
+/* the selected mode's line opens under its name */
+.more { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .6s cubic-bezier(.22,1,.36,1); }
+.on .more { grid-template-rows: 1fr; }
+.more > p { overflow: hidden; margin: 0; padding-left: 30px; font-family: var(--font-serif); font-style: italic; font-size: clamp(19px, 1.6vw, 23px); line-height: 1.35; color: rgb(240 242 247 / .86); }
+.on .more > p { padding-bottom: 18px; }
+
+.note { margin-top: 26px; max-width: 30rem; padding-left: 16px; border-left: 2px solid var(--color-voltage); font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: rgb(255 255 255 / .8); }
+
+/* ── the dial ── */
+.dial { position: relative; width: min(100%, 520px); aspect-ratio: 1; justify-self: center; }
+.h .dial { width: min(100%, 520px, 62svh); }
+.ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.orbit { position: absolute; inset: 0; rotate: var(--rot, 0deg); transition: rotate .9s cubic-bezier(.22,1,.36,1); }
+.h .orbit { rotate: none; transition: none; will-change: transform; }
+.orb { position: absolute; left: 50%; top: 50%; width: 14%; aspect-ratio: 1; border-radius: 50%; background: var(--c);
+  translate: -50% -50%; transform: rotate(var(--a)) translateY(-250%) scale(var(--s, .78)); opacity: .32; transition: opacity .6s, transform .6s; }
+.orb.lit { opacity: 1; --s: 1.18; box-shadow: 0 0 50px var(--c), 0 0 14px var(--c); }
+.core { position: absolute; inset: 27%; display: grid; place-items: center; align-content: center; gap: 6px; border-radius: 50%; text-align: center;
+  background: radial-gradient(circle at 35% 30%, rgb(255 255 255 / .16), rgb(255 255 255 / .04) 60%);
+  background-color: rgb(8 30 90 / .55); box-shadow: inset 0 1px 0 rgb(255 255 255 / .35), inset 0 0 0 1px rgb(255 255 255 / .14), 0 30px 60px -30px rgb(0 0 0 / .6); }
+.coreNum { font-family: var(--font-sans); font-weight: 800; font-size: clamp(54px, 7vw, 96px); line-height: .9; letter-spacing: -.06em; }
+.coreName { font-family: var(--font-serif); font-style: italic; font-size: clamp(20px, 2vw, 28px); color: var(--c); text-shadow: 0 0 18px rgb(0 0 0 / .35); }
+.coreNum, .coreName { transition: color .6s; }
+.swap { animation: swap .6s cubic-bezier(.22,1,.36,1); }
+@keyframes swap { from { opacity: 0; translate: 0 14px; } }
+
+@media (prefers-reduced-motion: reduce) { .orbit, .more, .wash { transition: none; } .swap { animation: none; } }

@@ -1,28 +1,26 @@
 import type { ReactNode } from 'react';
-import { Gallery } from './Gallery';
-import { DieCut, Lockup } from '../ui/Brand';
+import { ProductStage } from './ProductStage';
+import { Lockup } from '../ui/Brand';
+import { Words } from '../ui/Cta';
 
 type Tone = 'glacier' | 'flash' | 'volt';
-/** Product colours as on the home collection: lockup tone, frame pins and die-cut sticker. */
-const LOOK: Record<Tone, { pin: string; sc: 'blue' | 'red' | 'orange' }> = {
-  glacier: { pin: 'var(--color-glacier)', sc: 'blue' },
-  flash: { pin: 'var(--color-flash)', sc: 'orange' },
-  volt: { pin: 'var(--color-voltage)', sc: 'red' },
-};
+/** Product colours as on the home collection: lockup tone, disc, frame pins and die-cut sticker. */
+const STICKER: Record<Tone, 'blue' | 'red' | 'orange'> = { glacier: 'blue', flash: 'orange', volt: 'red' };
 
-/** `title` is a lockup string ("Crystal. *Made for your kitchen.*"); `sticker` is the product's die-cut phrase from the home page. */
-export function ProductHero({ title, tone, sticker, body, images, alt, children }: { title: string; tone: Tone; sticker: string; body: string; images: string[]; alt: string; children: ReactNode }) {
-  const look = LOOK[tone];
+/**
+ * Product page hero (01): gallery left (55%), purchase right (45%), as the content document lays out.
+ * `title` is a lockup string ("Crystal. *Made for your kitchen.*"); the body lights up word by word on load.
+ */
+export function ProductHero({ name, title, tone, sticker, body, cutout, images, alt, children }: {
+  name: string; title: string; tone: Tone; sticker: string; body: string; cutout: string; images: string[]; alt: string; children: ReactNode;
+}) {
   return (
-    <section className="pt-8 pb-16 sm:pt-12 sm:pb-24" aria-labelledby="p-title">
-      <div className="container-x grid gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
-        <div className="relative" style={{ ['--pin' as string]: look.pin }}>
-          <Gallery images={images} alt={alt} />
-          <DieCut text={sticker} tone={look.sc} className="absolute -top-6 right-4 z-[4] text-[22px] sm:right-10 sm:text-[28px]" />
-        </div>
-        <div className="flex flex-col gap-7 lg:pt-6">
+    <section className="pt-6 pb-20 sm:pt-10 sm:pb-28" aria-labelledby="p-title">
+      <div className="container-x grid gap-12 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
+        <ProductStage name={name} tone={tone} cutout={cutout} images={images} alt={alt} sticker={sticker} stickerTone={STICKER[tone]} />
+        <div className="flex flex-col gap-8 lg:pt-4">
           <Lockup id="p-title" as="h1" title={title} tone={tone} size="md" />
-          <p className="font-serif text-[21px] leading-snug text-ink italic sm:text-[23px]">{body}</p>
+          <p className="font-serif text-[21px] leading-snug text-ink italic sm:text-[24px]" data-words><Words text={body} /></p>
           {children}
         </div>
       </div>

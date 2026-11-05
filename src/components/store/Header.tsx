@@ -6,14 +6,20 @@ import { Logo } from '../ui/Logo';
 import { Icon } from '../ui/Icon';
 import { MobileMenu } from './MobileMenu';
 import { HeaderShell } from './HeaderShell';
+import { Ribbon } from './Ribbon';
+import { getLiveContent } from '@/lib/site-content.server';
+import { isLive, type Ribbon as RibbonData } from '@/lib/site-content';
 
 /**
  * `framed`: a light bar sitting above the home hero card — logo and actions line up with the
  * card's inner edge, the primary links sit centred between them.
  */
-export async function Header({ overlay = false, framed = false }: { overlay?: boolean; framed?: boolean }) {
+export async function Header({ overlay = false, framed = false, home = false, ribbon }: { overlay?: boolean; framed?: boolean; home?: boolean; ribbon?: RibbonData }) {
   // No database yet (frontend-only preview): render as a signed-out visitor with an empty cart.
-  const [count, customer] = await Promise.all([cartCount().catch(() => 0), getCustomer().catch(() => null)]);
+  const [count, customer, content] = await Promise.all([cartCount().catch(() => 0), getCustomer().catch(() => null), ribbon ? null : getLiveContent()]);
+  // announcement ribbon (Admin › Homepage & promotions): the home page passes its own, so ?preview=1 shows the draft
+  const rb = ribbon ?? content!.ribbon;
+  const band = rb.enabled && isLive(rb) && (home || rb.scope === 'all') ? <Ribbon ribbon={rb} /> : null;
   const actions = (
     <div className="ml-auto flex items-center gap-1 justify-self-end">
       <Link href="/search" className="grid size-11 place-items-center rounded-full hover:bg-current/10" aria-label="Search"><Icon name="search" /></Link>
@@ -30,16 +36,21 @@ export async function Header({ overlay = false, framed = false }: { overlay?: bo
   const logo = <Link href="/" className="shrink-0 justify-self-start" aria-label="DVINE H2O home"><Logo className="h-[17px] w-auto sm:h-5" /></Link>;
 
   if (framed) return (
-    <HeaderShell overlay={false} framed>
-      <div className="frame-x flex h-[68px] items-center lg:grid lg:h-[76px] lg:grid-cols-[1fr_auto_1fr]">
-        {logo}
-        <nav aria-label="Primary" className="hidden gap-9 font-sans text-[15px] font-medium lg:flex">{links}</nav>
-        {actions}
-      </div>
-    </HeaderShell>
+    <>
+      {band}
+      <HeaderShell overlay={false} framed>
+        <div className="frame-x flex h-[68px] items-center lg:grid lg:h-[76px] lg:grid-cols-[1fr_auto_1fr]">
+          {logo}
+          <nav aria-label="Primary" className="hidden gap-6 font-sans text-[14px] font-medium lg:flex xl:gap-8 xl:text-[14.5px]">{links}</nav>
+          {actions}
+        </div>
+      </HeaderShell>
+    </>
   );
 
   return (
+    <>
+    {band}
     <HeaderShell overlay={overlay}>
       <div className="hidden border-b border-current/10 lg:block">
         <nav aria-label="Utility" className="container-x flex h-8 items-center justify-end gap-3 font-sans text-[12.5px] opacity-75">
@@ -49,10 +60,11 @@ export async function Header({ overlay = false, framed = false }: { overlay?: bo
       <div className="container-x">
         <div className="flex h-16 items-center gap-8 lg:h-[76px]">
           {logo}
-          <nav aria-label="Primary" className="hidden gap-7 font-sans text-[15px] font-medium lg:flex">{links}</nav>
+          <nav aria-label="Primary" className="hidden gap-6 font-sans text-[14px] font-medium lg:flex xl:gap-7">{links}</nav>
           {actions}
         </div>
       </div>
     </HeaderShell>
+    </>
   );
 }

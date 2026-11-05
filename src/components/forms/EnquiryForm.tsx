@@ -25,9 +25,9 @@ export function EnquiryForm({ idPrefix = '', ...props }: Props & { idPrefix?: st
   return <FieldPrefix.Provider value={idPrefix}><Form {...props} /></FieldPrefix.Provider>;
 }
 
-type Props = { variant: Variant; source: string; defaultInterest?: string; submitLabel?: string; dark?: boolean; settings?: string[]; timelines?: string[]; photos?: boolean };
+type Props = { variant: Variant; source: string; defaultInterest?: string; submitLabel?: string; dark?: boolean; settings?: string[]; timelines?: string[]; photos?: boolean; partnerTypes?: string[] };
 
-function Form({ variant, source, defaultInterest, submitLabel = 'Send Enquiry', dark = false, settings = [], timelines = [], photos = false }: Props) {
+function Form({ variant, source, defaultInterest, submitLabel = 'Send Enquiry', dark = false, settings = [], timelines = [], photos = false, partnerTypes = [] }: Props) {
   const [state, action] = useActionState<FormState, FormData>(submitEnquiry, undefined);
   const e = state?.errors ?? {};
   const v = (k: string) => (state?.data?.[k] as string) ?? '';
@@ -60,6 +60,8 @@ function Form({ variant, source, defaultInterest, submitLabel = 'Send Enquiry', 
         <Field name="gstin" label="GSTIN (for a GST invoice)" defaultValue={v('gstin')} className="sm:col-span-2" />
       </>}
       {variant === 'distributorship' && <>
+        {partnerTypes.length > 0 && <Select name="partnerType" label="Type of partnership" options={partnerTypes} placeholder="Choose" defaultValue={v('partnerType')} />}
+        {partnerTypes.length > 0 && <Select name="interest" label="Products of interest" options={INTERESTS} defaultValue={v('interest') || 'multiple'} />}
         <Field name="territory" label="Territory or region" defaultValue={v('territory')} />
         <Field name="gstin" label="GSTIN" defaultValue={v('gstin')} />
       </>}
@@ -81,7 +83,7 @@ function Form({ variant, source, defaultInterest, submitLabel = 'Send Enquiry', 
       </div>
       <div className="sm:col-span-2 flex flex-col gap-3">
         <FormMessage state={state} />
-        <div><SubmitButton className={`btn ${dark ? 'btn-volt' : 'btn-primary'}`}>{submitLabel}</SubmitButton></div>
+        <div><SubmitButton cta={dark ? { kind: 'pill', tone: 'volt' } : { kind: 'ink', tone: 'glacier' }}>{submitLabel}</SubmitButton></div>
       </div>
     </form>
   );
