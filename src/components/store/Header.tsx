@@ -38,10 +38,10 @@ export async function Header({ overlay = false, framed = false, home = false, ri
   if (framed) return (
     <>
       {band}
-      <HeaderShell overlay={false} framed>
+      <HeaderShell overlay={false} framed glass={home}>
         <div className="frame-x flex h-[68px] items-center lg:grid lg:h-[76px] lg:grid-cols-[1fr_auto_1fr]">
           {logo}
-          <nav aria-label="Primary" className="hidden gap-6 font-sans text-[14px] font-medium lg:flex xl:gap-8 xl:text-[14.5px]">{links}</nav>
+          <nav aria-label="Primary" className="hidden gap-5 font-sans text-[13px] font-medium lg:flex xl:gap-6 xl:text-[13.5px]">{links}</nav>
           {actions}
         </div>
       </HeaderShell>
@@ -60,7 +60,7 @@ export async function Header({ overlay = false, framed = false, home = false, ri
       <div className="container-x">
         <div className="flex h-16 items-center gap-8 lg:h-[76px]">
           {logo}
-          <nav aria-label="Primary" className="hidden gap-6 font-sans text-[14px] font-medium lg:flex xl:gap-7">{links}</nav>
+          <nav aria-label="Primary" className="hidden gap-5 font-sans text-[13px] font-medium lg:flex xl:gap-6">{links}</nav>
           {actions}
         </div>
       </div>

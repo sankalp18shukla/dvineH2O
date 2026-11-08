@@ -11,7 +11,10 @@ import { SectionHead } from '@/components/ui/Section';
 import { Faq } from '@/components/ui/Faq';
 import { Icon } from '@/components/ui/Icon';
 import { Cta, Words } from '@/components/ui/Cta';
-import { DieCut, LabelBox, Lockup, Squiggle, plain } from '@/components/ui/Brand';
+import { DieCut, LabelBox, Lockup, plain } from '@/components/ui/Brand';
+import { LightUp } from '@/components/store/LightUp';
+import { FanHero } from '@/components/store/FanHero';
+import css from '@/components/store/Bands.module.css';
 import { getContent } from '@/lib/site-content.server';
 import { DEFAULT_PARTNER } from '@/lib/site-content';
 import { SITE } from '@/lib/content';
@@ -32,28 +35,23 @@ export default async function PartnerPage({ searchParams }: { searchParams: Prom
       <Header framed />
       <SmoothScroll />
       <main id="main">
-        {/* 01 · Hero: inset card, framed like the home cards */}
-        <section className="frame-card stage on-dark" aria-labelledby="p-title">
-          <div className="wave-lines pointer-events-none absolute inset-0 opacity-50" aria-hidden="true" />
-          <div className="container-x relative grid items-center gap-14 py-16 sm:py-24 lg:grid-cols-[1.1fr_1fr] lg:gap-20">
-            <div>
-              <Lockup id="p-title" as="h1" title={p.title} tone="volt" />
-              {p.body && <p className="mt-10 max-w-xl font-serif text-[21px] leading-snug text-white/90 italic sm:text-[24px]" data-words><Words text={p.body} /></p>}
-              <div id="hero-actions" className="cta-row mt-10" data-rise>
-                <Cta href="#apply" tone="volt">Apply to Partner</Cta>
-                <Cta href={tel} kind="glass">Call {SITE.phone}</Cta>
-              </div>
+        {/* 01 · Hero: copy and actions left, a hand of three photos right (FanHero); the front one is the admin's photo or film */}
+        <FanHero id="p-title" title={p.title} tone="volt" body={p.body || undefined}
+          front={m ? (m.type === 'video' ? <AutoVideo src={m.src} poster={m.poster} className="size-full object-cover" label={m.alt || undefined} /> : <img src={m.src} alt={m.alt} />) : <img src="/images/collection.webp" alt="Crystal, Titan and Hyper together" />}
+          back={[{ src: '/images/titan_sec.png', alt: 'Colleagues at TitanForce 111 in an office' }, { src: '/images/brand-handover.webp', alt: 'A Hyper bottle passed from one hand to another' }]}
+          sticker={<DieCut text={'Let’s Grow\nTogether.'} tone="red" />}>
+          <div className="flex flex-col gap-6" data-rise>
+            <div id="hero-actions" className="cta-row border-t-2 border-ink pt-6">
+              <Cta href="#apply" tone="volt">Apply to Partner</Cta>
+              <Cta href={tel} kind="glass">Call {SITE.phone}</Cta>
             </div>
-            {m && (
-              <div className="relative" style={{ ['--pin' as string]: 'var(--color-voltage)' }}>
-                <div className="pin-frame relative aspect-[4/3]"><div className="absolute inset-0 overflow-hidden">
-                  {m.type === 'video' ? <AutoVideo src={m.src} poster={m.poster} className="size-full object-cover" label={m.alt || undefined} /> : <img src={m.src} alt={m.alt} className="size-full scale-[1.12] object-cover" data-speed=".25" />}
-                </div></div>
-                <span className="absolute -bottom-7 -left-3 z-[4] sm:-left-8" data-pop><DieCut text={'Let’s Grow\nTogether.'} className="text-[22px] sm:text-[28px]" /></span>
-              </div>
+            {types.length > 0 && (
+              <ul className="flex flex-wrap gap-x-5 gap-y-2 border-t border-line pt-5 font-sans text-[14px] text-muted">
+                {types.slice(0, 4).map(t => <li key={t} className="flex items-center gap-2"><Icon name="check" className="size-4 shrink-0 text-deep-current" /> {t}</li>)}
+              </ul>
             )}
           </div>
-        </section>
+        </FanHero>
 
         {/* 02 · Who we work with: the partner types slide past in the lockup's two voices as you scroll */}
         {types.length > 0 && (
@@ -68,37 +66,38 @@ export default async function PartnerPage({ searchParams }: { searchParams: Prom
           <section className="section" aria-labelledby="why-title">
             <div className="container-x">
               <SectionHead id="why-title" tone="volt" title={p.benefitsTitle || '*Why partner* with us.'} />
-              <div className={`grid gap-x-8 gap-y-12 sm:grid-cols-2 ${p.benefits.length % 3 === 0 ? 'lg:grid-cols-3' : 'lg:grid-cols-4'}`} data-rise>
+              <LightUp armClass={css.armed} litClass={css.lit} className={`grid gap-x-8 gap-y-14 sm:grid-cols-2 ${p.benefits.length % 3 === 0 ? 'lg:grid-cols-3' : 'lg:grid-cols-4'}`}>
                 {p.benefits.map((b, i) => (
-                  <article key={b.id} className="group border-t-2 border-ink pt-6">
+                  <article key={b.id} className={`${css.tile} ${css.callout}`} data-light={i}>
                     <div className="flex items-center justify-between">
-                      <span className="grid size-14 place-items-center rounded-full bg-voltage text-ink transition duration-500 group-hover:-rotate-12 group-hover:scale-105"><Icon name={ICONS[i % ICONS.length]} className="size-6" /></span>
-                      <span className="font-serif text-[34px] leading-none text-deep-current/80 italic">0{i + 1}</span>
+                      <span className={css.chip} style={{ ['--d' as string]: `${i * -1.2}s` }}><Icon name={ICONS[i % ICONS.length]} className="size-6" strokeWidth={1.4} /></span>
+                      <span className={`${css.tileN} font-serif text-[34px] leading-none text-deep-current/80 italic`}>0{i + 1}</span>
                     </div>
                     <h3 className="mt-6 font-sans text-[22px] font-bold tracking-[-0.03em]">{b.title}</h3>
                     <p className="mt-2 text-[17px] leading-snug text-muted">{b.body}</p>
                   </article>
                 ))}
-              </div>
+              </LightUp>
+              <div className="mt-14" data-rise><Cta href="#apply" kind="ink">Apply to Partner</Cta></div>
             </div>
           </section>
         )}
 
         {/* 04 · How it works: steps on a line that draws down with the scroll */}
         {p.steps.length > 0 && (
-          <section className="surface-glacier section relative overflow-hidden" aria-labelledby="how-title">
-            <Squiggle className="pointer-events-none absolute -right-16 -bottom-20 hidden w-72 text-deep-current/20 lg:block" />
-            <div className="container-x grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-20">
+          <section className={`on-glacier relative overflow-clip text-ink ${css.bandTop} ${css.glacierCopy}`} aria-labelledby="how-title">
+            <WaveBand tone="glacier" interactive knot />
+            <div className="container-x relative grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-20">
               <div className="lg:sticky lg:top-36 lg:self-start">
                 <Lockup id="how-title" title={p.stepsTitle || '*How it* works.'} tone="blue" size="md" />
                 <div className="mt-10" data-rise><Cta href="#apply" kind="ink">Apply to Partner</Cta></div>
               </div>
               <ol className="relative">
-                <span className="absolute top-5 bottom-10 left-[23px] w-[2px] bg-ink/15" aria-hidden="true"><span className="block size-full bg-ink" data-draw /></span>
                 {p.steps.map((s, i) => (
-                  <li key={s.id} className="relative grid grid-cols-[48px_1fr] gap-6 pb-14 last:pb-0">
-                    <span className="grid size-12 place-items-center bg-voltage font-sans text-[15px] font-bold text-ink ring-8 ring-glacier" data-pop>{String(i + 1).padStart(2, '0')}</span>
-                    <div><h3 className="font-sans text-[24px] font-bold tracking-[-0.03em]">{s.title}</h3>{s.body && <p className="mt-2 text-[18px] leading-snug text-ink/75" data-words><Words text={s.body} /></p>}</div>
+                  <li key={s.id} className="relative grid grid-cols-[56px_1fr] gap-6 pb-12 last:pb-0 lg:min-h-[22svh] lg:last:min-h-0">
+                    {i < p.steps.length - 1 && <span className="absolute top-14 bottom-0 left-[27px] w-[2px] bg-ink/15" aria-hidden="true"><span className="block size-full bg-ink" data-draw /></span>}
+                    <span className="grid size-14 place-items-center rounded-full bg-ink font-serif text-[30px] text-glacier italic ring-8 ring-glacier" data-pop>{i + 1}</span>
+                    <div className="pt-2"><h3 className="font-sans text-[22px] font-bold tracking-[-0.03em]">{s.title}</h3>{s.body && <p className="mt-1 font-serif text-[20px] leading-snug italic text-ink/80" data-words><Words text={s.body} /></p>}</div>
                   </li>
                 ))}
               </ol>
@@ -107,10 +106,11 @@ export default async function PartnerPage({ searchParams }: { searchParams: Prom
         )}
 
         {/* 05 · Partner enquiry, into the CRM as a distributorship enquiry */}
-        <section id="apply" className="on-dark section relative overflow-hidden py-28 text-white sm:py-40" aria-labelledby="apply-title">
-          <WaveBand />
-          <div className="container-x relative grid gap-14 lg:grid-cols-[1fr_1.4fr]">
-            <div>
+        <section id="apply" className={`on-dark relative overflow-clip text-white ${p.steps.length > 0 ? `${css.overlap} ${css.bandUnder}` : css.bandPad}`} aria-labelledby="apply-title">
+          <WaveBand interactive knot />
+          <span className={css.scrim} aria-hidden="true" />
+          <div className="container-x relative grid gap-14 lg:grid-cols-[1fr_1.4fr] lg:gap-20">
+            <div className="lg:sticky lg:top-32 lg:self-start">
               <Lockup id="apply-title" title={p.formTitle || '*Tell us* about your business.'} tone="volt" size="md" />
               {p.formBody && <p className="lede mt-9" data-words><Words text={p.formBody} /></p>}
               <ul className="mt-10 grid gap-4 font-sans" data-rise>

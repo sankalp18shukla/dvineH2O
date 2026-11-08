@@ -1,5 +1,5 @@
+/* eslint-disable @next/next/no-img-element -- the hero photos are plain prints in FanHero */
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import { Header } from '@/components/store/Header';
 import { SmoothScroll } from '@/components/store/SmoothScroll';
 import { ActionBar } from '@/components/store/ActionBar';
@@ -14,8 +14,10 @@ import { Cta, CtaChip, Words } from '@/components/ui/Cta';
 import { WATER_TESTING } from '@/lib/content';
 import { formatINR } from '@/lib/money';
 import { getTestOptions } from '@/lib/catalog';
-import { Lockup, Tape, WaterSticker } from '@/components/ui/Brand';
+import { Lockup, Squiggle, Tape, WaterSticker } from '@/components/ui/Brand';
 import { WaveBand } from '@/components/store/WaveBand';
+import { FanHero } from '@/components/store/FanHero';
+import css from '@/components/store/Bands.module.css';
 
 /** Rendered per request: reads the catalog, which needs a live database. */
 export const dynamic = 'force-dynamic';
@@ -25,36 +27,34 @@ export const metadata: Metadata = { title: 'Water testing', description: WATER_T
 export default async function WaterTestingPage({ searchParams }: { searchParams: Promise<{ pin?: string }> }) {
   const { pin = '' } = await searchParams;
   const options = await getTestOptions();
+  const from = options.length ? Math.min(...options.map(o => o.price ?? 0)) : 0;
   return (
     <>
       <Header framed />
       <SmoothScroll />
       <main id="main">
-        {/* 01 · Hero: headline, body and two actions left, sample collection photo (W01) right, in an inset card */}
-        <section className="frame-card stage on-dark" aria-labelledby="wt-title">
-          <div className="wave-lines pointer-events-none absolute inset-0 opacity-40" aria-hidden="true" />
-          <div className="container-x relative grid items-center gap-14 py-16 sm:py-24 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
-            <div>
-              <Lockup id="wt-title" as="h1" title={WATER_TESTING.hero.title} tone="glacier" />
-              <p className="mt-10 max-w-xl font-serif text-[21px] leading-snug text-white/90 italic sm:text-[24px]" data-words><Words text={WATER_TESTING.hero.body} /></p>
-              <form id="hero-actions" action="/water-testing#book" className="mt-9 flex max-w-xl flex-col gap-3 sm:flex-row" data-rise>
-                <label htmlFor="hero-pin" className="sr-only">Enter your postcode</label>
-                <div className="relative flex-1">
-                  <Icon name="pin" className="absolute top-1/2 left-4 size-[18px] -translate-y-1/2 text-white/60" />
-                  <input id="hero-pin" name="pin" inputMode="numeric" pattern="\d{6}" maxLength={6} autoComplete="postal-code" placeholder="Enter your postcode" defaultValue={pin} className="input min-h-[52px] rounded-full border-white/25 bg-white/10 pl-11 text-white placeholder:text-white/55" />
-                </div>
-                <button className="cta cta-pill" style={{ ['--accent' as string]: 'var(--color-glacier)' }}><CtaChip /><span>Book a Water Test</span></button>
-              </form>
-              <div className="mt-3" data-rise><Cta href="#upload" kind="glass">Upload My Report</Cta></div>
-            </div>
-            <div className="relative" style={{ ['--pin' as string]: 'var(--color-glacier)' }}>
-              <div className="pin-frame relative aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5]">
-                <div className="absolute inset-0 overflow-hidden"><Image src="/images/hands-water.webp" alt="Hands collecting a water sample at a tap" fill priority sizes="(min-width:1024px) 42vw, 100vw" className="scale-[1.12] object-cover" data-speed=".25" /></div>
+        {/* 01 · Hero: copy and the postcode check left, a hand of three photos right (FanHero) */}
+        <FanHero id="wt-title" title={WATER_TESTING.hero.title} tone="glacier" body={WATER_TESTING.hero.body}
+          front={<img src="/images/hands-water.webp" alt="Hands collecting a water sample at a tap" />}
+          back={[{ src: '/images/2_2ndsec.png', alt: 'A water sample held up in a laboratory' }, { src: '/images/4_2ndsec.png', alt: 'A drop landing on still water' }]}
+          sticker={<WaterSticker />}>
+          <div className="flex flex-col gap-6" data-rise>
+            <form id="hero-actions" action="/water-testing#book" className="flex flex-col gap-3 border-t-2 border-ink pt-6 sm:flex-row">
+              <label htmlFor="hero-pin" className="sr-only">Enter your postcode</label>
+              <div className="relative flex-1">
+                <Icon name="pin" className="absolute top-1/2 left-4 size-[18px] -translate-y-1/2 text-muted" />
+                <input id="hero-pin" name="pin" inputMode="numeric" pattern="\d{6}" maxLength={6} autoComplete="postal-code" placeholder="Enter your postcode" defaultValue={pin} className="input min-h-[52px] rounded-full pl-11" />
               </div>
-              <span className="absolute -bottom-10 -left-8 z-[4] block w-28 sm:w-36" data-pop><WaterSticker /></span>
-            </div>
+              <button className="cta cta-pill" style={{ ['--accent' as string]: 'var(--color-glacier)' }}><CtaChip /><span>Book a Water Test</span></button>
+            </form>
+            <div><Cta href="#upload" kind="glass">Upload My Report</Cta></div>
+            <ul className="grid gap-2 border-t border-line pt-5 font-sans text-[14px] text-muted sm:grid-cols-3 sm:gap-4">
+              <li className="flex items-center gap-2"><Icon name="drop" className="size-4 shrink-0 text-deep-current" /> {from === 0 ? 'Essential test free' : `From ${formatINR(from)}`}</li>
+              <li className="flex items-center gap-2"><Icon name="calendar" className="size-4 shrink-0 text-deep-current" /> Pick your slot</li>
+              <li className="flex items-center gap-2"><Icon name="shield" className="size-4 shrink-0 text-deep-current" /> Private reports</li>
+            </ul>
           </div>
-        </section>
+        </FanHero>
 
         {/* 02 · Availability and test scope */}
         <section id="tests" className="section" aria-labelledby="scope-title">
@@ -62,10 +62,10 @@ export default async function WaterTestingPage({ searchParams }: { searchParams:
             <SectionHead id="scope-title" tone="blue" title={WATER_TESTING.scope.title} body={WATER_TESTING.scope.body} />
             <div className="grid gap-x-10 gap-y-14 md:grid-cols-2 lg:grid-cols-3" data-rise>
               {options.map((o, i) => (
-                <article key={o.id} className="group flex flex-col border-t-2 border-ink pt-6">
+                <article key={o.id} className={`${css.tile} ${css.callout} group flex flex-col`}>
                   <div className="flex items-center justify-between">
-                    <span className="grid size-12 place-items-center rounded-full bg-glacier text-ink transition duration-500 group-hover:-rotate-12"><Icon name="drop" className="size-6" strokeWidth={1.4} /></span>
-                    <span className="font-serif text-[22px] text-deep-current italic">Test 0{i + 1}</span>
+                    <span className={`${css.chip} ${css.chipTone}`} style={{ ['--d' as string]: `${i * -1.6}s` }}><Icon name="drop" className="size-6" strokeWidth={1.4} /></span>
+                    <span className={`${css.tileN} font-serif text-[26px] text-deep-current italic`}>Test 0{i + 1}</span>
                   </div>
                   <h3 className="mt-5 font-sans text-2xl font-bold tracking-tight">{o.name}</h3>
                   {o.summary && <p className="mt-2 text-muted">{o.summary}</p>}
@@ -83,24 +83,29 @@ export default async function WaterTestingPage({ searchParams }: { searchParams:
           </div>
         </section>
 
-        {/* 03 · How testing works: explainer film left (W03), four steps right on a line that draws down with the scroll */}
-        <section className="surface-glacier section" aria-labelledby="how-title">
-          <div className="container-x grid items-start gap-14 lg:grid-cols-[1.1fr_1fr] lg:gap-20">
-            <div className="lg:sticky lg:top-32">
+        {/* 03 · How testing works, on the Glacier wave band: its lines knot and follow the pointer. The film stays
+            beside the four steps, which draw down as you read, as Hyper's how it works */}
+        <section className={`on-glacier relative overflow-clip text-ink ${css.bandTop} ${css.glacierCopy}`} aria-labelledby="how-title">
+          <WaveBand tone="glacier" interactive knot />
+          <div className="container-x relative grid gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-20">
+            <div className="lg:sticky lg:top-32 lg:self-start">
               <GrowVideo id="wt-video" poster="/images/water-rings.webp" alt="Rings spreading across still water" label="Watch how testing works" pending="The explainer film is on its way." />
             </div>
             <div>
               <Lockup id="how-title" title={WATER_TESTING.how.title} tone="blue" size="md" />
-              <ol className="relative mt-12">
-                <span className="absolute top-4 bottom-8 left-[19px] w-[2px] bg-ink/15" aria-hidden="true"><span className="block size-full bg-ink" data-draw /></span>
+              <ol className="relative mt-14">
                 {WATER_TESTING.how.steps.map((s, i) => (
-                  <li key={s.title} className="relative grid grid-cols-[40px_1fr] gap-5 pb-10 last:pb-0">
-                    <span className="grid size-10 place-items-center bg-voltage font-sans text-sm font-bold text-ink ring-8 ring-glacier" data-pop>{String(i + 1).padStart(2, '0')}</span>
-                    <div><h3 className="font-sans text-[21px] font-bold tracking-tight">{s.title}</h3><p className="mt-1 text-[17px] text-ink/75" data-words><Words text={s.body} /></p></div>
+                  <li key={s.title} className="relative grid grid-cols-[56px_1fr] gap-6 pb-12 last:pb-0 lg:min-h-[22svh] lg:last:min-h-0">
+                    {i < WATER_TESTING.how.steps.length - 1 && <span className="absolute top-14 bottom-0 left-[27px] w-[2px] bg-ink/15" aria-hidden="true"><span className="block size-full bg-ink" data-draw /></span>}
+                    <span className="grid size-14 place-items-center rounded-full bg-ink font-serif text-[30px] text-glacier italic ring-8 ring-glacier" data-pop>{i + 1}</span>
+                    <div className="pt-2">
+                      <h3 className="font-sans text-[22px] font-bold tracking-[-0.03em]">{s.title}</h3>
+                      <p className="mt-1 font-serif text-[20px] leading-snug italic text-ink/80" data-words><Words text={s.body} /></p>
+                    </div>
                   </li>
                 ))}
               </ol>
-              <div className="mt-10" data-rise><Cta href="#book" kind="ink">Book a Test</Cta></div>
+              <div className="mt-10" data-rise><Cta href="#book" kind="ink" icon="calendar">Book a Test</Cta></div>
             </div>
           </div>
         </section>
@@ -114,8 +119,9 @@ export default async function WaterTestingPage({ searchParams }: { searchParams:
         </section>
 
         {/* 05 · Existing report upload: a redacted sample report (W04) taped beside the copy, the upload form right */}
-        <section id="upload" className="surface-glacier section" aria-labelledby="up-title">
-          <div className="container-x grid gap-14 lg:grid-cols-[1fr_1.3fr]">
+        <section id="upload" className={`on-glacier relative overflow-clip text-ink ${css.bandPad} ${css.glacierCopy}`} aria-labelledby="up-title">
+          <WaveBand tone="glacier" interactive knot />
+          <div className="container-x relative grid gap-14 lg:grid-cols-[1fr_1.3fr] lg:gap-16">
             <div className="relative">
               <Lockup id="up-title" title={WATER_TESTING.upload.title} tone="flash" size="md" />
               <p className="lede mt-9" data-words><Words text={WATER_TESTING.upload.body} /></p>
@@ -133,15 +139,19 @@ export default async function WaterTestingPage({ searchParams }: { searchParams:
               </ul>
               <p className="mt-6 flex items-start gap-2 font-sans text-sm text-ink/70"><Icon name="shield" className="mt-0.5 size-4 shrink-0" />Reports are private. Only the DVINE team reviewing your enquiry can open them.</p>
             </div>
-            <div className="pin-frame relative self-start" style={{ ['--pin' as string]: 'var(--color-flash)' }}>
-              <div className="bg-white p-6 sm:p-10"><ReportUploadForm /></div>
+            <div className="relative self-start">
+              <Squiggle className="pointer-events-none absolute -top-14 -right-10 z-[3] hidden w-40 text-deep-current lg:block" />
+              <div className="pin-frame relative" style={{ ['--pin' as string]: 'var(--color-flash)' }}>
+                <div className="bg-white p-6 sm:p-10"><ReportUploadForm /></div>
+              </div>
             </div>
           </div>
         </section>
 
         {/* 06 · Report explanation: the report reads itself, column by column, as you scroll */}
-        <section className="on-dark section relative overflow-hidden py-28 text-white sm:py-40" aria-labelledby="ex-title">
-          <WaveBand />
+        <section className={`on-dark relative overflow-clip text-white ${css.overlap} ${css.bandUnder}`} aria-labelledby="ex-title">
+          <WaveBand interactive knot />
+          <span className={css.scrim} aria-hidden="true" />
           <div className="container-x relative">
             <ReportScan sample={WATER_TESTING.explain.sample}>
               <Lockup id="ex-title" title={WATER_TESTING.explain.title} tone="glacier" size="md" />

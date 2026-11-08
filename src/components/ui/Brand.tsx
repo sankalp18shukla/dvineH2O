@@ -48,7 +48,7 @@ export function Lockup({ title, tone = 'volt', as: Tag = 'h2', id, size = 'lg', 
   return (
     <Tag id={id} className={`lk is-${tone} ${sz} ${className}`}>
       {top && <span className="lk-top"><span className="lk-ink">{top}</span></span>}{top && ' '}
-      <span className="lk-bot"><span className="lk-txt">{bottom}</span></span>
+      <span className="lk-bot"><span className="lk-txt">{bottom}</span>{!top && <span className="lk-pin" aria-hidden="true" />}</span>
     </Tag>
   );
 }
@@ -68,8 +68,9 @@ export function Steps({ items, className = '' }: { items: { title: string; body?
     <ol className={`grid gap-5 ${className}`}>
       {items.map((s, i) => (
         <li key={s.title} className="flex items-start gap-4">
-          <span className="mt-0.5 grid size-9 shrink-0 place-items-center bg-voltage font-sans text-sm font-bold text-ink">{String(i + 1).padStart(2, '0')}</span>
-          <div><h3 className="font-sans text-lg font-semibold">{s.title}</h3>{s.body && <p className="opacity-75">{s.body}</p>}</div>
+          <span className="grid size-9 shrink-0 place-items-center bg-voltage font-sans text-sm font-bold text-ink">{String(i + 1).padStart(2, '0')}</span>
+          {/* 6px + half a 24px line = 18px: the first line's middle sits level with the 36px number box's */}
+          <div className="pt-1.5"><h3 className="font-sans text-lg leading-6 font-semibold">{s.title}</h3>{s.body && <p className="opacity-75">{s.body}</p>}</div>
         </li>
       ))}
     </ol>

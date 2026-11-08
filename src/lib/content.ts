@@ -17,6 +17,7 @@ export const SITE = {
 export const NAV = {
   main: [
     { href: '/home-water-systems', label: 'Home Water Systems' },
+    { href: '/for-business', label: 'Office Water Systems' },
     { href: '/hydrogen-bottles', label: 'Hydrogen Bottles' },
     { href: '/water-testing', label: 'Water Testing' },
     { href: '/become-a-partner', label: 'Become a Partner' },
@@ -142,7 +143,7 @@ export const CRYSTAL = {
     gallery: ['/images/crystal.webp', '/images/crystal-inside.webp', '/images/collection.webp', '/images/ripple.webp'],
   },
   features: {
-    title: 'The details that make *Crystal work.*',
+    title: '*The details that make* Crystal work.',
     cards: [
       { icon: 'plates5', title: 'Five-plate ionisation', body: 'Platinum-coated titanium plates carry out electrolysis.' },
       { icon: 'filter', title: 'Multi-stage filtration', body: 'PureCore prepares incoming water before ionisation.' },
@@ -151,7 +152,7 @@ export const CRYSTAL = {
     ],
   },
   modes: {
-    title: 'Choose a mode. *Understand its use.*',
+    title: '*Choose a mode.* Understand its use.',
     items: [
       { key: 'hot', title: 'Hot', body: 'Explore the hot-water option.', color: '#FF0401' },
       { key: 'neutral', title: 'Neutral', body: 'View the neutral-water setting.', color: '#F0F2F7' },
@@ -161,11 +162,11 @@ export const CRYSTAL = {
     note: 'Use only the drinking-water settings specified in the product manual.',
   },
   demo: {
-    title: 'Take a closer look *at Crystal.*',
+    title: '*Take a closer look* at Crystal.',
     body: 'See how to select a mode, read the display and use the controls. The demonstration walks you through the machine before your first use.',
   },
   fit: {
-    title: 'Check the fit. *Know what comes with it.*',
+    title: '*Check the fit. Know what* comes with it.',
     body: 'Before you order, check the dimensions, water connections and available space. You can also share a photo of your kitchen and ask our team about the setup.',
     needs: [
       { icon: 'home', title: 'Counter space', body: 'A level counter beside your sink, with room above for the dispenser.' },
@@ -173,10 +174,10 @@ export const CRYSTAL = {
       { icon: 'battery', title: 'Power point', body: 'A grounded socket within reach of the unit.' },
       { icon: 'wrench', title: 'Drain line', body: 'A drain or sink outlet for the waste-water line.' },
     ],
-    setup: { title: 'Check *my setup.*', body: 'Tell us about your kitchen and attach a photo of the counter and water connection. Our team will check the setup with you before you order.' },
+    setup: { title: '*Check my* setup.', body: 'Tell us about your kitchen and attach a photo of the counter and water connection. Our team will check the setup with you before you order.' },
   },
   delivery: {
-    title: 'Know what to expect *after you order.*',
+    title: '*Know what to expect* after you order.',
     body: 'Check delivery availability for your postcode, review the installation arrangements and see the maintenance guidance for Crystal. Your warranty details are available here whenever you need them.',
     items: [
       { q: 'Delivery', a: 'Enter your pincode in the purchase panel to see whether we deliver to you and the expected date. We confirm the delivery date when you order and share tracking once it ships.' },
@@ -186,7 +187,7 @@ export const CRYSTAL = {
     ] as Faq[],
   },
   faq: {
-    title: 'Still deciding? *Let’s clear a few things up.*',
+    title: '*Still deciding? Let’s* clear a few things up.',
     items: [
       { q: 'Will Crystal work with my water supply?', a: 'Suitability depends on your source water and setup. Share those details with our team.' },
       { q: 'Are all modes for drinking?', a: 'Use only the drinking-water settings specified in the manual.' },
@@ -202,8 +203,18 @@ export const HYPER = {
     body: 'Hyper uses PEM electrolysis to generate dissolved molecular hydrogen in suitable drinking water. See the bottle, explore the controls and find out how to use it.',
     gallery: ['/images/hyper.webp', '/images/hyper-water.webp', '/images/hyper-exploded.webp', '/images/bubbles.webp'],
   },
+  /** Bottle finishes (BottleFinish.tsx). The first is the colour in the photos; the others repaint the photo's metal.
+   *  `coat` is the paint at full light (multiplied by the photo's shading), `swatch` how the finish reads at a glance,
+   *  `gloss` how much of the photo's highlights to lift back onto the paint (more on dark finishes). */
+  finishes: [
+    { key: 'burgundy', name: 'Burgundy', coat: '#9c4d50', swatch: '#6e1f27', gloss: 0 },
+    { key: 'midnight', name: 'Midnight', coat: '#34373e', swatch: '#1d2027', gloss: .55 },
+    { key: 'deep-current', name: 'Deep Current', coat: '#2f74e6', swatch: '#1b4fb0', gloss: .3 },
+    { key: 'sage', name: 'Sage', coat: '#a9c0a4', swatch: '#6f8a6c', gloss: .2 },
+    { key: 'lagoon', name: 'Lagoon', coat: '#3fd0bd', swatch: '#1f9a8c', gloss: .25 },
+  ],
   everyday: {
-    title: 'From your desk *to your day out.*',
+    title: '*From your desk* to your day out.',
     body: 'Keep it on your desk, pack it with your gym kit or take it along when you head out. Explore a portable format that fits the way you already carry water.',
     cards: [
       // B05–B07: the card titles are the copy; `alt` follows the photo brief ("Photo: Hyper on a work desk")
@@ -213,7 +224,7 @@ export const HYPER = {
     ],
   },
   how: {
-    title: 'Fill it. Start the cycle. *Follow the guide.*',
+    title: '*Fill it. Start the cycle.* Follow the guide.',
     steps: [
       'Fill with drinking water that meets the product instructions.',
       'Start a hydrogen-generation cycle using the bottle’s controls.',
@@ -221,12 +232,13 @@ export const HYPER = {
     ],
   },
   tech: {
-    title: 'Hydrogen generation *inside the bottle.*',
+    title: '*Hydrogen generation* inside the bottle.',
     body: 'The electrolysis chamber generates molecular hydrogen that dissolves into the water during operation. Digital controls let you operate the available functions according to the product instructions.',
-    parts: ['Anodised aluminium cup', 'Glass chamber', 'Electrolysis chamber', 'LED indicator', '2000 mAh battery (3.7 V / 7.4 Wh)'],
+    // in the order HyperAssembly builds the bottle, bottom up
+    parts: ['Control base: LED indicator, 2000 mAh battery (3.7 V / 7.4 Wh)', 'Electrolysis chamber: platinum-titanium plates, SPE/PEM membrane', 'Glass chamber', 'Anodised aluminium cup'],
   },
   care: {
-    title: 'A little care *between refills.*',
+    title: '*A little care* between refills.',
     body: 'Follow the instructions for cleaning the bottle, charging it and caring for the electrolysis chamber. You’ll find the guide here when you need a reminder.',
     steps: [
       { title: 'Rinse', body: 'Empty and rinse the cup and glass chamber after use.' },
@@ -235,7 +247,7 @@ export const HYPER = {
     ],
   },
   faq: {
-    title: 'A few things to know *before you buy.*',
+    title: '*A few things to know* before you buy.',
     items: [
       { q: 'Does Hyper purify untreated water?', a: 'Do not use it as a substitute for water treatment. Use suitable drinking water as directed.' },
       { q: 'How long does a cycle take?', a: 'Cycle options and times appear in the product specifications and supplied guide.' },
@@ -247,15 +259,15 @@ export const HYPER = {
 /* ───────────────────────── Water testing ───────────────────────── */
 export const WATER_TESTING = {
   hero: {
-    title: 'Get to know the water *you use every day.*',
+    title: '*Get to know the water* you use every day.',
     body: 'See what a water test can tell you, check what’s available in your area and choose your next step. If you already have a report, you can share it with our team.',
   },
   scope: {
-    title: 'Know what’s included *before you book.*',
+    title: '*Know what’s included* before you book.',
     body: 'Enter your postcode to see the available testing options. Each option shows what is measured, how the sample is collected, the price and when to expect your report.',
   },
   how: {
-    title: 'Here’s what *happens next.*',
+    title: '*Here’s what* happens next.',
     steps: [
       { title: 'Choose your test', body: 'Check the scope and select an available option.' },
       { title: 'Arrange your sample', body: 'Follow the collection instructions for your booking.' },
@@ -264,15 +276,15 @@ export const WATER_TESTING = {
     ],
   },
   booking: {
-    title: 'Let’s arrange *your water test.*',
+    title: '*Let’s arrange* your water test.',
     body: 'Tell us where the sample will come from. We’ll show the available collection options and total cost before you confirm.',
   },
   upload: {
-    title: 'Already have *a water report?*',
+    title: '*Already have* a water report?',
     body: 'Share a clear copy of the complete report, including the test date. Tell us what you’d like to understand, and our team will review your enquiry.',
   },
   explain: {
-    title: 'Read the results *with context.*',
+    title: '*Read the results* with context.',
     body: 'Your report lists the parameters tested and their measured results. Read those results alongside the sample details, test date and the reference ranges used in the report. If something is unclear, ask us.',
     // illustrative layout only: shows where each column sits on a report, not real results
     sample: {
@@ -282,7 +294,7 @@ export const WATER_TESTING = {
     },
   },
   faq: {
-    title: 'Before *you book.*',
+    title: '*Before* you book.',
     items: [
       { q: 'Do I need to buy a DVINE product?', a: 'No product purchase is required to request a test.' },
       { q: 'What will the test measure?', a: 'The selected test lists its parameters before booking.' },
@@ -297,46 +309,59 @@ export const WATER_TESTING = {
 /* ───────────────────────── For business ───────────────────────── */
 export const BUSINESS = {
   hero: {
-    title: 'Water for the spaces *people share.*',
+    title: '*Water for the spaces* people share.',
     body: 'Explore Titan for your workplace, hospitality property or larger residence. Tell us about daily use and peak demand so we can help assess your requirement.',
   },
   titan: {
-    title: 'Meet *TitanForce 111.*',
+    title: '*Meet* TitanForce 111.',
     body: 'Eleven platinum-coated titanium plates. A floor-standing system with a SmartFlow multi-mode display. Designed for semi-commercial applications with greater water demand.',
     views: [
       { title: 'Front view', body: 'TitanForce 111, floor-standing.', image: '/images/titan.webp' },
       { title: 'Controls', body: 'SmartFlow multi-mode display.', image: '/images/titan-display.webp' },
     ],
+    /** the four details around Titan on the office page, from its specifications */
+    features: [
+      { icon: 'plates11', title: 'Eleven plates', body: 'Platinum-coated titanium, HydroCore ionisation for higher demand.' },
+      { icon: 'drop', title: '120 litres an hour', body: 'Continuous output for the busiest part of the day.' },
+      { icon: 'display', title: 'SmartFlow display', body: 'A multi-mode display for alkaline, neutral and functional water.' },
+      { icon: 'building', title: 'Floor-standing', body: 'A semi-commercial build for offices, hospitality and larger homes.' },
+    ],
   },
   settings: {
-    title: 'Plan around the way *your space works.*',
+    title: '*Plan around the way* your space works.',
     items: [
-      { title: 'Offices', body: 'Consider daily users, refill points and the busiest part of the day.' },
-      { title: 'Hospitality', body: 'Discuss guest areas, dining spaces and operating hours.' },
-      { title: 'Larger residences', body: 'Assess household demand and the available installation space.' },
+      { title: 'Offices', body: 'Consider daily users, refill points and the busiest part of the day.', image: '/images/titan_sec.png', alt: 'Colleagues filling glasses at TitanForce 111 in an office' },
+      { title: 'Hospitality', body: 'Discuss guest areas, dining spaces and operating hours.', image: '/images/lifestyle-drink.webp', alt: 'Two people drinking water by the sea', pos: '82% 50%' },
+      { title: 'Larger residences', body: 'Assess household demand and the available installation space.', image: '/images/titan.webp', alt: 'TitanForce 111 standing in a warm-lit room' },
     ],
   },
   setup: {
-    title: 'Get the setup right *before you order.*',
+    title: '*Get the setup right* before you order.',
     body: 'Share your location, source water and intended installation area. We’ll use those details to discuss the configuration, connections and service arrangements for your site.',
+    steps: [
+      { title: 'Site assessment', body: 'We look at your space, source water and daily demand.' },
+      { title: 'Configuration and connections', body: 'We agree the setup, water line and drain for your site.' },
+      { title: 'Installation and handover', body: 'A DVINE-trained technician installs Titan and walks your team through it.' },
+      { title: 'Service arrangements', body: 'Filter changes and servicing are planned around your site.' },
+    ],
   },
   enquiry: {
-    title: 'Tell us *what you need.*',
+    title: '*Tell us what* you need.',
     body: 'Whether it’s one location or several, share the basics and we’ll take the conversation from there.',
     settings: ['Office', 'Hospitality', 'Larger residence', 'Wellness / clinic', 'Other'],
     timelines: ['Within a month', '1–3 months', '3–6 months', 'Just exploring'],
   },
   bulk: {
-    title: 'Looking at *a larger order?*',
+    title: '*Looking at* a larger order?',
     body: 'Ask about Hyper for team or client gifting, or share a requirement for multiple DVINE products. We’ll confirm availability, quantities and delivery options in your quotation.',
   },
 };
 
 /* ───────────────────────── Support ───────────────────────── */
 export const SUPPORT = {
-  hero: { title: 'What can we *help you with?*', body: 'Find guidance for your product, ask about an order or tell us what you need help with.', topics: ['Buying', 'Delivery', 'Installation', 'Product Care'] },
+  hero: { title: '*What can we* help you with?', body: 'Find guidance for your product, ask about an order or tell us what you need help with.', topics: ['Buying', 'Delivery', 'Installation', 'Product Care'] },
   products: {
-    title: 'Choose *your product.*',
+    title: '*Choose your* product.',
     body: 'Select Crystal, Titan or Hyper to find the relevant guides, care instructions and service options.',
     items: [
       { slug: 'crystal', title: 'Crystal', body: 'Home water system · guides, care, service', image: '/images/crystal.webp' },
@@ -344,11 +369,11 @@ export const SUPPORT = {
       { slug: 'hyper', title: 'Hyper', body: 'Hydrogen bottle · guides, care, service', image: '/images/hyper.webp' },
     ],
   },
-  order: { title: 'Need help *with an order?*', body: 'Use your order details to check the current status or contact us about delivery. If installation applies to your purchase, you’ll find the next steps with your order information.' },
-  manuals: { title: 'Keep the right information *close.*', body: 'Find your operating guide, check the care instructions and read the warranty terms for your model. If something isn’t working as expected, send us the details.' },
-  contact: { title: 'Tell us *what’s happening.*', body: 'A few details will help us direct your enquiry. Choose a topic, leave your contact information and describe what you need.', topics: ['Order or delivery', 'Installation', 'Product care', 'Service request', 'Warranty', 'Buying advice', 'Other'] },
+  order: { title: '*Need help with* an order?', body: 'Use your order details to check the current status or contact us about delivery. If installation applies to your purchase, you’ll find the next steps with your order information.' },
+  manuals: { title: '*Keep the right* information close.', body: 'Find your operating guide, check the care instructions and read the warranty terms for your model. If something isn’t working as expected, send us the details.' },
+  contact: { title: '*Tell us what’s* happening.', body: 'A few details will help us direct your enquiry. Choose a topic, leave your contact information and describe what you need.', topics: ['Order or delivery', 'Installation', 'Product care', 'Service request', 'Warranty', 'Buying advice', 'Other'] },
   faq: {
-    title: 'Quick answers *before you get in touch.*',
+    title: '*Quick answers before* you get in touch.',
     items: [
       { q: 'Can I order without creating an account?', a: 'Yes. Use guest checkout and keep your order confirmation.' },
       { q: 'How do I book a water test?', a: 'Visit Water Testing to check the available service and booking options.' },

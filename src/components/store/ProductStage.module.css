@@ -6,25 +6,33 @@
 .volt { --disc: var(--color-voltage); --sq: var(--color-deep-current); }
 
 /* the faded name behind everything, as the home collection's watermark */
-.mark { position: absolute; z-index: 0; inset: auto 0 -.08em; text-align: center; pointer-events: none; user-select: none; white-space: nowrap; overflow: hidden;
+/* clipped at the frame's bottom line: the word sits as low as before (.markIn's translate) but never hangs below it */
+.mark { position: absolute; z-index: 0; inset: auto 0 0; text-align: center; pointer-events: none; user-select: none; white-space: nowrap; overflow: hidden;
   font-family: var(--font-sans); font-weight: 800; font-size: clamp(90px, 15vw, 230px); line-height: .8; letter-spacing: -.07em; color: rgb(4 111 237 / .06); }
+.markIn { display: inline-block; translate: 0 .08em; will-change: transform; }
 
 .disc { position: absolute; z-index: 1; left: 50%; top: 50%; width: 74%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; overflow: hidden; background: var(--disc); isolation: isolate;
   box-shadow: inset 0 -30px 60px -30px rgb(4 22 74 / .25); }
 .pattern { position: absolute; inset: -18%; opacity: .22; animation: drift 14s ease-in-out infinite alternate; }
 @keyframes drift { from { translate: -7% 3%; rotate: -2deg; } to { translate: 7% -3%; rotate: 2deg; } }
 .squiggle { position: absolute; z-index: 0; width: 34%; top: 2%; right: 4%; color: var(--sq); pointer-events: none; overflow: visible; }
+/* the line runs over the disc, then its tail tucks behind it: a front copy above the disc, drawn only as far as the
+   line stays clear of the disc (squiggleTuck.ts), lies over the back copy; the product stands above both */
+.front { z-index: 2; }
 
-.product { position: absolute; z-index: 2; inset: 6% 18% 10%; }
+.product { position: absolute; z-index: 3; inset: 6% 18% 10%; }
 .flash .product { inset: 4% 10% 8%; }
-.cutout { object-fit: contain; object-position: 50% 100%; filter: drop-shadow(0 26px 24px rgb(4 22 74 / .32)); animation: bob 5.5s ease-in-out infinite; }
-.flash .cutout { rotate: -26deg; object-position: 50% 50%; }
+/* .body carries the lean, the bob and the shadow, so the finish paint over the cutout (BottleFinish.tsx) moves with it */
+.body { position: absolute; inset: 0; filter: drop-shadow(0 26px 24px rgb(4 22 74 / .32)); animation: bob 5.5s ease-in-out infinite; }
+.flash .body { rotate: -26deg; }
+.cutout { object-fit: contain; object-position: 50% 100%; }
+.flash .cutout { object-position: 50% 50%; }
 .shadow { position: absolute; left: 26%; right: 26%; bottom: 0; height: 6%; border-radius: 50%; background: radial-gradient(closest-side, rgb(4 22 74 / .38), transparent); animation: shadow 5.5s ease-in-out infinite; }
 @keyframes bob { 50% { translate: 0 -12px; } }
 @keyframes shadow { 50% { scale: .82; opacity: .65; } }
 
 /* a photo slide covers the disc */
-.photo { position: absolute; inset: 0; z-index: 3; opacity: 0; transition: opacity .6s cubic-bezier(.22,1,.36,1), scale 1.2s cubic-bezier(.22,1,.36,1); scale: 1.06; }
+.photo { position: absolute; inset: 0; z-index: 4; opacity: 0; transition: opacity .6s cubic-bezier(.22,1,.36,1), scale 1.2s cubic-bezier(.22,1,.36,1); scale: 1.06; }
 .photo.on { opacity: 1; scale: 1; }
 .photo img { object-fit: cover; }
 
@@ -39,8 +47,17 @@
 .thumb[aria-pressed="true"] { border-color: var(--color-ink); box-shadow: 0 0 0 3px var(--disc); }
 .thumb img { object-fit: cover; }
 .thumbDisc { position: absolute; inset: 14%; border-radius: 50%; background: var(--disc); }
-.thumb .thumbCut { object-fit: contain; padding: 8%; }
-.flash .thumb .thumbCut { rotate: -26deg; }
+.thumbBody { position: absolute; inset: 8%; }
+.flash .thumbBody { rotate: -26deg; }
+.thumb .thumbBody img { object-fit: contain; object-position: 50% 50%; }
 
-@media (prefers-reduced-motion: reduce) { .pattern, .cutout, .shadow { animation: none; } .photo { transition: none; } }
+/* PageStage.tsx: a photo held in the disc, with a fine white rim and a slow drift */
+.porthole { z-index: 1; width: 78%; box-shadow: 0 0 0 10px #fff, 0 0 0 11px rgb(4 22 74 / .08), 0 40px 60px -30px rgb(4 22 74 / .45); }
+.portholeIn { position: absolute; inset: 0; display: block; animation: porthole 16s ease-in-out infinite alternate; }
+.portholeIn > * { width: 100%; height: 100%; object-fit: cover; }
+@keyframes porthole { from { translate: -2% 1%; } to { translate: 2% -1%; } }
+.badge { position: absolute; z-index: 5; right: -6px; bottom: -18px; width: clamp(110px, 11vw, 150px); }
+@media (min-width: 640px) { .badge { right: -22px; } }
+
+@media (prefers-reduced-motion: reduce) { .pattern, .body, .shadow, .portholeIn { animation: none; } .photo { transition: none; } }
 @media (min-width: 640px) { .sticker { right: -10px; } }

@@ -1,0 +1,75 @@
+/* Shared section devices for the inner pages (office, water testing, partner), taken from the Crystal and Hyper
+   pages so every page moves and sits the same way: wave bands that overlap, callouts that light up with the
+   scroll, ripple chips, numbered parts and ruled steps. */
+
+/* pulled up under the wave band above (4 × WaveBand's edge amplitude), so the bands' wavy edges cross with no
+   paper between them, as Hyper's technology band does */
+.overlap { margin-top: calc(-1 * clamp(104px, 15vw, 236px)); }
+/* room inside a band for its wavy edges: copy never sits on, or straight across, an edge */
+.bandPad { padding-block: clamp(200px, 22vw, 320px); }
+.bandTop { padding-top: clamp(140px, 16vw, 220px); padding-bottom: clamp(200px, 22vw, 320px); }
+.bandUnder { padding-top: clamp(150px, 15vw, 250px); padding-bottom: clamp(200px, 22vw, 320px); }
+/* copy on a Glacier wave band, as .surface-glacier */
+.glacierCopy :global(.lede) { color: rgb(4 22 74 / .78); }
+/* a quiet darkening behind copy on a deep band, so the crossing lines don't fight the text */
+.scrim { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(60% 50% at 30% 50%, rgb(3 12 48 / .5), transparent 75%); }
+@media (max-width: 1023px) { .scrim { background: rgb(3 12 48 / .3); } }
+
+/* callouts that light up one by one (LightUp.tsx), as Crystal's key features: dim until lit, then the copy comes
+   to full ink and the chip fills Ink with a Glacier icon */
+.armed .callout { opacity: calc(.3 + .7 * var(--lit, 0)); }
+.armed .callout .chip { background: color-mix(in srgb, var(--color-ink) calc(var(--lit, 0) * 100%), #fff);
+  color: color-mix(in srgb, var(--color-glacier) calc(var(--lit, 0) * 100%), var(--color-deep-current));
+  scale: calc(1 + .08 * var(--lit, 0));
+  box-shadow: 0 0 0 calc(6px * var(--lit, 0)) rgb(255 255 255 / calc(.55 * var(--lit, 0))), 0 14px 30px -14px rgb(4 22 74 / calc(.6 * var(--lit, 0))); }
+.armed .callout:not(.lit) .chip::before, .armed .callout:not(.lit) .chip::after, .armed .callout:not(.lit) .chip > svg { animation: none; }
+
+/* icon chip: two soft ripples leave the chip in turn, the icon bobs and tilts; hover fills it Ink */
+.chip { position: relative; display: grid; place-items: center; flex: none; width: 56px; height: 56px; border-radius: 50%;
+  background: #fff; color: var(--color-deep-current); box-shadow: 0 10px 24px -14px rgb(4 22 74 / .5);
+  transition: background .5s cubic-bezier(.22,1,.36,1), color .5s, scale .5s cubic-bezier(.22,1,.36,1), box-shadow .5s; }
+.chip::before, .chip::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid rgb(4 22 74 / .3);
+  opacity: 0; pointer-events: none; animation: ripple 4.8s cubic-bezier(.22,1,.36,1) infinite; animation-delay: var(--d, 0s); }
+.chip::after { animation-delay: calc(var(--d, 0s) + 2.4s); }
+.chip > svg { animation: bob 4.8s ease-in-out infinite; animation-delay: var(--d, 0s); }
+.callout:hover .chip { background: var(--color-ink); color: var(--color-glacier); scale: 1.08; }
+/* the chip on paper, in the page's accent */
+.chipTone { background: var(--tone, var(--color-glacier)); color: var(--color-ink); }
+
+@keyframes ripple { 0% { opacity: .9; scale: 1; } 70%, 100% { opacity: 0; scale: 1.85; } }
+@keyframes bob { 0%, 100% { translate: 0 0; rotate: 0deg; } 30% { translate: 0 -3px; rotate: -6deg; } 60% { translate: 0 1px; rotate: 4deg; } }
+
+/* the circle behind a product breathes, and a hairline ring around it breathes out of step */
+.disc { animation: breathe 7s ease-in-out infinite; }
+.ring { border: 1.5px solid rgb(4 22 74 / .16); animation: breathe-ring 7s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { scale: 1; translate: 0 0; } 50% { scale: 1.04; translate: 0 -8px; } }
+@keyframes breathe-ring { 0%, 100% { scale: 1.08; opacity: .9; } 50% { scale: 1.015; opacity: .35; } }
+
+/* numbered parts on a deep band, lit one by one, as Hyper's technology: the row comes to full white, its number
+   chip fills Voltage and its rule draws across */
+.part { position: relative; display: flex; align-items: center; gap: 16px; padding: 14px 0; font-family: var(--font-sans); font-size: 15px; }
+.part::before { content: ""; position: absolute; inset: 0 0 auto; height: 1px; background: rgb(255 255 255 / .2); }
+.part::after { content: ""; position: absolute; inset: 0 0 auto; height: 1px; background: var(--color-voltage); transform-origin: left; scale: var(--lit, 1) 1; }
+.num { display: grid; place-items: center; flex: none; width: 32px; height: 32px; font-size: 13px; font-weight: 700; background: var(--color-voltage); color: var(--color-ink);
+  transition: translate .45s cubic-bezier(.22,1,.36,1), rotate .45s cubic-bezier(.22,1,.36,1); }
+.part:hover .num { translate: 0 -2px; rotate: -6deg; }
+.armed .part { color: rgb(255 255 255 / calc(.4 + .6 * var(--lit, 0))); }
+.armed .num { background: color-mix(in srgb, var(--color-voltage) calc(var(--lit, 0) * 100%), rgb(255 255 255 / .1));
+  color: color-mix(in srgb, var(--color-ink) calc(var(--lit, 0) * 100%), #fff); scale: calc(.86 + .14 * var(--lit, 0)); }
+.lit .num { box-shadow: 0 0 0 4px rgb(240 255 0 / .14); }
+
+/* ruled tiles (benefits, tests): the rule thickens and the number slides along on hover */
+.tile { position: relative; padding-top: 24px; }
+.tile::before { content: ""; position: absolute; inset: 0 0 auto; height: 2px; background: var(--color-ink); transition: height .4s cubic-bezier(.22,1,.36,1); }
+.tile:hover::before { height: 4px; }
+.tileN { display: inline-block; transition: translate .45s cubic-bezier(.22,1,.36,1), color .45s; }
+.tile:hover .tileN { translate: 6px 0; color: var(--color-ink); }
+
+/* photo cards with a tag under them (Hyper's everyday): the tag leans as you reach for the photo */
+.tag { display: inline-block; transition: rotate .5s cubic-bezier(.22,1,.36,1), translate .5s cubic-bezier(.22,1,.36,1); }
+.card:hover .tag { rotate: -2deg; translate: 4px -3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .chip::before, .chip::after, .chip > svg, .disc, .ring { animation: none; }
+  .num, .tag, .tileN, .tile::before { transition: none; }
+}

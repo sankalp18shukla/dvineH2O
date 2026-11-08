@@ -21,6 +21,9 @@ import { getProduct } from '@/lib/catalog';
 import { formatINR } from '@/lib/money';
 import { productJsonLd } from '@/lib/seo';
 import { Facts, Lockup, Squiggle } from '@/components/ui/Brand';
+import { WaveBand } from '@/components/store/WaveBand';
+import { LightUp } from '@/components/store/LightUp';
+import css from './crystal.module.css';
 
 /** Rendered per request: reads the catalog, which needs a live database. */
 export const dynamic = 'force-dynamic';
@@ -35,20 +38,13 @@ const FLOW = [
   { icon: 'screen', label: 'Touchscreen', body: 'Mode, pH, ORP and filter status' },
 ];
 
-/** One feature callout on the Crystal diagram: number, icon, title and line, with a pinned leader line to the machine. */
+/** One feature callout on the Crystal diagram: an animated icon chip, title and line. `n` is its turn to light up. */
 function Callout({ c, n, side }: { c: (typeof CRYSTAL.features.cards)[number]; n: number; side: 'l' | 'r' }) {
   return (
-    <div className={`relative flex flex-col ${side === 'l' ? 'lg:items-end lg:text-right' : 'lg:items-start'}`} data-rise>
-      <div className={`flex items-center gap-3 ${side === 'l' ? 'lg:flex-row-reverse' : ''}`}>
-        <span className="grid size-12 place-items-center rounded-full bg-white text-deep-current shadow-[0_10px_24px_-14px_rgb(4_22_74/.5)]"><Icon name={c.icon} className="size-6" strokeWidth={1.4} /></span>
-        <span className="font-serif text-[22px] italic text-deep-current">0{n}</span>
-      </div>
-      <h3 className="mt-4 font-sans text-[22px] font-bold tracking-[-0.03em] sm:text-[26px]">{c.title}</h3>
+    <div className={`${css.callout} relative flex flex-col ${side === 'l' ? 'lg:items-end lg:text-right' : 'lg:items-start'}`} data-light={n} data-rise>
+      <span className={css.chip} style={{ ['--d' as string]: `${n * -1.2}s` }}><Icon name={c.icon} className="size-6" strokeWidth={1.4} /></span>
+      <h3 className="mt-5 font-sans text-[22px] font-bold tracking-[-0.03em] sm:text-[26px]">{c.title}</h3>
       <p className="mt-2 max-w-[19rem] text-[17px] leading-snug text-ink/75">{c.body}</p>
-      {/* leader line from the copy to the machine, with the brand pin head at the machine end */}
-      <span className={`absolute top-6 hidden h-[2px] w-[clamp(40px,5vw,96px)] bg-ink lg:block ${side === 'l' ? 'left-full ml-5' : 'right-full mr-5'}`} data-draw={side === 'l' ? 'x' : 'x-rev'} aria-hidden="true">
-        <span className={`absolute -top-[5px] size-3 rounded-full bg-deep-current ${side === 'l' ? '-right-1.5' : '-left-1.5'}`} />
-      </span>
     </div>
   );
 }
@@ -66,30 +62,34 @@ export default async function CrystalPage() {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(p, '/home-water-systems')) }} />
 
         {/* 01 · Hero: gallery left, purchase right */}
-        <ProductHero name="Crystal" title="Crystal. *Made for your kitchen.*" tone="glacier" sticker={'Soft Launching\n“My Water Era.”'} body={CRYSTAL.hero.body}
+        <ProductHero name="Crystal" title="Home water system" tone="glacier" sticker={'Soft Launching\n“My Water Era.”'} body={CRYSTAL.hero.body}
           cutout="/images/crystal_product.png" images={p.images ?? CRYSTAL.hero.gallery} alt="Crystal home water system">
           <BuyBox p={p} tone="glacier" secondary={{ href: '/book-demo?product=crystal', label: 'Book a Demo' }} />
         </ProductHero>
 
-        {/* 02 · Key features: Crystal in the middle, the four details pinned to it with leader lines that draw in */}
-        <section id="features" className="surface-glacier section relative overflow-hidden" aria-labelledby="feat-title">
-          <div className="container-x">
+        {/* 02 · Key features: Crystal in the middle, the four details around it, over the Glacier wave band (its edges
+            are wave lines that drift with the scroll and part around the pointer, as on the home page's Meet DVINE) */}
+        <section id="features" className={`on-glacier relative overflow-clip pt-32 pb-[clamp(200px,22vw,320px)] text-ink sm:pt-44`} aria-labelledby="feat-title">
+          <WaveBand tone="glacier" interactive />
+          <div className="container-x relative">
             <SectionHead id="feat-title" tone="blue" title={CRYSTAL.features.title} align="center" />
-            <div className="grid items-center gap-12 lg:grid-cols-[1fr_minmax(260px,400px)_1fr] lg:gap-[clamp(64px,7vw,128px)]">
-              <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[0]} n={1} side="l" /><Callout c={f[1]} n={2} side="l" /></div>
+            {/* the four light up one by one with the scroll, row by row: top left, top right, bottom left, bottom right */}
+            <LightUp armClass={css.armed} litClass={css.lit} className="grid items-center gap-12 lg:grid-cols-[1fr_minmax(260px,400px)_1fr] lg:gap-[clamp(64px,7vw,128px)]">
+              <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[0]} n={0} side="l" /><Callout c={f[1]} n={2} side="l" /></div>
               <div className="relative order-first mx-auto aspect-[4/5] w-full max-w-[400px] lg:order-none" data-speed="-.4">
-                <span className="absolute inset-x-[4%] top-[12%] aspect-square rounded-full bg-white/70 shadow-[inset_0_-30px_60px_-30px_rgb(4_22_74/.18)]" aria-hidden="true" />
+                <span className={`${css.ring} absolute inset-x-[4%] top-[12%] aspect-square rounded-full`} aria-hidden="true" />
+                <span className={`${css.disc} absolute inset-x-[4%] top-[12%] aspect-square rounded-full bg-white/70 shadow-[inset_0_-30px_60px_-30px_rgb(4_22_74/.18)]`} aria-hidden="true" />
                 <Squiggle className="pointer-events-none absolute -top-4 -right-10 w-36 text-deep-current" />
                 <Image src="/images/crystal_product.png" alt="Crystal, front view" fill sizes="400px" className="object-contain object-bottom drop-shadow-[0_30px_30px_rgb(4_22_74/.3)]" />
               </div>
-              <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[2]} n={3} side="r" /><Callout c={f[3]} n={4} side="r" /></div>
-            </div>
+              <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[2]} n={1} side="r" /><Callout c={f[3]} n={3} side="r" /></div>
+            </LightUp>
             <div className="mt-16 flex justify-center" data-rise><Cta href="#specs" kind="ink">See Specifications</Cta></div>
           </div>
         </section>
 
         {/* 03 · Water modes: a dial that turns with the scroll */}
-        <ModeDial title={CRYSTAL.modes.title} items={CRYSTAL.modes.items} note={CRYSTAL.modes.note}>
+        <ModeDial overlap title={CRYSTAL.modes.title} items={CRYSTAL.modes.items} note={CRYSTAL.modes.note}>
           <Cta href={guide} tone="glacier" icon="doc">View Operating Guide</Cta>
         </ModeDial>
 
@@ -127,7 +127,7 @@ export default async function CrystalPage() {
         <section id="specs" className="section pt-0" aria-labelledby="spec-title">
           <div className="container-x">
             <SectionHead id="spec-title" tone="glacier" title={CRYSTAL.fit.title} body={CRYSTAL.fit.body}>
-              <div className="cta-row" data-rise><Cta href="#setup" kind="ink">Check My Setup</Cta><Cta href="#full-specs" kind="glass">View Full Specifications</Cta></div>
+              <div className="cta-row" data-rise><Cta href="#setup" kind="ink">Check My Setup</Cta></div>
             </SectionHead>
             <div className="grid gap-14 lg:grid-cols-[1fr_1.25fr]">
               <div data-reveal>
@@ -139,7 +139,14 @@ export default async function CrystalPage() {
             </div>
             <div id="setup" className="pin-frame relative mt-24 scroll-mt-32" style={{ ['--pin' as string]: 'var(--color-glacier)' }}>
               <div className="relative grid gap-10 bg-white p-6 sm:p-12 lg:grid-cols-[1fr_1.3fr]">
-                <div><Lockup title={CRYSTAL.fit.setup.title} tone="glacier" size="sm" /><p className="lede mt-8" data-words><Words text={CRYSTAL.fit.setup.body} /></p></div>
+                <div className="flex flex-col">
+                  <Lockup title={CRYSTAL.fit.setup.title} tone="glacier" size="sm" />
+                  <p className="lede mt-8" data-words><Words text={CRYSTAL.fit.setup.body} /></p>
+                  {/* fills the column down to the foot of the form */}
+                  <div className="relative mt-10 aspect-[4/5] overflow-hidden lg:aspect-auto lg:min-h-[320px] lg:flex-1" data-reveal>
+                    <Image src="/images/crystal_sec.png" alt="Crystal on a kitchen counter beside the window" fill sizes="(min-width:1024px) 38vw, 100vw" className="object-cover object-[50%_35%]" />
+                  </div>
+                </div>
                 <EnquiryForm variant="product" source="/home-water-systems#setup" defaultInterest="crystal" submitLabel="Check My Setup" photos />
               </div>
             </div>
@@ -147,8 +154,9 @@ export default async function CrystalPage() {
         </section>
 
         {/* 06 · Delivery and care */}
-        <section id="delivery" className="surface-glacier section" aria-labelledby="del-title">
-          <div className="container-x grid items-start gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
+        <section id="delivery" className={`${css.glacierCopy} relative overflow-clip py-32 text-ink sm:py-44`} aria-labelledby="del-title">
+          <WaveBand tone="glacier" interactive />
+          <div className="container-x relative grid items-start gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
             <div>
               <Lockup id="del-title" title={CRYSTAL.delivery.title} tone="volt" size="md" />
               <p className="lede mt-9" data-words><Words text={CRYSTAL.delivery.body} /></p>

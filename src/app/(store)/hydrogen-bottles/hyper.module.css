@@ -1,0 +1,44 @@
+/* Hyper page (page.tsx): the wave bands overlap one another, and the small motions inside them. */
+
+/* pulled up under the wave band above, far enough (4 × WaveBand's edge amplitude) that this band's wavy top edge
+   always lies over the band above, as Crystal's water modes do: no paper shows between them, only crossing waves */
+.overlap { margin-top: calc(-1 * clamp(104px, 15vw, 236px)); }
+/* room inside a band for its wavy edges: copy never sits on, or straight across, an edge */
+.bandPad { padding-block: clamp(200px, 22vw, 320px); }
+/* copy on a Glacier wave band, as .surface-glacier */
+.glacierCopy :global(.lede) { color: rgb(4 22 74 / .78); }
+/* a band that laps over the one above: its top edge is already clear of that band's copy, so it needs less */
+.bandUnder { padding-top: clamp(150px, 15vw, 250px); padding-bottom: clamp(200px, 22vw, 320px); }
+.bandTop { padding-top: clamp(140px, 16vw, 220px); padding-bottom: clamp(200px, 22vw, 320px); }
+
+/* a quiet darkening behind the copy, so the crossing lines don't fight the text */
+.scrim { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(60% 50% at 70% 50%, rgb(3 12 48 / .5), transparent 75%); }
+@media (max-width: 1023px) { .scrim { background: rgb(3 12 48 / .3); } }
+
+/* 04 · parts light up one by one with the scroll (LightUp.tsx): the row comes to full white, its number chip fills
+   Voltage and its rule draws across from the left */
+.part { position: relative; display: flex; align-items: center; gap: 16px; padding: 14px 0; font-family: var(--font-sans); font-size: 15px; }
+.part::before { content: ""; position: absolute; inset: 0 0 auto; height: 1px; background: rgb(255 255 255 / .2); }
+.part::after { content: ""; position: absolute; inset: 0 0 auto; height: 1px; background: var(--color-voltage); transform-origin: left; scale: var(--lit, 1) 1; }
+.num { display: grid; place-items: center; flex: none; width: 32px; height: 32px; font-size: 13px; font-weight: 700; background: var(--color-voltage); color: var(--color-ink);
+  transition: translate .45s cubic-bezier(.22,1,.36,1), rotate .45s cubic-bezier(.22,1,.36,1); }
+.part:hover .num { translate: 0 -2px; rotate: -6deg; }
+.armed .part { color: rgb(255 255 255 / calc(.4 + .6 * var(--lit, 0))); }
+.armed .num { background: color-mix(in srgb, var(--color-voltage) calc(var(--lit, 0) * 100%), rgb(255 255 255 / .1));
+  color: color-mix(in srgb, var(--color-ink) calc(var(--lit, 0) * 100%), #fff); scale: calc(.86 + .14 * var(--lit, 0)); }
+.lit .num { box-shadow: 0 0 0 4px rgb(240 255 0 / .14); }
+
+/* 02 · the tag under each photo leans a touch as you reach for the photo */
+.tag { display: inline-block; transition: rotate .5s cubic-bezier(.22,1,.36,1), translate .5s cubic-bezier(.22,1,.36,1); }
+.card:hover .tag { rotate: -2deg; translate: 4px -3px; }
+
+/* 05 · care steps: the number slides along and the rule thickens on hover */
+.care { position: relative; padding-top: 16px; }
+.care::before { content: ""; position: absolute; inset: 0 0 auto; height: 2px; background: var(--color-ink); transition: height .4s cubic-bezier(.22,1,.36,1); }
+.care:hover::before { height: 4px; }
+.careN { display: inline-block; transition: translate .45s cubic-bezier(.22,1,.36,1), color .45s; }
+.care:hover .careN { translate: 6px 0; color: var(--color-ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .num, .tag, .careN, .care::before { transition: none; }
+}

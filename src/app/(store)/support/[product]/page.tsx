@@ -9,6 +9,7 @@ import { Icon } from '@/components/ui/Icon';
 import { CRYSTAL, HYPER, SUPPORT } from '@/lib/content';
 import { getProduct } from '@/lib/catalog';
 import { Lockup, Steps } from '@/components/ui/Brand';
+import { WaveBand } from '@/components/store/WaveBand';
 
 /** Rendered per request: reads the catalog, which needs a live database. */
 export const dynamic = 'force-dynamic';
@@ -50,8 +51,10 @@ export default async function ProductSupport({ params }: { params: Promise<{ pro
             <div className="pin-frame relative aspect-[16/10] bg-stage" style={{ ['--pin' as string]: PIN[slug] }}><div className="absolute inset-0 overflow-hidden"><Image src={g.image} alt="" fill sizes="(min-width:1024px) 50vw, 100vw" className="object-cover" /></div></div>
           </div>
         </section>
-        <section className="surface-glacier section">
-          <div className="container-x grid gap-14 lg:grid-cols-2 lg:gap-20">
+        {/* care: over the moving Glacier wave band (wavy edges, lines drifting with the scroll and the pointer) */}
+        <section className="on-glacier relative overflow-clip py-32 text-ink sm:py-44">
+          <WaveBand tone="glacier" interactive />
+          <div className="container-x relative grid gap-14 lg:grid-cols-2 lg:gap-20">
             <div><Lockup title="*Care,* in short." tone="blue" size="md" /><Steps className="mt-10" items={g.care.map(title => ({ title }))} /></div>
             {p?.specs && <dl className="self-start divide-y divide-ink/15 border-t-2 border-ink">{p.specs.map(s => <div key={s.label} className="grid grid-cols-[140px_1fr] gap-4 py-3.5 font-sans text-sm"><dt className="text-ink/70">{s.label}</dt><dd className="font-medium">{s.value}</dd></div>)}</dl>}
           </div>

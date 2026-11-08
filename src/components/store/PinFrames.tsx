@@ -24,6 +24,7 @@ export function PinFrames() {
       };
       frames.forEach(f => {
         set(f, 0);
+        f.classList.add('m-on'); // start state set: lift the first-paint gate (globals.css)
         const o = { v: 0 };
         gsap.to(o, { v: 1, ease: 'power3.inOut', onUpdate: () => set(f, o.v),
           scrollTrigger: { trigger: f, start: 'top 92%', end: 'top 38%', scrub: .8 } });

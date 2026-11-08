@@ -1,49 +1,73 @@
 /* Crystal 03 · Water modes (ModeDial.tsx). Stacked by default; on desktop the script adds .h: a tall track
    with a sticky stage, the ring turning with the scroll. */
-.section { position: relative; overflow: clip; color: #fff; }
-.stage { position: relative; display: flex; align-items: center; padding-block: clamp(96px, 12vw, 160px); }
-.h { height: 320svh; }
-.h .stage { position: sticky; top: 76px; height: calc(100svh - 76px); padding-block: 0; overflow: clip; }
+/* --bleed: how far the wave band runs past the stage at each end, so its wavy edges sit well clear of the copy.
+   It is the section's padding, and the band hangs that far above and below the (sticky) stage. */
+.section { --bleed: clamp(120px, 14vw, 240px); position: relative; overflow: clip; color: #fff; padding-block: var(--bleed); }
+.stage { position: relative; display: flex; align-items: center; padding-block: clamp(8px, 3vw, 40px); }
+.band { position: absolute; inset: calc(-1 * var(--bleed)) 0; pointer-events: none; }
+/* `overlap`: pulled up under the wave band above, far enough (4 × WaveBand's edge amplitude) that this band's wavy
+   top edge always lies over the band above, so no page shows between the two */
+.overlap { margin-top: calc(-1 * clamp(104px, 15vw, 236px)); }
+/* a quiet darkening behind the copy column so the wave lines don't fight the text */
+.scrim { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgb(3 12 48 / .55), rgb(3 12 48 / .3) 45%, transparent 70%);
+  -webkit-mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent); mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent); }
+@media (max-width: 1023px) { .scrim { background: rgb(3 12 48 / .35); } }
+.h { height: calc(320svh + 2 * var(--bleed)); }
+.h .stage { position: sticky; top: 76px; height: calc(100svh - 76px); padding-block: 0; align-items: stretch; }
+/* Pinned: the grid fills the stage and the copy column hangs from a fixed top. Centred, it re-centred every time a
+   row opened and another closed (their lines differ in height), so the whole column bobbed while scrolling. */
+.h .grid { height: 100%; }
+.h .grid > :first-child { align-self: start; padding-top: max(24px, calc((100svh - 76px - 700px) / 2)); }
 
 .grid { position: relative; display: grid; gap: clamp(48px, 6vw, 96px); align-items: center; width: 100%; }
 @media (min-width: 1024px) { .grid { grid-template-columns: 1fr 1fr; } }
 
-/* the colour of the selected mode washes the band */
-.wash { position: absolute; inset: 0; pointer-events: none; transition: background 1s cubic-bezier(.22,1,.36,1); }
 
 .list { list-style: none; margin: clamp(28px, 4svh, 44px) 0 0; padding: 0; border-top: 1px solid rgb(255 255 255 / .18); }
-.row { border-bottom: 1px solid rgb(255 255 255 / .18); }
-.tab { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 18px; width: 100%; padding: 16px 0; text-align: left; cursor: pointer; color: rgb(255 255 255 / .5); transition: color .5s; }
+.row { border-bottom: 1px solid rgb(255 255 255 / .22); }
+.tab { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 18px; width: 100%; padding: 16px 0; text-align: left; cursor: pointer; color: rgb(255 255 255 / .68); transition: color .5s; }
 .tab:hover { color: rgb(255 255 255 / .85); }
-.dot { width: 12px; height: 12px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 rgb(0 0 0 / 0); transition: box-shadow .6s, scale .6s; }
+.dot { width: 12px; height: 12px; border-radius: 50%; background: var(--c); outline: 1px solid transparent; outline-offset: 4px; transition: outline-color .6s, scale .6s; }
 .name { font-family: var(--font-sans); font-weight: 700; font-size: clamp(24px, 2.4vw, 34px); letter-spacing: -.035em; line-height: 1.05; }
 .num { font-family: var(--font-serif); font-style: italic; font-size: 18px; opacity: .7; }
 .on .tab { color: #fff; }
-.on .dot { scale: 1.35; box-shadow: 0 0 18px var(--c), 0 0 4px var(--c); }
+.on .dot { scale: 1.15; outline-color: var(--c); }
 /* the selected mode's line opens under its name */
 .more { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .6s cubic-bezier(.22,1,.36,1); }
 .on .more { grid-template-rows: 1fr; }
-.more > p { overflow: hidden; margin: 0; padding-left: 30px; font-family: var(--font-serif); font-style: italic; font-size: clamp(19px, 1.6vw, 23px); line-height: 1.35; color: rgb(240 242 247 / .86); }
-.on .more > p { padding-bottom: 18px; }
+.more > p { overflow: hidden; margin: 0; padding-left: 30px; font-family: var(--font-serif); font-style: italic; font-size: clamp(19px, 1.6vw, 23px); line-height: 1.35; color: #fff; }
+/* the 18px under the line is part of the text, so it folds away with the row: as padding it snapped on .on, and a
+   shut row kept it, so the next row's opening lagged the last one's closing and the rows below bobbed */
+.more > p::after { content: ""; display: block; height: 18px; }
 
-.note { margin-top: 26px; max-width: 30rem; padding-left: 16px; border-left: 2px solid var(--color-voltage); font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: rgb(255 255 255 / .8); }
+.note { margin-top: 26px; max-width: 30rem; padding-left: 16px; border-left: 2px solid var(--color-voltage); font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: rgb(255 255 255 / .92); }
 
-/* ── the dial ── */
+/* ── the dial: an instrument, not a glow. Hairline rings, a ticked bezel that turns with the orbs, flat discs. ── */
 .dial { position: relative; width: min(100%, 520px); aspect-ratio: 1; justify-self: center; }
 .h .dial { width: min(100%, 520px, 62svh); }
 .ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.index { transition: fill .6s; }
 .orbit { position: absolute; inset: 0; rotate: var(--rot, 0deg); transition: rotate .9s cubic-bezier(.22,1,.36,1); }
 .h .orbit { rotate: none; transition: none; }
-.orb { position: absolute; left: 50%; top: 50%; width: 14%; aspect-ratio: 1; border-radius: 50%; background: var(--c);
-  translate: -50% -50%; transform: rotate(var(--a)) translateY(-250%) scale(var(--s, .78)); opacity: .32; transition: opacity .6s, transform .6s; }
-.orb.lit { opacity: 1; --s: 1.18; box-shadow: 0 0 50px var(--c), 0 0 14px var(--c); }
-.core { position: absolute; inset: 27%; display: grid; place-items: center; align-content: center; gap: 6px; border-radius: 50%; text-align: center;
-  background: radial-gradient(circle at 35% 30%, rgb(255 255 255 / .16), rgb(255 255 255 / .04) 60%);
-  background-color: rgb(8 30 90 / .55); box-shadow: inset 0 1px 0 rgb(255 255 255 / .35), inset 0 0 0 1px rgb(255 255 255 / .14), 0 30px 60px -30px rgb(0 0 0 / .6); }
+/* unlit: a small outlined disc; lit: filled in its colour with a fine concentric ring */
+.orb { position: absolute; left: 50%; top: 50%; width: 11%; aspect-ratio: 1; border-radius: 50%;
+  background: transparent; border: 1.5px solid color-mix(in srgb, var(--c) 70%, transparent);
+  outline: 1px solid transparent; outline-offset: 5px;
+  translate: -50% -50%; transform: rotate(var(--a)) translateY(-318%) scale(var(--s, .62)); opacity: .55;
+  transition: opacity .6s, transform .7s cubic-bezier(.22,1,.36,1), background-color .6s, outline-color .6s, box-shadow .6s; }
+/* the selected disc glows up in its colour, breathing gently while it rests at the top */
+.orb.lit { opacity: 1; --s: 1; background: var(--c); border-color: var(--c); outline-color: color-mix(in srgb, var(--c) 55%, transparent);
+  box-shadow: 0 0 18px 2px color-mix(in srgb, var(--c) 75%, transparent), 0 0 56px 8px color-mix(in srgb, var(--c) 35%, transparent);
+  animation: orb-glow 3.2s ease-in-out infinite; }
+@keyframes orb-glow { 50% { box-shadow: 0 0 26px 4px color-mix(in srgb, var(--c) 85%, transparent), 0 0 80px 14px color-mix(in srgb, var(--c) 45%, transparent); } }
+.core { position: absolute; inset: 28%; display: grid; place-items: center; align-content: center; gap: 6px; border-radius: 50%; text-align: center;
+  background: rgb(3 14 54 / .72); border: 1px solid rgb(255 255 255 / .14); }
+/* a hairline in the selected mode's colour just outside the core */
+.core::before { content: ""; position: absolute; inset: -14px; border-radius: 50%; border: 1px solid var(--c); opacity: .5; transition: border-color .6s; }
 .coreNum { font-family: var(--font-sans); font-weight: 800; font-size: clamp(54px, 7vw, 96px); line-height: .9; letter-spacing: -.06em; }
-.coreName { font-family: var(--font-serif); font-style: italic; font-size: clamp(20px, 2vw, 28px); color: var(--c); text-shadow: 0 0 18px rgb(0 0 0 / .35); }
+.coreName { font-family: var(--font-serif); font-style: italic; font-size: clamp(20px, 2vw, 28px); color: color-mix(in srgb, var(--c) 45%, #fff); }
 .coreNum, .coreName { transition: color .6s; }
 .swap { animation: swap .6s cubic-bezier(.22,1,.36,1); }
 @keyframes swap { from { opacity: 0; translate: 0 14px; } }
 
-@media (prefers-reduced-motion: reduce) { .orbit, .more, .wash { transition: none; } .swap { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .orbit, .more { transition: none; } .orb.lit { animation: none; } .swap { animation: none; } }

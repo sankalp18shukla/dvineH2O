@@ -45,7 +45,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
       <Preloader model={HERO_SLIDES[0].model} />
       <SmoothScroll />
       <Header framed home ribbon={ribbon} />
-      <main id="main">
+      {/* data-home: keeps the homepage out of the inner-page headline rules (globals.css, LockupFit.tsx) */}
+      <main id="main" data-home>
         <h1 className="sr-only">DVINE H2O — functional hydration for home, on the go and business</h1>
         <HeroShowcase slides={HERO_SLIDES} promos={promos} />
 

@@ -1,0 +1,51 @@
+/* Crystal 02 · Key features (page.tsx): the icon chips and the circle behind the machine move gently on their own. */
+
+/* copy on a Glacier wave band (as .surface-glacier) */
+.glacierCopy :global(.lede) { color: rgb(4 22 74 / .78); }
+
+/* lighting up (LightUp.tsx): once armed, each callout waits dim with a plain white chip and eases up with its
+   --lit (0 → 1, scrubbed): the copy comes to full ink, the chip fills Ink with a Glacier icon and gains a fine
+   white ring. Its ripples and bob start once it is more than half lit (.lit). */
+.armed .callout { opacity: calc(.3 + .7 * var(--lit, 0)); }
+.armed .callout .chip { background: color-mix(in srgb, var(--color-ink) calc(var(--lit, 0) * 100%), #fff);
+  color: color-mix(in srgb, var(--color-glacier) calc(var(--lit, 0) * 100%), var(--color-deep-current));
+  scale: calc(1 + .08 * var(--lit, 0));
+  box-shadow: 0 0 0 calc(6px * var(--lit, 0)) rgb(255 255 255 / calc(.55 * var(--lit, 0))), 0 14px 30px -14px rgb(4 22 74 / calc(.6 * var(--lit, 0))); }
+.armed .callout:not(.lit) .chip::before, .armed .callout:not(.lit) .chip::after, .armed .callout:not(.lit) .chip > svg { animation: none; }
+
+/* icon chip: two soft ripples leave the chip in turn, the icon bobs and tilts; hover fills the chip Ink */
+.chip { position: relative; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%;
+  background: #fff; color: var(--color-deep-current); box-shadow: 0 10px 24px -14px rgb(4 22 74 / .5);
+  transition: background .5s cubic-bezier(.22,1,.36,1), color .5s, scale .5s cubic-bezier(.22,1,.36,1); }
+.chip::before, .chip::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid rgb(4 22 74 / .3);
+  opacity: 0; pointer-events: none; animation: ripple 4.8s cubic-bezier(.22,1,.36,1) infinite; animation-delay: var(--d, 0s); }
+.chip::after { animation-delay: calc(var(--d, 0s) + 2.4s); }
+.chip > svg { animation: bob 4.8s ease-in-out infinite; animation-delay: var(--d, 0s); }
+.callout:hover .chip { background: var(--color-ink); color: var(--color-glacier); scale: 1.08; }
+.chip { transition: background .5s cubic-bezier(.22,1,.36,1), color .5s, scale .5s cubic-bezier(.22,1,.36,1), box-shadow .5s; }
+
+@keyframes ripple {
+  0% { opacity: .9; scale: 1; }
+  70%, 100% { opacity: 0; scale: 1.85; }
+}
+@keyframes bob {
+  0%, 100% { translate: 0 0; rotate: 0deg; }
+  30% { translate: 0 -3px; rotate: -6deg; }
+  60% { translate: 0 1px; rotate: 4deg; }
+}
+
+/* the circle behind Crystal breathes, and a hairline ring around it breathes out of step, like a slow ripple */
+.disc { animation: breathe 7s ease-in-out infinite; }
+.ring { border: 1.5px solid rgb(4 22 74 / .16); animation: breathe-ring 7s ease-in-out infinite; }
+@keyframes breathe {
+  0%, 100% { scale: 1; translate: 0 0; }
+  50% { scale: 1.04; translate: 0 -8px; }
+}
+@keyframes breathe-ring {
+  0%, 100% { scale: 1.08; opacity: .9; }
+  50% { scale: 1.015; opacity: .35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip::before, .chip::after, .chip > svg, .disc, .ring { animation: none; }
+}

@@ -24,7 +24,7 @@ export function MobileMenu({ signedIn }: { signedIn: boolean }) {
             <button className="ml-auto grid size-11 place-items-center rounded-full hover:bg-white/10" aria-label="Close menu" onClick={() => setOpen(false)}><Icon name="close" /></button>
             <nav aria-label="Mobile" className="mt-4 flex flex-col">
               {NAV.main.map(l => <Link key={l.href} href={l.href} className="border-b border-white/12 py-4 font-sans text-2xl font-semibold">{l.label}</Link>)}
-              {NAV.utility.map(l => <Link key={l.href} href={l.href} className="border-b border-white/12 py-3.5 font-sans text-lg text-white/80">{l.label}</Link>)}
+              {NAV.utility.filter(u => !NAV.main.some(m => m.href === u.href)).map(l => <Link key={l.href} href={l.href} className="border-b border-white/12 py-3.5 font-sans text-lg text-white/80">{l.label}</Link>)}
               <Link href={signedIn ? '/account' : '/account/login'} className="border-b border-white/12 py-3.5 font-sans text-lg text-white/80">{signedIn ? 'My account' : 'Sign in'}</Link>
               <Link href="/track" className="border-b border-white/12 py-3.5 font-sans text-lg text-white/80">Track my order</Link>
             </nav>

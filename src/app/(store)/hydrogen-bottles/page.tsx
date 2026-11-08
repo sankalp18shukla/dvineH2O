@@ -12,13 +12,17 @@ import { ActionBar } from '@/components/store/ActionBar';
 import { GrowVideo } from '@/components/store/GrowVideo';
 import { SectionHead } from '@/components/ui/Section';
 import { Faq } from '@/components/ui/Faq';
-import { Bubbles, Cta, Words } from '@/components/ui/Cta';
+import { Cta, Words } from '@/components/ui/Cta';
 import { HYPER } from '@/lib/content';
 import { getProduct } from '@/lib/catalog';
 import { formatINR } from '@/lib/money';
 import { productJsonLd } from '@/lib/seo';
 import { Lockup, Squiggle } from '@/components/ui/Brand';
+import { HyperAssembly } from '@/components/store/HyperAssembly';
 import { WaveBand } from '@/components/store/WaveBand';
+import { LightUp } from '@/components/store/LightUp';
+import { FinishPicker, FinishProvider } from '@/components/store/BottleFinish';
+import css from './hyper.module.css';
 
 /** Rendered per request: reads the catalog, which needs a live database. */
 export const dynamic = 'force-dynamic';
@@ -36,11 +40,15 @@ export default async function HyperPage() {
       <main id="main">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(p, '/hydrogen-bottles')) }} />
 
-        {/* 01 · Hero: gallery left, purchase right */}
-        <ProductHero name="Hyper" title="Meet Hyper. *A hydrogen water bottle to take along.*" tone="flash" sticker="Sip Check." body={HYPER.hero.body}
-          cutout="/images/hyper_product.png" images={p.images ?? HYPER.hero.gallery} alt="Hyper hydrogen water bottle">
-          <BuyBox p={p} tone="flash" />
-        </ProductHero>
+        {/* 01 · Hero: gallery left, purchase right. Picking a finish repaints the bottle on the stage in place: a wavy
+            fill line runs up the metal in the new colour (BottleFinish.tsx); the glass, logo and drops stay the photo's. */}
+        <FinishProvider finishes={HYPER.finishes}>
+          <ProductHero name="Hyper" title="Hydrogen water bottle" tone="flash" sticker="Sip Check." body={HYPER.hero.body}
+            cutout="/images/hyper_product.png" shell="/images/hyper_shell.png" axis={-41} images={p.images ?? HYPER.hero.gallery} alt="Hyper hydrogen water bottle">
+            <FinishPicker />
+            <BuyBox p={p} tone="flash" />
+          </ProductHero>
+        </FinishProvider>
 
         {/* 02 · Everyday use: three tall photos, staggered, drifting at their own pace */}
         <section className="section overflow-hidden" aria-labelledby="day-title">
@@ -48,13 +56,13 @@ export default async function HyperPage() {
             <SectionHead id="day-title" tone="flash" title={HYPER.everyday.title} body={HYPER.everyday.body} />
             <div className="grid gap-6 md:grid-cols-3 lg:gap-8">
               {HYPER.everyday.cards.map((c, i) => (
-                <figure key={c.title} className={`relative ${i === 1 ? 'md:mt-24' : i === 2 ? 'md:mt-10' : ''}`} data-speed={['.25', '-.2', '.1'][i]}>
+                <figure key={c.title} className={`${css.card} relative ${i === 1 ? 'md:mt-24' : i === 2 ? 'md:mt-10' : ''}`} data-speed={['.25', '-.2', '.1'][i]}>
                   <div className="pin-frame relative aspect-[3/4]" style={{ ['--pin' as string]: 'var(--color-flash)' }}>
                     <div className="group absolute inset-0 overflow-hidden">
                       <Image src={c.image} alt={c.alt} fill sizes="(min-width:768px) 33vw, 100vw" className="object-cover transition duration-[1.2s] ease-out group-hover:scale-105" />
                     </div>
                   </div>
-                  <figcaption className="relative -mt-7 ml-5"><h3 className="tag-box text-[30px] sm:text-[36px]">{c.title}</h3></figcaption>
+                  <figcaption className="relative z-[3] -mt-7 ml-5"><span className={css.tag}><h3 className="tag-box no-pins text-[30px] sm:text-[36px]">{c.title}</h3></span></figcaption>
                 </figure>
               ))}
             </div>
@@ -62,67 +70,52 @@ export default async function HyperPage() {
           </div>
         </section>
 
-        {/* 03 · How it works: the film stays beside the three steps, which light up as you read down */}
-        <section id="how-it-works" className="surface-glacier section" aria-labelledby="how-title">
-          <div className="container-x grid gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-20">
+        {/* 03 · How it works, on the Glacier wave band: its lines gather into the brand pattern's crossing knot, which
+            follows the pointer. The film stays beside the three steps, which light up as you read down. */}
+        <section id="how-it-works" className={`on-glacier relative overflow-clip text-ink ${css.bandTop}`} aria-labelledby="how-title">
+          <WaveBand tone="glacier" interactive knot />
+          <div className="container-x relative grid gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-20">
             <div className="lg:sticky lg:top-32 lg:self-start">
               <GrowVideo id="hyper-video" src={p.videoUrl} poster="/images/hyper-water.webp" alt="Hyper filled with water" label="Watch How to Use Hyper" pending="The demonstration film is on its way." />
             </div>
             <div>
-              <Lockup id="how-title" title={HYPER.how.title} tone="flash" size="md" />
+              <Lockup id="how-title" title={HYPER.how.title} tone="blue" size="md" />
               <ol className="relative mt-14">
-                <span className="absolute top-4 bottom-10 left-[27px] w-[2px] bg-ink/15" aria-hidden="true"><span className="block size-full bg-ink" data-draw /></span>
                 {HYPER.how.steps.map((s, i) => (
-                  <li key={s} className="relative grid grid-cols-[56px_1fr] gap-6 pb-14 last:pb-0 lg:min-h-[28svh]">
-                    <h3 className="grid size-14 place-items-center rounded-full bg-flash font-serif text-[30px] text-voltage italic ring-8 ring-glacier" data-pop>{i + 1}</h3>
+                  <li key={s} className="relative grid grid-cols-[56px_1fr] gap-6 pb-14 last:pb-0 lg:min-h-[28svh] lg:last:min-h-0">
+                    {i < HYPER.how.steps.length - 1 && <span className="absolute top-14 bottom-0 left-[27px] w-[2px] bg-ink/15" aria-hidden="true"><span className="block size-full bg-ink" data-draw /></span>}
+                    <h3 className="grid size-14 place-items-center rounded-full bg-ink font-serif text-[30px] text-glacier italic ring-8 ring-glacier" data-pop>{i + 1}</h3>
                     <p className="pt-2 font-serif text-[23px] leading-snug italic sm:text-[27px]" data-words><Words text={s} /></p>
                   </li>
                 ))}
               </ol>
-              <div className="mt-10" data-rise><Cta href={p.videoUrl ? '#hyper-video' : guide} tone="flash" icon="play">Watch How to Use Hyper</Cta></div>
+              <div className="mt-10" data-rise><Cta href="#hyper-video" kind="ink" icon="play">Watch How to Use Hyper</Cta></div>
             </div>
           </div>
         </section>
 
-        {/* 04 · Product technology: hydrogen bubbles rise through the band past the labelled chamber */}
-        <section id="technology" className="on-dark section relative overflow-hidden py-28 text-white sm:py-40" aria-labelledby="tech-title">
-          <WaveBand />
-          <Bubbles />
-          <div className="container-x relative grid items-center gap-14 lg:grid-cols-2 lg:gap-20">
-            <div className="relative">
-              <div className="pin-frame relative aspect-[16/11]" style={{ ['--pin' as string]: 'var(--color-voltage)' }}>
-                <div className="absolute inset-0 overflow-hidden"><Image src="/images/hyper-exploded.webp" alt="Hyper taken apart: cup, glass chamber, electrodes, membrane and control base" fill sizes="(min-width:1024px) 50vw, 100vw" className="object-cover" /></div>
-              </div>
-              <Squiggle className="pointer-events-none absolute -right-8 -bottom-16 z-[3] hidden w-40 text-flash lg:block" />
-            </div>
-            <div>
-              <Lockup id="tech-title" title={HYPER.tech.title} tone="flash" size="md" />
-              <p className="lede mt-9" data-words><Words text={HYPER.tech.body} /></p>
-              <ol className="mt-9 grid gap-x-8 sm:grid-cols-2" data-rise>
-                {HYPER.tech.parts.map((x, i) => (
-                  <li key={x} className="flex items-center gap-4 border-t border-white/20 py-3.5 font-sans text-[15px]">
-                    <span className="grid size-8 shrink-0 place-items-center bg-voltage text-[13px] font-bold text-ink">{String(i + 1).padStart(2, '0')}</span>{x}
-                  </li>
-                ))}
-              </ol>
-              <div className="mt-10" data-rise><Cta href="#specs" tone="flash">View Specifications</Cta></div>
-            </div>
-          </div>
+        {/* 04 · Product technology: Hyper builds itself from its parts as you scroll */}
+        <section id="technology" className="relative" aria-labelledby="tech-title">
+          <HyperAssembly steps={HYPER.tech.parts} after={<div className="mt-10" data-rise><Cta href="#specs" tone="flash">View Specifications</Cta></div>}>
+            <Lockup id="tech-title" title={HYPER.tech.title} tone="flash" size="md" />
+            <p className="lede mt-9" data-words><Words text={HYPER.tech.body} /></p>
+          </HyperAssembly>
         </section>
         <section id="specs" className="section" aria-labelledby="spec-title">
-          <div className="container-x"><SectionHead id="spec-title" tone="volt" title="*The* specifications." /><div data-reveal><Specs p={p} box={false} /></div></div>
+          <div className="container-x"><SectionHead id="spec-title" tone="volt" title="*Built to these* specifications." /><div data-reveal><Specs p={p} box={false} /></div></div>
         </section>
 
-        {/* 05 · Care and box contents */}
-        <section id="care" className="surface-glacier section" aria-labelledby="care-title">
-          <div className="container-x grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
+        {/* 05 · Care and box contents, on a second Glacier wave band with its own knot */}
+        <section id="care" className={`on-glacier relative overflow-clip text-ink ${css.glacierCopy} ${css.bandPad}`} aria-labelledby="care-title">
+          <WaveBand tone="glacier" interactive knot />
+          <div className="container-x relative grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
             <div>
               <Lockup id="care-title" title={HYPER.care.title} tone="blue" size="md" />
               <p className="lede mt-9" data-words><Words text={HYPER.care.body} /></p>
               <ol className="mt-10 grid gap-4 sm:grid-cols-3" data-rise>
                 {HYPER.care.steps.map((s, i) => (
-                  <li key={s.title} className="border-t-2 border-ink pt-4">
-                    <span className="font-serif text-[40px] leading-none text-deep-current italic">{i + 1}</span>
+                  <li key={s.title} className={css.care}>
+                    <span className={`${css.careN} font-serif text-[40px] leading-none text-deep-current italic`}>{i + 1}</span>
                     <h3 className="mt-3 font-sans text-lg font-bold tracking-tight">{s.title}</h3>
                     <p className="mt-1 text-[16px] leading-snug text-ink/75">{s.body}</p>
                   </li>
@@ -143,7 +136,7 @@ export default async function HyperPage() {
           </div>
         </section>
 
-        <Reviews productId={p.id} name="Hyper" />
+        <Reviews productId={p.id} name="Hyper" flow />
 
         {/* 06 · Questions and purchase reminder */}
         <section id="faq" className="section" aria-labelledby="faq-title">

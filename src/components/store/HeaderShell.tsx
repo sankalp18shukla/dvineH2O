@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 
 /** Transparent over dark heroes, solid once the page scrolls. */
-export function HeaderShell({ overlay, framed = false, children }: { overlay: boolean; framed?: boolean; children: React.ReactNode }) {
+export function HeaderShell({ overlay, framed = false, glass = false, children }: { overlay: boolean; framed?: boolean; glass?: boolean; children: React.ReactNode }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const on = () => setScrolled(window.scrollY > 12);
@@ -11,7 +11,9 @@ export function HeaderShell({ overlay, framed = false, children }: { overlay: bo
   }, []);
   const solid = !overlay || scrolled;
   if (framed) return (
-    <header className={`no-print sticky top-0 z-40 w-full text-ink transition-[background-color] duration-300 ${scrolled ? 'bg-paper/85 backdrop-blur-xl' : 'bg-paper'}`}>
+    // Home keeps its frosted bar. Other pages get a solid bar with a hairline once scrolled: their coloured
+    // headings and photos run right up under it, and through the frosted glass they smeared as flickering blotches.
+    <header className={`no-print sticky top-0 z-40 w-full bg-paper text-ink transition-[background-color,box-shadow] duration-300 ${scrolled ? (glass ? 'bg-paper/85 backdrop-blur-xl' : 'shadow-[0_1px_0_rgb(4_22_74/.08)]') : ''}`}>
       {children}
     </header>
   );

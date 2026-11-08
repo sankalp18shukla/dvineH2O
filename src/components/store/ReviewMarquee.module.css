@@ -1,0 +1,17 @@
+/* ReviewMarquee.tsx: two identical sets side by side, the track sliding one set's width, then starting over */
+.marquee { overflow: hidden; padding-block: 8px 28px;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); }
+.track { display: flex; width: max-content; animation: slide var(--dur, 60s) linear infinite; }
+.marquee:hover .track, .marquee:focus-within .track { animation-play-state: paused; }
+.set { display: flex; gap: 20px; padding-right: 20px; margin: 0; list-style: none; }
+.item { width: clamp(280px, 28vw, 380px); flex: none; transition: translate .5s cubic-bezier(.22,1,.36,1); }
+.item > * { height: 100%; }
+.item:hover { translate: 0 -6px; }
+@keyframes slide { to { translate: -50% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .track { animation: none; }
+  .copy { display: none; }
+  .marquee { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+  .item { transition: none; }
+}

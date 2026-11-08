@@ -71,16 +71,20 @@ export function HelpChoosing({ title, body, options }: { title: string; body: st
 
       // the tag wipes open left to right with its words gliding in behind the edge, then the line and button rise in
       const write = (tl: gsap.core.Timeline, i: number, at: number) => {
-        tl.set(tags[i], { autoAlpha: 1 }, at)
-          .to(tags[i], { clipPath: OPEN, duration: TYPE, ease: 'power2.inOut' }, at)
-          .to(texts[i], { xPercent: 0, opacity: 1, duration: TYPE, ease: 'power2.out' }, at + TYPE * .15)
-          .to([descs[i], btns[i]], { opacity: 1, y: 0, duration: BTN, stagger: .15, ease: 'power3.out' }, at + TYPE * .7);
+        const lazy = { immediateRender: false };
+        tl.fromTo(tags[i], { autoAlpha: 0 }, { autoAlpha: 1, duration: 0, ...lazy }, at)
+          .fromTo(tags[i], { clipPath: SHUT }, { clipPath: OPEN, duration: TYPE, ease: 'power2.inOut', ...lazy }, at)
+          .fromTo(texts[i], { xPercent: -8, opacity: 0 }, { xPercent: 0, opacity: 1, duration: TYPE, ease: 'power2.out', ...lazy }, at + TYPE * .15)
+          .fromTo([descs[i], btns[i]], { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: BTN, stagger: .15, ease: 'power3.out', ...lazy }, at + TYPE * .7);
       };
 
-      // coming down into the section, At Home rises out of a tilt and grows into place
-      gsap.fromTo(cards[0], { scale: .78, y: 70, rotateX: 16, opacity: 0 }, {
+      // coming down into the section, At Home rises out of a tilt and grows into place. This runs on the deck
+      // wrapper, never on the cards: the cards' scale belongs to the deck timeline alone, so the two scrubbed
+      // animations can't fight over it (that let the back card snap back to full size on the way up)
+      const deck = el.querySelector<HTMLElement>(`.${s.deck}`)!;
+      gsap.fromTo(deck, { scale: .78, y: 70, rotateX: 16, opacity: 0, transformPerspective: 1600 }, {
         scale: 1, y: 0, rotateX: 0, opacity: 1, ease: 'power2.out',
-        scrollTrigger: { trigger: track, start: 'top 80%', end: () => `top ${hdr()}px`, scrub: .8, invalidateOnRefresh: true },
+        scrollTrigger: { trigger: track, start: 'top 80%', end: () => `top ${hdr()}px`, scrub: .8 },
       });
 
       const tl = gsap.timeline();
@@ -93,17 +97,19 @@ export function HelpChoosing({ title, body, options }: { title: string; body: st
           tl.fromTo(back, depth(from, wide), { ...depth(to, wide), duration: MOVE, ease: 'power2.inOut', immediateRender: false }, at)
             .fromTo(veils[j], { opacity: VEIL[from] }, { opacity: VEIL[to], duration: MOVE, ease: 'power1.inOut', immediateRender: false }, at);
         });
-        tl.to(infos[i - 1], { opacity: 0, duration: MOVE * .35, ease: 'power1.in' }, at)
+        tl.fromTo(infos[i - 1], { opacity: 1 }, { opacity: 0, duration: MOVE * .35, ease: 'power1.in', immediateRender: false }, at)
           // the next card swings in from the right over the top of the deck
-          .to(card, { xPercent: 0, rotateY: 0, scale: 1, duration: MOVE, ease: 'power3.out' }, at)
-          .to(card, { opacity: 1, duration: MOVE * .25, ease: 'none' }, at);
+          .fromTo(card, { xPercent: 130, rotateY: -38, scale: .92 }, { ...depth(0, wide), duration: MOVE, ease: 'power3.out', immediateRender: false }, at)
+          .fromTo(card, { opacity: 0 }, { opacity: 1, duration: MOVE * .25, ease: 'none', immediateRender: false }, at);
         write(tl, i, at + MOVE * .7);
       });
       tl.to({}, { duration: HOLD * .5 }); // a short rest on For My Business before the page moves on
 
       // scrubbed with a soft catch-up so the deck glides after the scroll rather than jumping with it
       ScrollTrigger.create({
-        animation: tl, trigger: track, start: () => `top ${hdr()}px`, end: 'bottom bottom', scrub: 1, invalidateOnRefresh: true,
+        // no invalidateOnRefresh: a refresh while scrolled past would make the tweens re-read their start
+        // values from the finished deck and break the reverse; every value here is explicit instead
+        animation: tl, trigger: track, start: () => `top ${hdr()}px`, end: 'bottom bottom', scrub: 1,
       });
       ScrollTrigger.refresh();
 

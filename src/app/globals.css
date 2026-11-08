@@ -90,7 +90,7 @@
   .input { @apply min-h-12 w-full rounded-xl border border-line bg-white px-4 font-sans text-[16px] text-ink placeholder:text-[#7B87A3] transition focus:border-deep-current focus:ring-4 focus:ring-deep-current/15 focus:outline-none aria-[invalid=true]:border-[#C2001B]; }
   textarea.input { @apply min-h-32 py-3; }
   select.input { @apply appearance-none bg-no-repeat pr-10; background-position: right 16px center; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath stroke='%2304164A' stroke-width='1.6' d='m1 1 5 5 5-5'/%3E%3C/svg%3E"); }
-  .check { @apply mt-1 size-[18px] shrink-0 accent-deep-current; }
+  .check { @apply mt-px size-[18px] shrink-0 accent-deep-current; }
 
   .stage { background: radial-gradient(80% 90% at 70% 40%, #0B3FA8 0%, #082A7E 40%, #06195A 72%, #030E36 100%); @apply text-white; }
 
@@ -166,6 +166,20 @@
     background: radial-gradient(circle at 6px 6px, var(--lk-pin) 5.5px, transparent 6px), linear-gradient(var(--lk-pin), var(--lk-pin)) 5px 6px / 2px 100% no-repeat; }
   .lk-bot::after { right: -6px; top: 0; bottom: -14px;
     background: radial-gradient(circle at 6px calc(100% - 6px), var(--lk-pin) 5.5px, transparent 6px), linear-gradient(var(--lk-pin), var(--lk-pin)) 5px 0 / 2px calc(100% - 6px) no-repeat; }
+  /* Paint order: lower block's fill < lower block's pin line < upper block's fill < text. Where the lower block
+     sits under the upper one, its pin line runs under the upper fill, so it seems to start at the upper block's
+     edge (meeting a descender, as "Home water system / Crystal."); where it sticks out past it, the whole line shows. */
+  .lk-bot::before { z-index: -3; }
+  .lk-bot::after { z-index: -2; }
+  .lk-top::before { z-index: -1; }
+  .lk.is-tail .lk-top::before { z-index: -3; }
+  .lk.is-tail .lk-top::after { z-index: -2; }
+  .lk.is-tail .lk-bot::before { z-index: -1; }
+  /* one-line lockup ("Warranty."): it gets the top-left pin too (Lockup adds .lk-pin), so it has both, like the rest */
+  .lk-pin { position: absolute; left: -6px; top: -14px; bottom: 0; width: 12px; pointer-events: none;
+    background: radial-gradient(circle at 6px 6px, var(--lk-pin) 5.5px, transparent 6px), linear-gradient(var(--lk-pin), var(--lk-pin)) 5px 6px / 2px 100% no-repeat; }
+  /* on a Glacier ground the blue lockup's Glacier pins vanish: pin it in Ink */
+  :is(.surface-glacier, .on-glacier) .lk.is-blue { --lk-pin: var(--color-ink); }
   .lk.is-center { align-items: center; text-align: center; }
   .lk.is-center .lk-bot { margin-left: 0; translate: clamp(14px, 2.4vw, 40px) 0; }
   /* inner-page sizes: same lockup, scaled for longer lines */
@@ -183,6 +197,26 @@
     background: radial-gradient(circle at 6px calc(100% - 6px), var(--lk-pin) 5.5px, transparent 6px), linear-gradient(var(--lk-pin), var(--lk-pin)) 5px 0 / 2px calc(100% - 6px) no-repeat; }
   .lk.is-tail.is-center .lk-top { margin-left: 0; translate: clamp(14px, 2.4vw, 40px) 0; }
   .lk.is-tail.is-center .lk-bot { translate: none; }
+
+  /* Inner pages (every page but the homepage, whose <main> is [data-home]): the reference lockup.
+     Italic on top, heavy sans under it and a touch larger, set further in (1.5em) so the italic's descenders fall
+     over it, two balanced blocks. Each block stays on ONE line (never more than two lines in all): LockupFit.tsx
+     scales the whole lockup down through --lk-fit when it would be wider than its column. */
+  main:not([data-home]) .lk { width: 100%; min-width: 0; }
+  main:not([data-home]) .lk > span { max-width: none; white-space: nowrap; }
+  main:not([data-home]) .lk .lk-top { font-size: calc(clamp(40px, 5vw, 76px) * var(--lk-fit, 1)); }
+  main:not([data-home]) .lk .lk-bot { font-size: calc(clamp(44px, 5.7vw, 86px) * var(--lk-fit, 1)); margin: -.34em 0 0 1.5em; }
+  main:not([data-home]) .lk.is-md .lk-top { font-size: calc(clamp(32px, 3.7vw, 58px) * var(--lk-fit, 1)); }
+  main:not([data-home]) .lk.is-md .lk-bot { font-size: calc(clamp(35px, 4.2vw, 66px) * var(--lk-fit, 1)); }
+  main:not([data-home]) .lk.is-sm .lk-top { font-size: calc(clamp(26px, 2.6vw, 40px) * var(--lk-fit, 1)); }
+  main:not([data-home]) .lk.is-sm .lk-bot { font-size: calc(clamp(28px, 3vw, 46px) * var(--lk-fit, 1)); }
+  main:not([data-home]) .lk > .lk-bot:only-child { margin: 0; }
+  main:not([data-home]) .lk.is-center .lk-bot { margin-left: 0; translate: .75em 0; }
+
+  /* Product hero title: the brand lockup with the product's name as the sans line, set about twice the italic
+     (category) line so the name leads and the two blocks come out about the same width */
+  main:not([data-home]) .lk.ph-lk .lk-top { font-size: calc(clamp(30px, 3.2vw, 50px) * var(--lk-fit, 1)); }
+  main:not([data-home]) .lk.ph-lk .lk-bot { font-size: calc(clamp(64px, 7.4vw, 120px) * var(--lk-fit, 1)); margin: -.22em 0 0 .6em; letter-spacing: -0.055em; }
 
   /* Fact rows (as the home collection's feature row): an ink rule over each item, thin dividers between */
   .facts { display: grid; gap: 0; margin: 0; font-family: var(--font-sans); }
@@ -228,6 +262,7 @@
   .lk.is-opening .lk-ink, .lk.is-opening .lk-txt { display: inline-block; clip-path: inset(-40% calc((50% + .2em) * var(--shut) - .2em)); }
   .lk.is-opening .lk-top::after { left: calc(-6px + 50% * var(--shut)); }
   .lk.is-opening .lk-bot::after { right: calc(-6px + 50% * var(--shut)); }
+  .lk.is-opening .lk-pin { left: calc(-6px + 50% * var(--shut)); }
   .lk.is-tail.is-opening .lk-bot::after { left: calc(-6px + 50% * var(--shut)); right: auto; }
   .lk.is-tail.is-opening .lk-top::after { right: calc(-6px + 50% * var(--shut)); left: auto; }
   .label-box.is-opening { background: linear-gradient(var(--lb-bg) 0 0) center / calc(100% * var(--open)) 100% no-repeat; }
@@ -273,6 +308,7 @@
       linear-gradient(var(--pin, var(--color-glacier)) 0 0) top right / 8px 8px no-repeat,
       linear-gradient(var(--pin, var(--color-glacier)) 0 0) bottom left / 8px 8px no-repeat,
       linear-gradient(var(--pin, var(--color-glacier)) 0 0) bottom right / 8px 8px no-repeat; }
+  .tag-box.no-pins::after { content: none; }
 
   .prose-dvine p { @apply mb-4; }
   .prose-dvine h2 { @apply mt-10 mb-3 text-2xl font-bold; }
@@ -356,7 +392,11 @@
 /* announcement ribbon above the header (Ribbon.tsx): the home hero subtracts it so it still fits the first screen */
 html:has(.site-ribbon) { --ribbon-h: 34px; }
 @media (min-width: 1024px) { html:has(.site-ribbon) { --ribbon-h: 38px; } }
-.page-card { position: relative; background: var(--color-paper); border-radius: 0 0 var(--card-r) var(--card-r); overflow: clip; }
+/* The radius rounds the card's own background only. Never clip it with overflow (that would round the clip too):
+   a rounded clip makes the browser give every animated layer inside (sticky header, parallax, canvases, video)
+   its own mask the size of the whole page, hundreds of megapixels to repaint on scroll, which showed as white
+   cracks and a tearing header. overflow-x: clip still stops sideways scrolling, with a plain rectangular clip. */
+.page-card { position: relative; background: var(--color-paper); border-radius: 0 0 var(--card-r) var(--card-r); overflow-x: clip; }
 .site-footer { position: relative; z-index: -1; margin-top: calc(-1 * var(--card-r)); padding-top: var(--card-r);
   padding-bottom: var(--action-bar, 0px); transition: padding-bottom .3s; }  /* clears the mobile ActionBar */
 .footer-reveal .page-card { margin-bottom: var(--footer-h, 0px); }
@@ -369,6 +409,21 @@ html:has(.site-ribbon) { --ribbon-h: 34px; }
 .js [data-reveal] { opacity: 0; transform: translateY(22px); transition: opacity .9s var(--ease-out-soft), transform .9s var(--ease-out-soft); }
 .js [data-reveal].in { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .js [data-reveal] { opacity: 1; transform: none; transition: none; } }
+
+/* Motion gate: everything the scroll scripts (TagReveal, PinFrames, ScrollCopy, [data-m] sections) animate in
+   stays hidden from the first paint until its script has set its start state and adds .m-on. Without this the
+   server-rendered page paints it fully shown, then hydration snaps it shut and it opens again: a flash. If the
+   script never runs, the failsafe shows it after 3s. Reduced motion shows everything at once. */
+@media (prefers-reduced-motion: no-preference) {
+  .js :is(.lk, .label-box, .band-lk, .pin-frame, [data-words], [data-rise] > *, [data-pop], [data-draw]):not([data-own-motion] *, .m-on),
+  .js [data-m]:not(.m-on) { visibility: hidden; animation: m-failsafe 0s 3s forwards; }
+}
+@keyframes m-failsafe { to { visibility: visible; } }
+/* a section's copy waits for its headline (TagReveal.tsx): faint and a little low, it fades up into place as the
+   headline opens (--hl, 0 → 1, scrubbed with the scroll) */
+.hl-hold { opacity: calc(.15 + .85 * var(--hl, 0)) !important; translate: 0 calc((1 - var(--hl, 0)) * 36px); }
+/* while GSAP drives an element, its own CSS transitions (e.g. .cta's transform) would chase every frame and judder */
+.m-tween { transition: none !important; }
 
 @media print {
   .no-print { display: none !important; }

@@ -34,6 +34,7 @@ export function GrowVideo({ id, src, poster, alt, pending, label, className = ''
       gsap.timeline({ scrollTrigger: { trigger: el, start: 'top 95%', end: 'center 55%', scrub: .8 } })
         .fromTo(frame, { clipPath: 'inset(14% 24% 14% 24% round 24px)' }, { clipPath: 'inset(0% 0% 0% 0% round 30px)', ease: 'power2.inOut' }, 0)
         .fromTo(media, { scale: 1.3 }, { scale: 1, ease: 'power2.inOut' }, 0);
+      frame?.classList.add('m-on'); // start state set: lift the first-paint gate (globals.css)
     });
     // "Watch …" links pointing here start the film once the page has scrolled to it
     const onClick = (e: MouseEvent) => {
@@ -47,7 +48,7 @@ export function GrowVideo({ id, src, poster, alt, pending, label, className = ''
 
   return (
     <div ref={root} id={id} className={`relative scroll-mt-32 ${className}`} data-own-motion>
-      <div data-frame className="relative aspect-video overflow-hidden rounded-[30px] bg-stage-deep">
+      <div data-frame data-m className="relative aspect-video overflow-hidden rounded-[30px] bg-stage-deep">
         <div data-media className="absolute inset-0">
           {playing && src
             ? <video ref={video} src={src} poster={poster} controls playsInline preload="metadata" className="size-full object-cover" aria-label={label} onEnded={() => setPlaying(false)} />
@@ -58,11 +59,11 @@ export function GrowVideo({ id, src, poster, alt, pending, label, className = ''
           <div className="on-dark absolute inset-0 grid place-items-center p-6 text-center">
             {src
               ? <button type="button" onClick={play} className="group flex flex-col items-center gap-4 text-white" aria-label={label}>
-                  <span className="cta-glass glare grid size-20 place-items-center rounded-full transition duration-500 group-hover:scale-110 sm:size-24"><Icon name="play" className="ml-1 size-8 sm:size-9" /></span>
+                  <span className="cta-glass glare grid size-20 place-items-center rounded-full !p-0 transition duration-500 group-hover:scale-110 sm:size-24"><Icon name="play" className="size-8 sm:size-9" /></span>
                   <span className="font-sans text-[15px] font-semibold tracking-tight">{label}</span>
                 </button>
               : <div className="flex flex-col items-center gap-4 text-white">
-                  <span className="cta-glass grid size-20 place-items-center rounded-full"><Icon name="play" className="ml-1 size-8" /></span>
+                  <span className="cta-glass grid size-20 place-items-center rounded-full !p-0"><Icon name="play" className="size-8" /></span>
                   <p className="font-serif text-[19px] italic text-white/90 sm:text-[22px]">{pending}</p>
                 </div>}
           </div>
