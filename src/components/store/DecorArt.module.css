@@ -1,0 +1,43 @@
+/* Festive art (DecorArt.tsx). Every loop is phased per item by --p (set by DecorLayer) and per part by its own delay. */
+.art { position: relative; width: 100%; }
+.svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.flame, .flameSway, .glow, .tassel, .glint, .bulb { transform-box: fill-box; }
+
+/* flame: an irregular, fast flicker inside a slow lean, the way a real wick flame breathes */
+.flame { transform-origin: 50% 100%; animation: flicker 1.9s linear infinite; }
+@keyframes flicker {
+  0%   { transform: scale(1, 1) skewX(0); }
+  9%   { transform: scale(.95, 1.07) skewX(-3deg); }
+  17%  { transform: scale(1.03, .94) skewX(2deg); }
+  28%  { transform: scale(.97, 1.09) skewX(-1deg); }
+  36%  { transform: scale(1.02, .97) skewX(3deg); }
+  49%  { transform: scale(.96, 1.05) skewX(-2deg); }
+  58%  { transform: scale(1.04, .93) skewX(1deg); }
+  71%  { transform: scale(.98, 1.08) skewX(-3deg); }
+  83%  { transform: scale(1.01, .96) skewX(2deg); }
+  100% { transform: scale(1, 1) skewX(0); }
+}
+.flameSway { transform-origin: 50% 100%; animation: lean 3.7s ease-in-out infinite; }
+@keyframes lean { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(4deg); } }
+.glow { animation: glow 2.3s ease-in-out infinite; }
+@keyframes glow { 0%, 100% { opacity: .85; } 21% { opacity: 1; } 34% { opacity: .78; } 52% { opacity: .96; } 70% { opacity: .82; } }
+
+/* lantern tassels, toran strings: slow pendulum from their top */
+.tassel { transform-origin: 50% 0; animation: swing 4.6s ease-in-out infinite; }
+.dangle { transform-box: view-box; animation: swing 5s ease-in-out infinite; }
+@keyframes swing { 0%, 100% { transform: rotate(-1.6deg); } 50% { transform: rotate(1.6deg); } }
+
+/* rice lights and bokeh: a soft chase, never a hard on/off blink */
+.bulb { animation: bulb 2.8s ease-in-out infinite; }
+@keyframes bulb { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+.glint { transform-origin: 50% 50%; animation: glint 3.4s ease-in-out infinite; }
+@keyframes glint { 0%, 100% { opacity: 0; transform: scale(.3) rotate(0); } 45% { opacity: 1; transform: scale(1) rotate(25deg); } 70% { opacity: 0; transform: scale(.5) rotate(45deg); } }
+
+/* firework: rays draw out from the centre, droop and fade; tips sparkle last */
+.burst { animation: burst 3.2s cubic-bezier(.2,.7,.3,1) infinite; }
+@keyframes burst { 0% { opacity: 0; transform: scale(.2); } 8% { opacity: 1; } 55% { opacity: 1; transform: scale(1) translateY(0); } 100% { opacity: 0; transform: scale(1.08) translateY(8px); } }
+.tip { animation: bulb .5s ease-in-out infinite alternate; }
+
+@media (prefers-reduced-motion: reduce) {
+  .flame, .flameSway, .glow, .tassel, .dangle, .bulb, .glint, .burst, .tip { animation: none; }
+}

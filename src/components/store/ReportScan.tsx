@@ -37,13 +37,21 @@ export function ReportScan({ sample, children }: { sample: Sample; children: Rea
       };
       gsap.set(hl, { opacity: 0, ...box(0) });
       const tl = gsap.timeline({ defaults: { ease: 'power2.inOut' } }).to(hl, { opacity: 1, duration: .4 }, 0);
-      STOPS.forEach((_, i) => { if (i) tl.to(hl, { x: () => box(i).x, y: () => box(i).y, width: () => box(i).width, height: () => box(i).height, duration: 1 }, '+=.5'); });
-      tl.to({}, { duration: .6 });
-      const n = STOPS.length;
-      ScrollTrigger.create({
-        animation: tl, trigger: el, start: 'top 65%', end: 'bottom 35%', scrub: .8, invalidateOnRefresh: true,
-        onUpdate: ({ progress }) => setK(progress < .02 ? -1 : Math.min(n - 1, Math.floor(progress * n))),
+      // when each stop's highlight has (mostly) arrived, so the legend follows the highlight, not a flat split
+      const at = [.2];
+      STOPS.forEach((_, i) => {
+        if (!i) return;
+        const t0 = tl.duration() + .35;
+        tl.to(hl, { x: () => box(i).x, y: () => box(i).y, width: () => box(i).width, height: () => box(i).height, duration: .8 }, t0);
+        at.push(t0 + .5);
       });
+      tl.to({}, { duration: .5 });
+      // scrubbed to the report card itself: starts as it comes up, and finishes on the last column while the
+      // whole card is still comfortably in view (its centre a little above the middle of the screen)
+      ScrollTrigger.create({
+        animation: tl, trigger: paper, start: 'top 85%', end: 'center 45%', scrub: .6, invalidateOnRefresh: true,
+      });
+      tl.eventCallback('onUpdate', () => { const t = tl.time(); let i = -1; at.forEach((a, j) => { if (t >= a) i = j; }); setK(i); });
       return () => setK(-1);
     });
     mm.add('(prefers-reduced-motion: reduce)', () => setK(STOPS.length));
@@ -51,7 +59,7 @@ export function ReportScan({ sample, children }: { sample: Sample; children: Rea
   }, []);
 
   return (
-    <div ref={root} className="relative grid items-center gap-14 lg:grid-cols-[1fr_1.15fr] lg:gap-20">
+    <div ref={root} className="relative grid grid-cols-[minmax(0,1fr)] items-center gap-14 lg:grid-cols-[1fr_1.15fr] lg:gap-20">
       <div>
         {children}
         <ol className="mt-10 grid font-sans" aria-label="What to read on your report">

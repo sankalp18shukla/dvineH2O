@@ -1,11 +1,11 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { beginPayment, completeRazorpay, failRazorpay, completeTestPayment } from '@/app/actions/payments';
 import { formatINR } from '@/lib/money';
 import { Icon } from '../ui/Icon';
 
-type Props = { kind: 'order' | 'water_test'; ref_: string; token: string; amount: number; prefill: { name: string; email?: string | null; phone?: string | null }; successHref: string; testAllowed: boolean };
+type Props = { kind: 'order' | 'water_test'; ref_: string; token: string; amount: number; prefill: { name: string; email?: string | null; phone?: string | null }; successHref: string; testAllowed: boolean; gateway?: 'phonepe' | 'razorpay' | 'test' };
 declare global { interface Window { Razorpay?: new (o: Record<string, unknown>) => { open: () => void; on: (e: string, cb: (r: { error: Record<string, string> }) => void) => void } } }
 
 function loadScript() {
@@ -16,12 +16,19 @@ function loadScript() {
   });
 }
 
-export function PayPanel({ kind, ref_, token, amount, prefill, successHref, testAllowed }: Props) {
+export function PayPanel({ kind, ref_, token, amount, prefill, successHref, testAllowed, gateway = 'razorpay' }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [test, setTest] = useState<{ gatewayOrderId: string } | null>(null);
   const [method, setMethod] = useState('upi');
+
+  // Back from PhonePe's page: the return route has already checked the real status.
+  useEffect(() => {
+    const pp = new URLSearchParams(window.location.search).get('pp');
+    if (pp === 'failed') setError('The payment didn’t go through and no money was taken. You can try again.');
+    if (pp === 'pending') setError('PhonePe is still confirming this payment. If money left your account, it will update here within a few minutes, so please don’t pay twice. Refresh this page to check.');
+  }, []);
 
   const pay = async () => {
     setBusy(true); setError(null);
@@ -30,6 +37,7 @@ export function PayPanel({ kind, ref_, token, amount, prefill, successHref, test
     if ('error' in r && r.error) { setError(r.error); setBusy(false); return; }
     const s = r.session!;
     if (s.mode === 'test') { setTest({ gatewayOrderId: s.gatewayOrderId }); setBusy(false); return; }
+    if (s.mode === 'phonepe') { window.location.assign(s.redirectUrl); return; }
     if (!(await loadScript())) { setError('Could not load the payment window. Check your connection and try again.'); setBusy(false); return; }
     const rz = new window.Razorpay!({
       key: s.keyId, order_id: s.gatewayOrderId, amount: s.amount, currency: 'INR', name: 'DVINE H2O', description: s.receipt,
@@ -57,13 +65,13 @@ export function PayPanel({ kind, ref_, token, amount, prefill, successHref, test
       <div className="flex items-baseline justify-between font-sans"><span className="text-muted">Amount to pay</span><span className="text-3xl font-bold">{formatINR(amount)}</span></div>
       {!test ? (
         <>
-          <button onClick={pay} disabled={busy} className="btn btn-primary mt-6 w-full">{busy ? 'Opening payment…' : <>Pay {formatINR(amount)} securely <Icon name="arrow" className="size-4" /></>}</button>
-          <p className="mt-3 flex items-center justify-center gap-2 font-sans text-[13px] text-muted"><Icon name="shield" className="size-4" /> UPI, cards, net banking, wallets, EMI and pay later via Razorpay</p>
+          <button onClick={pay} disabled={busy} className="btn btn-primary mt-6 w-full">{busy ? (gateway === 'phonepe' ? 'Taking you to PhonePe…' : 'Opening payment…') : <>Pay {formatINR(amount)} securely <Icon name="arrow" className="size-4" /></>}</button>
+          <p className="mt-3 flex items-center justify-center gap-2 font-sans text-[13px] text-muted"><Icon name="shield" className="size-4" /> {gateway === 'phonepe' ? 'UPI, cards and net banking via PhonePe' : gateway === 'razorpay' ? 'UPI, cards, net banking, wallets, EMI and pay later via Razorpay' : 'UPI, cards and net banking'}</p>
         </>
       ) : (
         <div className="mt-6 rounded-2xl border-2 border-dashed border-[#E8A600] bg-[#FFF8E1] p-5 font-sans" role="region" aria-label="Test payment">
           <p className="font-semibold text-[#7A4B00]">Test payment mode</p>
-          <p className="mt-1 text-sm text-[#7A4B00]">Razorpay keys aren’t set, so this simulates the gateway. No money moves.</p>
+          <p className="mt-1 text-sm text-[#7A4B00]">No payment gateway keys are set, so this simulates the gateway. No money moves.</p>
           <label htmlFor="tm" className="label mt-4 block">Method</label>
           <select id="tm" className="input mt-1.5" value={method} onChange={e => setMethod(e.target.value)}>
             <option value="upi">UPI</option><option value="card">Card</option><option value="netbanking">Net banking</option><option value="wallet">Wallet</option><option value="emi">EMI</option>

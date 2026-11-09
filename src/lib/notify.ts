@@ -35,6 +35,10 @@ export const templates = {
     template: 'water_test_booked', subject: `Water test request ${w.ref}`,
     text: `Hi ${w.name},\n\nYour water test request ${w.ref} for ${w.when} has been received. We'll confirm your collection slot shortly.\n\nView booking: ${w.link}\n\nDVINE H2O`,
   }),
+  paymentLink: (o: { number: string; name: string; total: string; what: string; link: string; until: string }): Msg => ({
+    template: 'payment_link', subject: `Your DVINE H2O quote is ready to pay (${o.number})`,
+    text: `Hi ${o.name},\n\nAs agreed, here is the secure payment link for ${o.what} (${o.total}, GST included).\n\nPay here: ${o.link}\n\nThe link is valid until ${o.until}. Your GST invoice is issued as soon as the payment is confirmed.\n\nDVINE H2O`,
+  }),
   ticketOpened: (t: { number: string; name: string }): Msg => ({
     template: 'ticket_opened', subject: `Service request ${t.number}`,
     text: `Hi ${t.name},\n\nWe've logged your service request ${t.number}. A DVINE engineer will be in touch.\n\nDVINE H2O`,
@@ -80,6 +84,7 @@ async function sendWhatsApp(phone: string, msg: Msg) {
 
 export const links = {
   order: (number: string, token: string) => `${site()}/order/${number}?t=${token}`,
+  pay: (number: string, token: string) => `${site()}/checkout/pay/${number}?t=${token}`,
   waterTest: (ref: string, token: string) => `${site()}/water-testing/booking/${ref}?t=${token}`,
   account: () => `${site()}/account`,
 };

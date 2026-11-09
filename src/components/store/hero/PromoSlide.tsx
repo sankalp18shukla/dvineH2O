@@ -29,13 +29,15 @@ export function PromoSlide({ p, cls, active, leaving, label }: { p: P; cls: stri
   // the name is sized like the product names (--em = "Crystal"), and shrinks for longer titles
   const em = Math.max(2.44, Math.max(...lines.map(l => l.length)) * 0.37);
   const ctas = [p.primary, p.secondary].filter(c => c.label && c.href);
-  const m = p.media?.src ? p.media : null;
+  // lineup: the 3D stage stands the three products on the right, so the slide brings no media of its own
+  const lineup = p.fit === 'lineup';
+  const m = p.media?.src && !lineup ? p.media : null;
 
   return (
     <article data-slide data-promo className={`${h.slide} ${s.promo} ${p.fit === 'side' ? s.side : s.cover} ${active ? s.on : leaving ? s.off : ''} ${cls}`} aria-roledescription="slide" aria-label={label} aria-hidden={!active}
       style={{ ['--accent' as string]: t.accent, ['--tag-bg' as string]: t.bg, ['--tag-fg' as string]: t.fg, ['--tag-em' as string]: t.em, ['--shade' as string]: p.shade / 100, ['--em' as string]: em }}>
       {/* "behind the text" decorations sit behind a side product too, but over a full-background photo */}
-      {p.fit === 'side' && <DecorLayer items={p.decor} layer="back" play={active} out={leaving} />}
+      {p.fit !== 'cover' && <DecorLayer items={p.decor} layer="back" play={active} out={leaving} />}
       {m && (
         <div className={s.media} aria-hidden={!m.alt || undefined}>
           {p.fit === 'side' && <svg className={s.sq} viewBox="-20 -20 300 280" fill="none" aria-hidden="true"><path d={SQUIGGLE} stroke={t.em === '#046FED' ? t.bg : t.em} strokeWidth="11" strokeLinecap="round" /></svg>}
@@ -45,8 +47,8 @@ export function PromoSlide({ p, cls, active, leaving, label }: { p: P; cls: stri
           {p.fit === 'cover' && <span className={s.shade} />}
         </div>
       )}
-      {p.fit !== 'side' && <DecorLayer items={p.decor} layer="back" play={active} out={leaving} />}
-      <div className={h.copy}>
+      {p.fit === 'cover' && <DecorLayer items={p.decor} layer="back" play={active} out={leaving} />}
+      <div className={h.copy} data-lineup-copy={lineup || undefined}>
         <h2 className={h.head}>
           {words.length > 0 && (
             <span className={`${h.desc} ${h.f}`} style={{ ['--i' as string]: 0 }}><i /><span className={h.tag}>

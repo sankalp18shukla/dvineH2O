@@ -219,7 +219,7 @@ export const payments = sqliteTable('payments', {
   purpose: text('purpose', { enum: ['order', 'water_test'] }).notNull().default('order'),
   orderId: integer('order_id').references(() => orders.id),
   waterTestId: integer('water_test_id'),
-  gateway: text('gateway', { enum: ['razorpay', 'test'] }).notNull(),
+  gateway: text('gateway', { enum: ['phonepe', 'razorpay', 'test'] }).notNull(),
   gatewayOrderId: text('gateway_order_id'),
   gatewayPaymentId: text('gateway_payment_id'),
   amount: integer('amount').notNull(),

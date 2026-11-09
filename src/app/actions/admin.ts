@@ -11,14 +11,15 @@ import {
 import { requireStaff, hashPassword } from '@/lib/auth';
 import type { Permission } from '@/lib/session';
 import { audit } from '@/lib/audit';
-import { setOrderStatus, cancelOrder, refundOrder, STATUS_LABEL, type OrderStatus } from '@/lib/orders';
+import { setOrderStatus, cancelOrder, refundOrder, createQuoteOrder, CheckoutError, STATUS_LABEL, type OrderStatus } from '@/lib/orders';
 import { moveStock } from '@/lib/inventory';
 import { pushOrder, assignAwb, trackAwb, trackingUrl, shiprocketEnabled, mapStatus } from '@/lib/shiprocket';
 import { setSetting, DEFAULT_COMPANY, DEFAULT_COMMERCE } from '@/lib/settings';
 import { DEFAULT_REFERRAL } from '@/lib/referrals';
 import { toPaise } from '@/lib/money';
 import { saveUpload, UploadError } from '@/lib/uploads';
-import { notify } from '@/lib/notify';
+import { notify, templates, links } from '@/lib/notify';
+import { formatINR } from '@/lib/money';
 import { formToObject, zodErrors, type FormState } from '@/lib/validators';
 import type { ChatMsg } from '@/lib/chatbot';
 
@@ -225,6 +226,40 @@ export const updateEnquiry = guarded('enquiries', async (s, fd): Promise<FormSta
   if (note) await db.insert(enquiryNotes).values({ enquiryId: id, staffId: s.id, note });
   await audit(s.id, 'enquiry.update', 'enquiry', id, { status });
   revalidatePath(`/admin/enquiries/${id}`);
+});
+
+/** Accepted quote → pending-payment order + secure pay link (optionally sent to the customer). */
+export const createPaymentLink = guarded('enquiries', async (s, fd): Promise<FormState | void> => {
+  const id = num(fd, 'id');
+  const errors: Record<string, string> = {};
+  const need = (k: string, msg: string) => { if (!str(fd, k)) errors[k] = msg; };
+  need('name', 'Enter the customer name'); need('line1', 'Enter the address'); need('city', 'Enter the city'); need('state', 'Choose the state');
+  if (!/^\S+@\S+\.\S+$/.test(str(fd, 'email'))) errors.email = 'Enter a valid email';
+  if (!/^[6-9]\d{9}$/.test(str(fd, 'phone').replace(/\D/g, '').slice(-10))) errors.phone = 'Enter a 10-digit mobile number';
+  if (!/^\d{6}$/.test(str(fd, 'pincode'))) errors.pincode = 'Enter a 6-digit pincode';
+  const amount = toPaise(str(fd, 'amount').replace(/[,\s₹]/g, '') || '0');
+  if (!amount || amount < 100) errors.amount = 'Enter the agreed amount';
+  const gstin = str(fd, 'gstin').toUpperCase();
+  if (gstin && !/^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(gstin)) errors.gstin = 'Enter a valid GSTIN';
+  if (Object.keys(errors).length) return { errors };
+  const phone = str(fd, 'phone').replace(/\D/g, '').slice(-10);
+  const contact = { name: str(fd, 'name'), email: str(fd, 'email').toLowerCase(), phone };
+  const shipping = { name: contact.name, phone, line1: str(fd, 'line1'), line2: str(fd, 'line2') || undefined, city: str(fd, 'city'), state: str(fd, 'state'), pincode: str(fd, 'pincode') };
+  const validDays = Math.min(30, Math.max(1, Math.trunc(num(fd, 'validDays')) || 7));
+  let order;
+  try {
+    order = await createQuoteOrder({ enquiryId: id, productId: num(fd, 'productId'), qty: Math.max(1, Math.trunc(num(fd, 'qty')) || 1), amount, contact, shipping, gstin: gstin || undefined, validDays, note: str(fd, 'note') || undefined, staffId: s.id });
+  } catch (e) { if (e instanceof CheckoutError) return { ok: false, message: e.message }; throw e; }
+  const item = await db.query.orderItems.findFirst({ where: eq(orderItems.orderId, order.id) });
+  if (fd.get('send') === 'on') {
+    await notify({ email: order.contactEmail, phone: order.contactPhone }, templates.paymentLink({
+      number: order.number, name: order.contactName.split(' ')[0], total: formatINR(order.total), what: `${item?.name ?? 'your DVINE system'}${item && item.qty > 1 ? ` × ${item.qty}` : ''}`,
+      link: links.pay(order.number, order.accessToken), until: order.reservationExpiresAt!.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' }),
+    }));
+  }
+  await audit(s.id, 'quote.payment_link', 'enquiry', id, { order: order.number, amount });
+  revalidatePath(`/admin/enquiries/${id}`);
+  return { ok: true, message: `Payment link created for order ${order.number}${fd.get('send') === 'on' ? ' and sent to the customer' : ''}.` };
 });
 
 export const replyToChat = guarded('enquiries', async (s, fd): Promise<FormState | void> => {

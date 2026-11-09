@@ -52,7 +52,8 @@ export const RibbonSchema = z.object({
   speed: z.number().min(8).max(120).catch(36).default(36),
   separator: z.enum(['drop', 'star', 'dot', 'spark']).catch('drop').default('drop'),
   href: s(300),
-  scope: z.enum(['home', 'all']).catch('home').default('home'),
+  /** home: the homepage; shop: the homepage and the product pages; all: every page */
+  scope: z.enum(['home', 'shop', 'all']).catch('home').default('home'),
   schedule: Schedule,
 });
 
@@ -84,8 +85,9 @@ export const SlideSchema = z.object({
   primary: Link.catch({ label: '', href: '' }).default({ label: '', href: '' }),
   secondary: Link.catch({ label: '', href: '' }).default({ label: '', href: '' }),
   media: Media,
-  /** cover: photo or video fills the card behind the copy; side: shown on the right, as the products are */
-  fit: z.enum(['cover', 'side']).catch('cover').default('cover'),
+  /** cover: photo or video fills the card behind the copy; side: shown on the right, as the products are;
+      lineup: no media, the three 3D products stand together on the right (Crystal, Titan in the middle, Hyper) */
+  fit: z.enum(['cover', 'side', 'lineup']).catch('cover').default('cover'),
   /** how much the media is darkened behind the copy (0–90) */
   shade: z.number().min(0).max(90).catch(45).default(45),
   /** seconds before the slideshow moves on */
@@ -115,6 +117,42 @@ export const PromoSchema = z.object({
   cards: z.array(CardSchema).max(3).catch([]).default([]),
 });
 
+/* ───────────── Product pages: an offer ticket in the purchase panel, and promotion cards ───────────── */
+export const PRODUCT_PAGES = [
+  { key: 'crystal', name: 'Crystal', sub: 'Home water system', path: '/home-water-systems', theme: 'glacier' },
+  { key: 'hyper', name: 'Hyper', sub: 'Hydrogen water bottle', path: '/hydrogen-bottles', theme: 'flash' },
+  { key: 'titan', name: 'Titan', sub: 'For business', path: '/for-business', theme: 'volt' },
+] as const;
+export type ProductKey = (typeof PRODUCT_PAGES)[number]['key'];
+
+/** The offer ticket beside the price: a pinned label, the offer, optional small print, a code to copy, and a countdown to its end date. */
+export const OfferSchema = z.object({
+  enabled: bool(false),
+  theme: theme('volt'),
+  tag: s(40),
+  title: s(90),
+  body: s(220),
+  /** a coupon from Admin › Marketing; visitors tap to copy it and apply it in the cart */
+  code: s(24),
+  /** counts down to the schedule's end date (a live clock on the last day) */
+  countdown: bool(true),
+  link: Link.catch({ label: '', href: '' }).default({ label: '', href: '' }),
+  schedule: Schedule,
+});
+export const ProductPromoSchema = z.object({
+  offer: OfferSchema.catch(() => OfferSchema.parse({})).default({}),
+  banner: z.object({
+    enabled: bool(false),
+    /** hero: straight after the hero; faq: before the questions at the end */
+    placement: z.enum(['hero', 'faq']).catch('hero').default('hero'),
+    title: s(90),
+    body: s(280),
+    cards: z.array(CardSchema).max(2).catch([]).default([]),
+  }).catch({ enabled: false, placement: 'hero', title: '', body: '', cards: [] }).default({}),
+});
+const productPromo = () => ProductPromoSchema.catch(() => ProductPromoSchema.parse({})).default({});
+export const ProductsSchema = z.object({ crystal: productPromo(), hyper: productPromo(), titan: productPromo() });
+
 export const PicSchema = z.object({ id: uid, after: s(40), src: s(500), alt: s(160) });
 export const WaterSchema = z.object({
   title: s(90, HOME.waterTesting.title),
@@ -143,6 +181,7 @@ export const SiteContentSchema = z.object({
   ribbon: RibbonSchema.catch(() => RibbonSchema.parse({})).default({}),
   slides: z.array(SlideSchema).max(4).catch([]).default([]),
   promo: PromoSchema.catch(() => PromoSchema.parse({})).default({}),
+  products: ProductsSchema.catch(() => ProductsSchema.parse({})).default({}),
   water: WaterSchema.catch(() => WaterSchema.parse({})).default({}),
   partner: PartnerSchema.catch(() => PartnerSchema.parse({})).default({}),
 });
@@ -152,6 +191,8 @@ export type Ribbon = SiteContent['ribbon'];
 export type PromoSlide = SiteContent['slides'][number];
 export type PromoCard = SiteContent['promo']['cards'][number];
 export type MediaItem = NonNullable<PromoSlide['media']>;
+export type ProductPromo = SiteContent['products'][ProductKey];
+export type Offer = ProductPromo['offer'];
 export type WaterPic = SiteContent['water']['pics'][number];
 export type DecorItem = z.infer<typeof DecorSchema>;
 
@@ -165,6 +206,7 @@ export const DECOR_PACKS = [
     { src: '/decor/diwali/toran.png', label: 'Toran', w: 60 },
     { src: '/decor/diwali/lights.png', label: 'Fairy lights', w: 50 },
     { src: '/decor/diwali/rangoli.png', label: 'Rangoli', w: 18 },
+    { src: '/decor/diwali/rangoli-floor.png', label: 'Rangoli on the floor', w: 30 },
     { src: '/decor/diwali/marigold.png', label: 'Marigold', w: 6 },
     { src: '/decor/diwali/sparkles.png', label: 'Sparkles', w: 8 },
     { src: '/decor/diwali/firework.png', label: 'Firework', w: 14 },
@@ -234,44 +276,54 @@ export const isLive = (x: { enabled?: boolean; schedule?: { from: string; to: st
 /* ───────────── Festive templates ─────────────
    One click fills the ribbon, a first hero slide and one promotion card with ready copy in a matching theme.
    Copy follows the brand voice: plain, factual, no health claims; offers are written for the team to finish. */
+/** Diwali hero: a marigold toran along the top, two kandils, and the lineup standing behind a floor rangoli
+    with diyas lit around it. Exported so an already-published Diwali slide can be brought up to date. */
+export const DIWALI_SLIDE_DECOR = decor([
+  { src: '/decor/diwali/toran.png', x: 76, y: 7, w: 54, layer: 'front', motion: 'none', mobile: false },
+  { src: '/decor/diwali/lantern.png', x: 55, y: 19, w: 4.4, layer: 'front', motion: 'sway', mobile: false },
+  { src: '/decor/diwali/lantern.png', x: 96.5, y: 23, w: 3.6, layer: 'front', motion: 'sway', mobile: false },
+  { src: '/decor/diwali/rangoli-floor.png', x: 76, y: 97, w: 30, layer: 'front', motion: 'none', mobile: false },
+  { src: '/decor/diwali/diya.png', x: 76, y: 94, w: 6, layer: 'front', motion: 'none', mobile: false },
+  { src: '/decor/diwali/diya.png', x: 58, y: 92, w: 7, layer: 'front', motion: 'none' },
+  { src: '/decor/diwali/diya.png', x: 92, y: 92, w: 6.4, layer: 'front', motion: 'none', mobile: false },
+  { src: '/decor/diwali/sparkles.png', x: 66, y: 32, w: 6, layer: 'front', motion: 'none', mobile: false },
+]);
+
 export type Template = {
   key: string; label: string; theme: ThemeKey; emoji: string;
   ribbon: string[];
-  slide: { tag: string; title: string; body: string; primary: { label: string; href: string }; media: string; fit: 'cover' | 'side'; decor?: DecorItem[] };
+  slide: { tag: string; title: string; body: string; primary: { label: string; href: string }; media: string; fit: 'cover' | 'side' | 'lineup'; decor?: DecorItem[] };
   card: { tag: string; title: string; body: string; cta: { label: string; href: string }; media: string; decor?: DecorItem[] };
+  /** the offer ticket on the Crystal and Hyper pages; {name} becomes the product's name */
+  offer: { tag: string; title: string; body: string };
 };
 export const TEMPLATES: Template[] = [
   {
     key: 'diwali', label: 'Diwali', theme: 'volt', emoji: '🪔',
     ribbon: ['Festive offers on Crystal and Hyper', 'Gift Hyper this Diwali', 'Free installation on Crystal this season', 'Book a free home demo'],
-    slide: { tag: 'This Diwali Festive Offers', title: 'Light up\nevery sip.', body: 'Festive pricing on Crystal and Hyper for a limited period. Gift better water to the people you celebrate with.', primary: { label: 'Shop the Offers', href: '/home-water-systems' }, media: '/images/hyper_product.png', fit: 'side',
-      decor: decor([
-        { src: '/decor/diwali/rangoli.png', x: 74, y: 55, w: 34, layer: 'back', motion: 'spin', opacity: .3, mobile: false },
-        { src: '/decor/diwali/toran.png', x: 70, y: 3, w: 58, layer: 'front', motion: 'sway', mobile: false },
-        { src: '/decor/diwali/lantern.png', x: 52, y: 18, w: 5, layer: 'front', motion: 'sway' },
-        { src: '/decor/diwali/lantern.png', x: 95, y: 22, w: 4.2, layer: 'front', motion: 'sway' },
-        { src: '/decor/diwali/sparkles.png', x: 90, y: 50, w: 7, layer: 'front', motion: 'twinkle', mobile: false },
-        { src: '/decor/diwali/diya.png', x: 60, y: 90, w: 9, layer: 'front', motion: 'float' },
-        { src: '/decor/diwali/diya.png', x: 93, y: 91, w: 7, layer: 'front', motion: 'float', mobile: false },
-      ]) },
+    slide: { tag: 'This Diwali Festive Offers', title: 'Light up\nevery sip.', body: 'Festive pricing on Crystal and Hyper for a limited period. Gift better water to the people you celebrate with.', primary: { label: 'Shop the Offers', href: '/home-water-systems' }, media: '', fit: 'lineup',
+      decor: DIWALI_SLIDE_DECOR },
     card: { tag: 'Diwali gifting', title: 'Gift Hyper this Diwali', body: 'A hydrogen water bottle for everyone on your list. Bulk and corporate gifting available.', cta: { label: 'Explore gifting', href: '/for-business#bulk' }, media: '/images/brand-hand-bottle.webp',
       decor: decor([
-        { src: '/decor/diwali/lights.png', x: 50, y: 2, w: 70, layer: 'front', motion: 'sway' },
+        { src: '/decor/diwali/lights.png', x: 50, y: 7, w: 80, layer: 'front', motion: 'none' },
         { src: '/decor/diwali/diya.png', x: 36, y: 90, w: 9, layer: 'front', motion: 'float' },
         { src: '/decor/diwali/sparkles.png', x: 6, y: 24, w: 6, layer: 'front', motion: 'twinkle' },
       ]) },
+    offer: { tag: 'Diwali offer', title: 'Festive pricing on {name}', body: 'Celebrate with better water. Limited-period pricing this Diwali.' },
   },
   {
     key: 'holi', label: 'Holi', theme: 'flash', emoji: '🎨',
     ribbon: ['Holi offers on Hyper', 'A splash of colour, a bottle of Hyper', 'Limited-period festive pricing'],
     slide: { tag: 'Holi Colour Edition', title: 'Splash into\nHoli.', body: 'Take Hyper along for the celebrations. Festive pricing for a limited period.', primary: { label: 'Shop Hyper', href: '/hydrogen-bottles' }, media: '/images/hyper_product.png', fit: 'side' },
     card: { tag: 'Holi special', title: 'Hyper for the celebrations', body: 'Rechargeable, portable and ready to go wherever the colours take you.', cta: { label: 'Shop Hyper', href: '/hydrogen-bottles' }, media: '/images/lifestyle-move.webp' },
+    offer: { tag: 'Holi offer', title: 'Holi pricing on {name}', body: 'A splash of savings for the celebrations, for a limited period.' },
   },
   {
     key: 'independence', label: 'Independence Day', theme: 'current', emoji: '🇮🇳',
     ribbon: ['Independence Day offers', 'Made for Indian water conditions', 'Book a free water test'],
     slide: { tag: 'Independence Day Special', title: 'Freedom\nto choose.', body: 'Independence Day pricing on Crystal. Start with a water test and choose the setup that suits your home.', primary: { label: 'Shop Crystal', href: '/home-water-systems' }, media: '/images/crystal_product.png', fit: 'side' },
     card: { tag: '15 August', title: 'Independence Day pricing', body: 'Limited-period offers on our home water systems, with installation included.', cta: { label: 'See the offer', href: '/home-water-systems' }, media: '/images/crystal.webp' },
+    offer: { tag: 'Independence Day', title: 'Independence Day pricing on {name}', body: 'Limited-period pricing for 15 August.' },
   },
   {
     key: 'newyear', label: 'New Year', theme: 'ultra', emoji: '✨',
@@ -279,23 +331,27 @@ export const TEMPLATES: Template[] = [
     slide: { tag: 'Happy New Year Resolution', title: 'New year.\nNew water.', body: 'Start the year with a better water routine. New Year offers across Crystal, Hyper and Titan.', primary: { label: 'Shop the Range', href: '/home-water-systems' }, media: '/images/collection.webp', fit: 'cover',
       decor: decor([{ src: '/decor/diwali/firework.png', x: 88, y: 20, w: 16, motion: 'twinkle' }, { src: '/decor/diwali/sparkles.png', x: 70, y: 70, w: 8, motion: 'twinkle' }]) },
     card: { tag: 'New Year', title: 'Start the year right', body: 'Offers across the range for a limited period.', cta: { label: 'Shop now', href: '/home-water-systems' }, media: '/images/lifestyle-drink.webp' },
+    offer: { tag: 'New Year offer', title: 'Start the year with {name}', body: 'New Year pricing for a limited period.' },
   },
   {
     key: 'summer', label: 'Summer', theme: 'glacier', emoji: '☀️',
     ribbon: ['Stay hydrated this summer', 'Summer offers on Hyper', 'Free delivery across India'],
     slide: { tag: 'Summer Hydration Season', title: 'Keep your\ncool.', body: 'Summer is the season to drink more water. Take Hyper along, wherever the day goes.', primary: { label: 'Shop Hyper', href: '/hydrogen-bottles' }, media: '/images/hyper-water.webp', fit: 'cover' },
     card: { tag: 'Summer', title: 'Hydration on the go', body: 'Hyper is rechargeable over USB-C and fits in your bag.', cta: { label: 'Shop Hyper', href: '/hydrogen-bottles' }, media: '/images/pool.webp' },
+    offer: { tag: 'Summer offer', title: 'Summer pricing on {name}', body: 'Stay hydrated this summer. Limited-period pricing.' },
   },
   {
     key: 'launch', label: 'New launch', theme: 'volt', emoji: '🚀',
     ribbon: ['Just launched', 'Be among the first to own it', 'Book a demo today'],
     slide: { tag: 'Introducing Something New', title: 'Just\nlaunched.', body: 'Meet the newest member of the DVINE family. Book a demo to see it for yourself.', primary: { label: 'Book a Demo', href: '/book-demo' }, media: '/images/crystal_product.png', fit: 'side' },
     card: { tag: 'New', title: 'Just launched', body: 'See what is new from DVINE H2O.', cta: { label: 'Find out more', href: '/book-demo' }, media: '/images/crystal-inside.webp' },
+    offer: { tag: 'Launch offer', title: 'Launch pricing on {name}', body: 'Introductory pricing for the first customers.' },
   },
   {
     key: 'sale', label: 'Sale', theme: 'flash', emoji: '🏷️',
     ribbon: ['Sale now on', 'Limited-period prices', 'While stocks last'],
     slide: { tag: 'Limited Period Sale', title: 'The DVINE\nsale.', body: 'Limited-period prices across the range, while stocks last.', primary: { label: 'Shop the Sale', href: '/home-water-systems' }, media: '/images/collection.webp', fit: 'cover' },
     card: { tag: 'Sale', title: 'Limited-period prices', body: 'Offers across Crystal and Hyper while stocks last.', cta: { label: 'Shop now', href: '/home-water-systems' }, media: '/images/collection.webp' },
+    offer: { tag: 'Sale', title: 'Limited-period price on {name}', body: 'While stocks last.' },
   },
 ];

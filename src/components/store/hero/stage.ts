@@ -12,7 +12,10 @@ type Box = { cx: number; cy: number; h: number; w: number };
 type Opts = {
   canvas: HTMLCanvasElement; hero: HTMLElement; models: string[]; accents: string[]; squiggle: string;
   placement: { desk: Box; tilt: number; rest: number; sway: number; sq: { cx: number; cy: number; w: number } }[];
-  copyFor: (i: number) => HTMLElement | undefined; onFirstLoad: () => void; initial: number;
+  /** where each product stands when all three are shown together (a promotion slide set to "lineup"); the box's
+      bottom edge is the floor they all stand on, so different sizes still line up */
+  lineup: { desk: Box; mob: { cx: number; h: number; w: number }; tilt: number; rest: number; delay: number }[];
+  copyFor: (i: number) => HTMLElement | undefined; lineupCopy: () => HTMLElement | undefined; onFirstLoad: () => void; initial: number;
 };
 
 const FRAG = /* glsl */ `
@@ -131,12 +134,14 @@ export async function createStage(o: Opts) {
   renderer.initTexture(sqTex);
   const sqPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -SQ_Z);
 
-  type Slot = { i: number; root: THREE.Group; tilt: THREE.Group; spin: THREE.Group; loaded: boolean; size: THREE.Vector3; state: 'hidden' | 'entering' | 'in' | 'leaving'; t: number; yawDrag: number; scale: number; pos: THREE.Vector3; offY: number };
+  /** pos/scale/offY: alone on its own slide; posL/scaleL/offYL: in the lineup. m blends between them (0 alone, 1 lineup). */
+  type Slot = { i: number; root: THREE.Group; tilt: THREE.Group; spin: THREE.Group; loaded: boolean; size: THREE.Vector3; state: 'hidden' | 'entering' | 'in' | 'leaving'; t: number; yawDrag: number;
+    scale: number; pos: THREE.Vector3; offY: number; scaleL: number; posL: THREE.Vector3; offYL: number; m: number; mT: number; settle: boolean };
   const slots: Slot[] = o.models.map((_, i) => {
     const root = new THREE.Group(); root.visible = false; scene.add(root);
     const tilt = new THREE.Group(); root.add(tilt);
     const spin = new THREE.Group(); tilt.add(spin);
-    return { i, root, tilt, spin, loaded: false, size: new THREE.Vector3(1, 1, 1), state: 'hidden', t: 0, yawDrag: 0, scale: 1, pos: new THREE.Vector3(), offY: 2 };
+    return { i, root, tilt, spin, loaded: false, size: new THREE.Vector3(1, 1, 1), state: 'hidden', t: 0, yawDrag: 0, scale: 1, pos: new THREE.Vector3(), offY: 2, scaleL: 1, posL: new THREE.Vector3(), offYL: 2, m: 0, mT: 0, settle: false };
   });
 
   let current = o.initial, W = 1, H = 1, mobile = false, firstDone = false, disposed = false;
@@ -153,12 +158,23 @@ export async function createStage(o: Opts) {
     return { cx: i === 0 ? .54 : .5, cy: top + h / 2 + 0.02, h, w: i === 0 ? .42 : .62 };
   };
 
-  const tint = new THREE.Color(o.accents[current]), tintTarget = tint.clone();
+  /** LINEUP = -2: every product on stage at once */
+  const LINEUP = -2;
+  const lineBoxFor = (i: number): Box => {
+    const L = o.lineup[i];
+    if (!mobile) return L.desk;
+    const copy = o.lineupCopy();
+    const top = copy ? (copy.offsetTop + copy.offsetHeight + 24) / H : .55;
+    const avail = 1 - top, floor = top + avail * .9, h = avail * L.mob.h;
+    return { cx: L.mob.cx, cy: floor - h / 2, h, w: L.mob.w };
+  };
+
+  const tint = new THREE.Color(o.accents[Math.max(0, current)]), tintTarget = tint.clone();
   const focus = new THREE.Vector2(.62, .5), focusTarget = focus.clone();
   const tmp = new THREE.Vector3();
   const updateFocus = (snap = false) => {
-    const s = slots[current];
-    if (s?.loaded) { tmp.copy(s.pos).project(camera); focusTarget.set((tmp.x + 1) / 2, (tmp.y + 1) / 2); }
+    const s = current === LINEUP ? slots[2] ?? slots[0] : slots[current];
+    if (s?.loaded) { tmp.copy(current === LINEUP ? s.posL : s.pos).project(camera); focusTarget.set((tmp.x + 1) / 2, (tmp.y + 1) / 2); }
     if (snap) focus.copy(focusTarget);
   };
 
@@ -167,6 +183,7 @@ export async function createStage(o: Opts) {
     if (mobile) {
       let need = 0;
       for (let i = 0; i < slots.length; i++) { const c = o.copyFor(i); if (c) need = Math.max(need, c.offsetTop + c.offsetHeight); }
+      const lc = o.lineupCopy(); if (lc) need = Math.max(need, lc.offsetTop + lc.offsetHeight);
       o.hero.style.setProperty('--mh', Math.max(innerHeight - o.hero.offsetTop - 8, need + 24 + 400) + 'px');
     } else o.hero.style.removeProperty('--mh');
     const r = o.hero.getBoundingClientRect(); W = r.width; H = r.height;
@@ -181,8 +198,15 @@ export async function createStage(o: Opts) {
       const c = toPlane(b.cx, b.cy), t = toPlane(b.cx, b.cy - b.h / 2), bt = toPlane(b.cx, b.cy + b.h / 2);
       const L = toPlane(b.cx - b.w / 2, b.cy), R = toPlane(b.cx + b.w / 2, b.cy);
       s.scale = Math.min((t.y - bt.y) / s.size.y, (R.x - L.x) / (Math.max(s.size.x, s.size.z) * 1.08));
-      s.pos.copy(c); s.root.scale.setScalar(s.scale);
+      s.pos.copy(c);
       s.offY = (t.y - toPlane(b.cx, 1.25).y) + s.size.y * s.scale;
+      // lineup: fit the box, then stand on its bottom edge
+      const lb = lineBoxFor(s.i);
+      const lt = toPlane(lb.cx, lb.cy - lb.h / 2), lbt = toPlane(lb.cx, lb.cy + lb.h / 2);
+      const lL = toPlane(lb.cx - lb.w / 2, lb.cy), lR = toPlane(lb.cx + lb.w / 2, lb.cy);
+      s.scaleL = Math.min((lt.y - lbt.y) / s.size.y, (lR.x - lL.x) / (Math.max(s.size.x, s.size.z) * 1.08));
+      s.posL.set(lbt.x, lbt.y + s.size.y * s.scaleL / 2, lbt.z);
+      s.offYL = (s.posL.y + s.size.y * s.scaleL / 2 - toPlane(lb.cx, 1.25).y) + s.size.y * s.scaleL;
     }
     squiggles.forEach((q, i) => {
       const a = o.placement[i].sq, c = toPlane(a.cx, a.cy, sqPlane);
@@ -192,17 +216,28 @@ export async function createStage(o: Opts) {
     updateFocus(true);
   };
 
-  /** i = -1: a promotion slide is showing (its own media covers the card); every product leaves and the
-      backdrop takes the promotion's accent. */
+  /** i = -1: a promotion slide with its own media; every product leaves and the backdrop takes the promotion's
+      accent. i = LINEUP (-2): a promotion slide showing the whole range; all three rise in, one after another,
+      and a product already on stage glides across into its place in the line (and back out to its own slide). */
   const show = (i: number, accent?: string) => {
     current = i;
+    const line = i === LINEUP;
     const someoneOut = slots.some(s => s.state === 'in' || s.state === 'entering');
     for (const s of slots) {
       if (!s.loaded) continue;
-      if (s.i === i) { if (s.state !== 'in' && s.state !== 'entering') { s.state = 'entering'; s.t = someoneOut ? -0.32 : 0; s.yawDrag = 0; s.root.visible = true; } }
+      if (line || s.i === i) {
+        // changing between its own slide and the line: the turn a visitor dragged in is let go (settles back to
+        // the front in the frame loop); wrapped to the nearest half-turn so it never spins round several times
+        if (s.mT !== (line ? 1 : 0)) { s.yawDrag = Math.atan2(Math.sin(s.yawDrag), Math.cos(s.yawDrag)); s.settle = true; }
+        s.mT = line ? 1 : 0;
+        if (s.state !== 'in' && s.state !== 'entering') {
+          s.state = 'entering'; s.m = s.mT; s.yawDrag = 0; s.root.visible = true;
+          s.t = (someoneOut ? -0.32 : 0) - (line ? o.lineup[s.i].delay : 0);
+        }
+      }
       else if (s.state === 'in' || s.state === 'entering') { s.state = 'leaving'; s.t = 0; }
     }
-    tintTarget.set(accent ?? o.accents[i]); updateFocus();
+    tintTarget.set(accent ?? o.accents[Math.max(0, i)]); updateFocus();
   };
 
   const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
@@ -227,7 +262,7 @@ export async function createStage(o: Opts) {
         obj.traverse(m => { const mesh = m as THREE.Mesh; if (!mesh.isMesh) return;
           (Array.isArray(mesh.material) ? mesh.material : [mesh.material]).forEach(mat => Object.values(mat).forEach(v => { if (v instanceof THREE.Texture) renderer.initTexture(v); })); });
         s.root.visible = was; squiggles[i].mesh.visible = false;
-        if (i === current) show(current);
+        if (i === current || current === LINEUP) show(current);
         if (!firstDone) { firstDone = true; o.onFirstLoad(); }
       } catch (e) { console.error('model load failed', o.models[i], e); if (!firstDone) { firstDone = true; o.onFirstLoad(); } }
     }
@@ -241,7 +276,7 @@ export async function createStage(o: Opts) {
     bgU.uMouse.value.set((e.clientX - r.left) / r.width, 1 - (e.clientY - r.top) / r.height);
     if (dragging && slots[current]) { const dx = e.clientX - lastX; lastX = e.clientX; dragVel = dx * 0.006; slots[current].yawDrag += dragVel; }
   };
-  const onDown = (e: PointerEvent) => { if (e.pointerType !== 'mouse') return; dragging = true; lastX = e.clientX; };
+  const onDown = (e: PointerEvent) => { if (e.pointerType !== 'mouse') return; dragging = true; lastX = e.clientX; if (slots[current]) slots[current].settle = false; };
   const onUp = () => { dragging = false; };
   addEventListener('pointermove', onMove, { passive: true }); o.canvas.addEventListener('pointerdown', onDown); addEventListener('pointerup', onUp);
   const ro = new ResizeObserver(layout); ro.observe(o.hero);
@@ -276,12 +311,20 @@ export async function createStage(o: Opts) {
         const k = clamp01(s.t / 0.6); rise = 1 - easeIn(k); spinIn = -easeIn(k) * 0.5; tiltIn = -easeIn(k) * 0.4;
         if (s.t > 0.62) { s.state = 'hidden'; s.root.visible = false; continue; }
       }
-      const p = o.placement[s.i];
-      const float = reduce ? 0 : Math.sin(time * 0.9 + s.i * 2) * 0.012 * s.size.y * s.scale;
-      s.root.position.set(s.pos.x, s.pos.y + (rise - 1) * s.offY + float, s.pos.z);
-      s.tilt.rotation.z = p.tilt * (1 - tiltIn * 0.9) + mouseS.x * -0.03;
+      const p = o.placement[s.i], L = o.lineup[s.i];
+      // glide between its own spot and its place in the line (smoothstep on a damped blend: no snap at either end)
+      s.m += (s.mT - s.m) * (reduce ? 1 : 1 - Math.pow(0.035, dt));
+      // a dragged turn eases back to the front while it glides (and in the line, where it can't be dragged)
+      if (s.settle || current === LINEUP) { s.yawDrag *= reduce ? 0 : Math.pow(0.03, dt); if (Math.abs(s.yawDrag) < 1e-3) { s.yawDrag = 0; s.settle = false; } }
+      const m = s.m * s.m * (3 - 2 * s.m);
+      const scale = THREE.MathUtils.lerp(s.scale, s.scaleL, m), offY = THREE.MathUtils.lerp(s.offY, s.offYL, m);
+      s.root.scale.setScalar(scale);
+      const float = reduce ? 0 : Math.sin(time * 0.9 + s.i * 2) * 0.012 * s.size.y * scale;
+      tmp.lerpVectors(s.pos, s.posL, m);
+      s.root.position.set(tmp.x, tmp.y + (rise - 1) * offY + float, tmp.z);
+      s.tilt.rotation.z = THREE.MathUtils.lerp(p.tilt, L.tilt, m) * (1 - tiltIn * 0.9) + mouseS.x * -0.03;
       s.tilt.rotation.x = mouseS.y * 0.04;
-      s.spin.rotation.y = p.rest + (reduce ? 0 : Math.sin(time * 0.32 + s.i) * p.sway * 0.35) + mouseS.x * 0.25 + s.yawDrag - spinIn * 1.9;
+      s.spin.rotation.y = THREE.MathUtils.lerp(p.rest, L.rest, m) + (reduce ? 0 : Math.sin(time * 0.32 + s.i) * p.sway * (0.35 - m * 0.2)) + mouseS.x * 0.25 + s.yawDrag - spinIn * 1.9;
     }
     squiggles.forEach((q, i) => {
       const s = slots[i], on = !mobile && s.loaded && s.state !== 'hidden';
@@ -292,7 +335,9 @@ export async function createStage(o: Opts) {
         const k = clamp01(s.t / 0.22); u.uFade.value = 1 - k; q.mesh.position.y = q.y - easeIn(clamp01(s.t / 0.6)) * s.offY;
         if (k >= 1) q.mesh.visible = false;
       } else {
-        u.uFade.value = 1; q.mesh.position.y = q.y;
+        // its squiggle belongs to its own slide: it fades out as the product glides into the line
+        u.uFade.value = 1 - Math.min(1, s.m * 2.5); q.mesh.position.y = q.y;
+        if (u.uFade.value <= 0.001) { q.mesh.visible = false; return; }
         u.uDraw.value = reduce ? 1 : easeInOut(clamp01((s.t - 0.55) / 1.6));
       }
     });

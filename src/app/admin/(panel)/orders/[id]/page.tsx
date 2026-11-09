@@ -8,6 +8,7 @@ import { can } from '@/lib/session';
 import { formatINR } from '@/lib/money';
 import { TRANSITIONS, STATUS_LABEL } from '@/lib/orders';
 import { shiprocketEnabled } from '@/lib/shiprocket';
+import { GATEWAY_LABEL } from '@/lib/payments-mode';
 import { PageHead, Panel, TableWrap, dt } from '@/components/admin/ui';
 import { AdminForm } from '@/components/admin/AdminForm';
 import { Status } from '@/components/ui/Status';
@@ -148,12 +149,12 @@ export default async function OrderAdmin({ params }: { params: Promise<{ id: str
             </div>
           </Panel>
           <Panel title="Payments">
-            <ul className="space-y-2 font-sans text-sm">{o.payments.map(p => <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-paper px-3 py-2"><span>#{p.attempt} · {p.gateway}{p.method ? ` · ${p.method}` : ''}<span className="block text-[12px] text-muted">{p.gatewayPaymentId ?? p.gatewayOrderId}{p.errorDescription ? ` · ${p.errorDescription}` : ''}</span></span><span className="flex items-center gap-2"><Status value={p.status} /><b>{formatINR(p.amount)}</b></span></li>)}{!o.payments.length && <li className="text-muted">No payment attempts yet.</li>}</ul>
+            <ul className="space-y-2 font-sans text-sm">{o.payments.map(p => <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-paper px-3 py-2"><span>#{p.attempt} · {GATEWAY_LABEL[p.gateway] ?? p.gateway}{p.method ? ` · ${p.method}` : ''}<span className="block text-[12px] text-muted">{p.gatewayPaymentId ?? p.gatewayOrderId}{p.errorDescription ? ` · ${p.errorDescription}` : ''}</span></span><span className="flex items-center gap-2"><Status value={p.status} /><b>{formatINR(p.amount)}</b></span></li>)}{!o.payments.length && <li className="text-muted">No payment attempts yet.</li>}</ul>
             {paid && can(s.role, 'refunds') && refunded < paid.amount && (
               <AdminForm action={issueRefund} className="mt-4 grid gap-2 border-t border-line pt-4" confirm="Issue this refund through the payment gateway?">
                 <><p className="font-sans text-sm font-semibold">Refund</p><input type="hidden" name="orderId" value={o.id} />
                   <div className="flex gap-2"><input name="amount" defaultValue={((paid.amount - refunded) / 100).toFixed(2)} inputMode="decimal" className={`${sel} w-32`} aria-label="Amount in rupees" /><input name="reason" placeholder="Reason" className={`${sel} flex-1`} aria-label="Reason" required /></div>
-                  <SubmitButton className="btn btn-red btn-sm" pendingLabel="Refunding">Refund via {paid.gateway === 'razorpay' ? 'Razorpay' : 'test gateway'}</SubmitButton>
+                  <SubmitButton className="btn btn-red btn-sm" pendingLabel="Refunding">Refund via {GATEWAY_LABEL[paid.gateway] ?? paid.gateway}</SubmitButton>
                   <p className="font-sans text-[12px] text-muted">A GST credit note is issued automatically. To cancel and refund in full, use “Move to Cancelled”.</p></>
               </AdminForm>
             )}

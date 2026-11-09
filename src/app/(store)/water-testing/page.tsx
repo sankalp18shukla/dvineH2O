@@ -125,7 +125,7 @@ export default async function WaterTestingPage({ searchParams }: { searchParams:
             <div className="relative">
               <Lockup id="up-title" title={WATER_TESTING.upload.title} tone="flash" size="md" />
               <p className="lede mt-9" data-words><Words text={WATER_TESTING.upload.body} /></p>
-              <div className="relative mx-auto mt-12 w-[78%] max-w-xs lg:mx-0" data-speed=".35" aria-hidden="true">
+              <div className="relative mx-auto mt-14 mb-12 w-[78%] max-w-xs lg:mx-0" aria-hidden="true">
                 <Tape className="-top-4 left-1/2 -translate-x-1/2 -rotate-3" />
                 <div className="-rotate-3 bg-white p-5 shadow-[0_30px_60px_-30px_rgb(4_22_74/.5)]">
                   <div className="flex items-center justify-between border-b border-line pb-3"><span className="h-2.5 w-24 bg-ink/80" /><span className="h-2 w-10 rounded-full bg-glacier" /></div>
@@ -134,7 +134,7 @@ export default async function WaterTestingPage({ searchParams }: { searchParams:
                   <p className="mt-4 font-sans text-[11px] text-muted">Sample report · details redacted</p>
                 </div>
               </div>
-              <ul className="mt-12 grid gap-3 font-sans text-[15px]" data-rise>
+              <ul className="grid gap-3 font-sans text-[15px]" data-rise>
                 {['Every page of the report', 'The sample and test date', 'Readable results and units'].map(x => <li key={x} className="flex items-center gap-3"><Icon name="check" className="size-5 text-deep-current" />{x}</li>)}
               </ul>
               <p className="mt-6 flex items-start gap-2 font-sans text-sm text-ink/70"><Icon name="shield" className="mt-0.5 size-4 shrink-0" />Reports are private. Only the DVINE team reviewing your enquiry can open them.</p>

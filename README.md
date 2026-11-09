@@ -12,7 +12,7 @@ npm run dev                     # http://localhost:3000   ·   admin: http://loc
 ```
 
 Seeded admin: `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` from `.env.local` (defaults `admin@dvineh2o.com` / `ChangeMe!2026` — change it).
-With Razorpay keys blank and `ALLOW_TEST_PAYMENTS=true`, checkout uses a built-in test gateway (simulate success / failure).
+With no gateway keys set (dev, or `ALLOW_TEST_PAYMENTS=true`), checkout uses a built-in test gateway (simulate success / failure).
 
 ---
 
@@ -36,7 +36,8 @@ Copy comes from the content document and lives in `src/lib/content.ts`. Prices, 
 - Cart (cookie), coupons, **referral codes**, quantity limits, live stock check.
 - Guest or signed-in checkout, shipping + billing address, optional GSTIN, consent capture.
 - Stock is **reserved** when the order is created and released automatically if payment isn't completed in time (maintenance job).
-- **Razorpay**: server-created orders, signature-verified callback, webhook (`payment.captured`, `payment.failed`, `refund.*`), every attempt stored with method / error / stage. No card/UPI data touches the server. All Razorpay methods (UPI, cards, net banking, wallets, EMI, pay-later) are available in their checkout.
+- **PhonePe** (default gateway): Standard Checkout v2. The customer pays on PhonePe's hosted page (UPI, cards, net banking) and returns to `/checkout/phonepe/return`, where the result is confirmed with PhonePe's Order Status API, never trusted from the redirect. Webhook `/api/webhooks/phonepe` (`checkout.order.*`, `pg.refund.*`) and the maintenance job settle anything still pending. Refunds go through PhonePe's Refund API.
+- **Razorpay** (optional alternative, `PAYMENT_GATEWAY=razorpay`): server-created orders, signature-verified callback, webhook (`payment.captured`, `payment.failed`, `refund.*`), every attempt stored with method / error / stage. No card/UPI data touches the server. All Razorpay methods (UPI, cards, net banking, wallets, EMI, pay-later) are available in their checkout.
 - Order lifecycle: Pending payment → Confirmed → Processing → Packed → Shipped → Delivered / Cancelled / Returned, with full event history.
 - **GST invoices** auto-issued on payment (FY series `DVH/2026-27/0001`, CGST+SGST vs IGST by place of supply), **credit notes** for refunds, printable / save-as-PDF, bulk CSV export.
 - **Shiprocket**: push order, assign AWB, tracking refresh, tracking webhook (auto-moves orders to Shipped/Delivered, logs RTO/exceptions). Manual shipments when not configured.
@@ -100,12 +101,15 @@ See `.env.example`. Key variables:
 |---|---|
 | `AUTH_SECRET` | Signs login sessions. Required in production (long random string). |
 | `DATABASE_URL`, `DATABASE_AUTH_TOKEN` | `file:./data/dvine.db` locally; `libsql://…` for Turso in production |
-| `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | Live payments + webhook verification |
+| `PAYMENT_GATEWAY` | `phonepe` or `razorpay`; blank picks PhonePe if configured |
+| `PHONEPE_ENV`, `PHONEPE_CLIENT_ID`, `PHONEPE_CLIENT_SECRET`, `PHONEPE_CLIENT_VERSION` | PhonePe Standard Checkout (`sandbox` or `production`) |
+| `PHONEPE_WEBHOOK_USERNAME`, `PHONEPE_WEBHOOK_PASSWORD` | Verifies PhonePe webhooks |
+| `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | Optional Razorpay alternative |
 | `SHIPROCKET_EMAIL`, `SHIPROCKET_PASSWORD`, `SHIPROCKET_PICKUP_LOCATION`, `SHIPROCKET_WEBHOOK_TOKEN` | Shipping |
 | `SMTP_*`, `MAIL_FROM` | Transactional email (otherwise messages are only logged) |
 | `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_ID`, `NEXT_PUBLIC_WHATSAPP_NUMBER` | WhatsApp Cloud API notifications + chat hand-off link |
 | `CRON_SECRET` | Protects `/api/cron/maintenance` |
-| `ALLOW_TEST_PAYMENTS` | Built-in test gateway when Razorpay keys are blank. **Keep `false` in production.** |
+| `ALLOW_TEST_PAYMENTS` | Built-in test gateway when no gateway keys are set. **Keep `false` in production.** |
 
 ## Deploying
 **Option A — Vercel + Turso (managed):** create a Turso database, set `DATABASE_URL`/`DATABASE_AUTH_TOKEN`, run `npm run db:setup` once against it, deploy. Move uploads (`src/lib/uploads.ts`) to S3/R2/Vercel Blob, since serverless disks aren't persistent. Add a Vercel Cron hitting `POST /api/cron/maintenance` every 10 minutes with `Authorization: Bearer $CRON_SECRET`.
@@ -113,7 +117,8 @@ See `.env.example`. Key variables:
 **Option B — single VPS (matches the brief's 10 GB hosting):** `npm ci && npm run build && npm run db:setup && npm start` behind Nginx + Let's Encrypt, with `data/` on persistent disk and a nightly backup of `data/` (database + private uploads). Crontab: `*/10 * * * * cd /srv/dvine && npm run cron`.
 
 Then configure:
-- Razorpay Dashboard › Webhooks → `https://<domain>/api/webhooks/razorpay` (events: payment.captured, payment.failed, order.paid, refund.processed, refund.failed) with `RAZORPAY_WEBHOOK_SECRET`.
+- PhonePe Business Dashboard › Developer Settings › Webhooks → `https://<domain>/api/webhooks/phonepe`, with the username/password from `PHONEPE_WEBHOOK_USERNAME`/`PASSWORD`; events `checkout.order.completed`, `checkout.order.failed`, `pg.refund.completed`, `pg.refund.failed`. Run the maintenance cron: it also reconciles PhonePe payments the customer never returned from.
+- (If using Razorpay) Razorpay Dashboard › Webhooks → `https://<domain>/api/webhooks/razorpay` (events: payment.captured, payment.failed, order.paid, refund.processed, refund.failed) with `RAZORPAY_WEBHOOK_SECRET`.
 - Shiprocket › Settings › Webhooks → `https://<domain>/api/webhooks/shiprocket?token=<SHIPROCKET_WEBHOOK_TOKEN>`.
 - A staging copy is the same app with its own database and Razorpay test keys.
 
@@ -123,9 +128,11 @@ Then configure:
 3. **Opening stock**, reorder levels and **water-test options/prices** are placeholders.
 4. **Pincode list** is a sample of metro pincodes. Paste the real serviceability list in Admin › Settings › Pincodes.
 5. **Warranty for Hyper** is seeded as 12 months (Crystal/Titan 5 years per the catalog). Confirm.
-6. **Policies** (`/policies/*`) are drafts for legal review. HSN codes are suggestions. Confirm with your CA.
+6. **Policies** (`/policies/*`) are drafts for legal review: what to send and check is in [docs/legal-review.md](docs/legal-review.md). The pages no longer carry a draft banner, so don't launch before that review is done. HSN codes are suggestions. Confirm with your CA.
 7. Upload brochures, manuals and demo videos (Admin › Products) and replace the stand-in fonts.
 8. Change the seeded admin password, set `AUTH_SECRET`, and set `ALLOW_TEST_PAYMENTS=false`.
+9. **Demo reviews**: the Crystal page shows 8 made-up reviews while there are no real ones (dev only, or wherever `DEMO_REVIEWS=1` is set). Leave `DEMO_REVIEWS` unset in production and delete the `DEMO` list in `src/components/store/Reviews.tsx` before launch.
+10. PhonePe: test end to end with sandbox keys (`PHONEPE_ENV=sandbox`), then switch to live keys and `PHONEPE_ENV=production`. PhonePe must whitelist the live domain before production payments work.
 
 ## Testing
 ```

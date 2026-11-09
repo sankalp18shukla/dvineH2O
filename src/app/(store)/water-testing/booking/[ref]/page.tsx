@@ -9,7 +9,7 @@ import { Status } from '@/components/ui/Status';
 import { db } from '@/lib/db';
 import { waterTests } from '@/lib/db/schema';
 import { formatINR } from '@/lib/money';
-import { testPaymentsAllowed } from '@/lib/payments-mode';
+import { activeGateway, testPaymentsAllowed } from '@/lib/payments-mode';
 
 export const metadata: Metadata = { title: 'Your water test', robots: { index: false } };
 
@@ -38,7 +38,7 @@ export default async function BookingPage({ params, searchParams }: { params: Pr
             </dl>
             <p className="mt-6 text-sm text-muted">Need to change something? <Link href="/support#contact" className="link">Contact us</Link> with reference {w.ref}.</p>
           </div>
-          {needsPay && <PayPanel kind="water_test" ref_={w.ref} token={w.accessToken} amount={w.price} prefill={{ name: w.name, email: w.email, phone: w.phone }} successHref={`/water-testing/booking/${w.ref}?t=${w.accessToken}`} testAllowed={testPaymentsAllowed()} />}
+          {needsPay && <PayPanel kind="water_test" ref_={w.ref} token={w.accessToken} amount={w.price} prefill={{ name: w.name, email: w.email, phone: w.phone }} successHref={`/water-testing/booking/${w.ref}?t=${w.accessToken}`} testAllowed={testPaymentsAllowed()} gateway={activeGateway()} />}
         </div>
       </main>
     </>

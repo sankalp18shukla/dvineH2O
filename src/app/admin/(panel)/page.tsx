@@ -5,7 +5,8 @@ import { orders, products } from '@/lib/db/schema';
 import { requireStaff } from '@/lib/auth';
 import { overview, parseRange } from '@/lib/metrics';
 import { getCompany } from '@/lib/settings';
-import { razorpayEnabled } from '@/lib/razorpay';
+import { activeGateway } from '@/lib/payments-mode';
+import { phonepeEnabled, phonepeMode } from '@/lib/phonepe';
 import { shiprocketEnabled } from '@/lib/shiprocket';
 import { formatINR } from '@/lib/money';
 import { Kpi, PageHead, Panel, TableWrap, pct, dt } from '@/components/admin/ui';
@@ -26,7 +27,8 @@ export default async function Overview({ searchParams }: { searchParams: Promise
     db.query.orders.findMany({ orderBy: desc(orders.createdAt), limit: 6 }),
   ]);
   const warnings = [
-    !razorpayEnabled() && 'Payments are in TEST MODE. Add Razorpay keys to take real payments.',
+    activeGateway() === 'test' && 'Payments are in TEST MODE. Add PhonePe (or Razorpay) keys to take real payments.',
+    activeGateway() === 'phonepe' && phonepeEnabled() && phonepeMode() !== 'production' && 'PhonePe is in SANDBOX mode. Set PHONEPE_ENV=production with live keys to take real payments.',
     !shiprocketEnabled() && 'Shiprocket is not connected. Shipments are recorded manually.',
     !company.confirmed && 'Company legal name, address and GSTIN are not confirmed. Invoices show placeholders.',
     unconfirmed.filter(p => p.saleMode === 'cart').length > 0 && `Prices for ${unconfirmed.filter(p => p.saleMode === 'cart').map(p => p.shortName).join(', ')} are placeholders. Confirm them in Products.`,

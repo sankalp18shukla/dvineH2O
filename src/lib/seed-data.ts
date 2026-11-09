@@ -17,11 +17,16 @@ export const SEED_PRODUCTS: (typeof schema.products.$inferInsert)[] = [
     description: 'Hyper uses PEM electrolysis to generate dissolved molecular hydrogen in suitable drinking water.',
     specs: [
       { label: 'Technology', value: 'H2 Precision Infusion™ — PEM electrolysis' },
-      { label: 'Electrodes', value: 'Platinum titanium anode and cathode, proton exchange membrane' },
+      // every row is from the master catalogue's Hyper spread. Cycle time is left out on purpose: the catalogue says
+      // both "in under three minutes" and "complete in under 5 minutes"; add it once the client confirms one.
+      { label: 'Electrodes', value: 'Platinum titanium anode and cathode' },
+      { label: 'Membrane', value: 'SPE/PEM proton exchange membrane, titanium core' },
       { label: 'Chamber', value: 'Borosilicate glass' },
       { label: 'Cup', value: 'Anodised aluminium' },
+      { label: 'Housing', value: 'Leak-proof, durable body for daily and travel use; BPA-free Tritan' },
       { label: 'Modes', value: 'H2 Generation, Auto Clean, Standby' },
       { label: 'Controls', value: 'One-touch digital control panel, smart timer, auto shut-off' },
+      { label: 'Indicator', value: 'LED indicator' },
       { label: 'Battery', value: '2000 mAh (3.7 V / 7.4 Wh), USB-C rechargeable' },
     ],
     boxContents: ['Hyper bottle', 'USB-C charging cable', 'User guide'],

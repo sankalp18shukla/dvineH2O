@@ -116,6 +116,7 @@ export default async function PartnerPage({ searchParams }: { searchParams: Prom
               <ul className="mt-10 grid gap-4 font-sans" data-rise>
                 <li><a href={tel} className="group flex items-center gap-4 text-white"><span className="grid size-11 place-items-center rounded-full bg-white/10 transition group-hover:bg-voltage group-hover:text-ink"><Icon name="phone" className="size-5" /></span>{SITE.phone}</a></li>
                 <li><a href={`mailto:${SITE.email}`} className="group flex items-center gap-4 text-white"><span className="grid size-11 place-items-center rounded-full bg-white/10 transition group-hover:bg-voltage group-hover:text-ink"><Icon name="chat" className="size-5" /></span>{SITE.email}</a></li>
+                <li><a href={SITE.whatsappUrl} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 text-white"><span className="grid size-11 place-items-center rounded-full bg-white/10 transition group-hover:bg-voltage group-hover:text-ink"><Icon name="whatsapp" className="size-5" /></span>WhatsApp us</a></li>
               </ul>
             </div>
             <EnquiryForm variant="distributorship" source="/become-a-partner" submitLabel="Send Partner Enquiry" dark partnerTypes={types} />
@@ -133,7 +134,7 @@ export default async function PartnerPage({ searchParams }: { searchParams: Prom
           </section>
         )}
       </main>
-      <ActionBar watch="hero-actions" title="Become a partner" sub="Distributors, dealers and institutions" action={{ label: 'Apply', href: '#apply' }} />
+      <ActionBar tone="blue" watch="hero-actions" title="Become a partner" sub="Distributors, dealers and institutions" action={{ label: 'Apply', href: '#apply' }} />
     </>
   );
 }

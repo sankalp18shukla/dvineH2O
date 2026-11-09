@@ -7,7 +7,7 @@ import { ActionBar } from '@/components/store/ActionBar';
 import { SectionHead } from '@/components/ui/Section';
 import { Faq } from '@/components/ui/Faq';
 import { Icon } from '@/components/ui/Icon';
-import { SUPPORT } from '@/lib/content';
+import { SITE, SUPPORT } from '@/lib/content';
 import { Lockup, Squiggle } from '@/components/ui/Brand';
 
 export const metadata: Metadata = { title: 'Support', description: SUPPORT.hero.body, alternates: { canonical: '/support' } };
@@ -80,8 +80,10 @@ export default function SupportPage() {
             <div>
               <Lockup id="c-title" title={SUPPORT.contact.title} tone="volt" size="md" /><p className="lede mt-9">{SUPPORT.contact.body}</p>
               <ul className="mt-8 space-y-3 font-sans">
-                <li className="flex items-center gap-3"><Icon name="phone" className="size-5 text-deep-current" /><a href="tel:18002024504" className="hover:underline">1800 202 4504</a></li>
-                <li className="flex items-center gap-3"><Icon name="chat" className="size-5 text-deep-current" />Chat with us, bottom right</li>
+                <li className="flex items-center gap-3"><Icon name="phone" className="size-5 shrink-0 text-deep-current" /><a href={`tel:${SITE.phone.replace(/\s/g, '')}`} className="hover:underline">{SITE.phone}</a></li>
+                <li className="flex items-center gap-3"><Icon name="whatsapp" className="size-5 shrink-0 text-deep-current" /><a href={SITE.whatsappUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">WhatsApp +91 89841 63478</a></li>
+                <li className="flex items-center gap-3"><Icon name="chat" className="size-5 shrink-0 text-deep-current" /><a href={`mailto:${SITE.email}`} className="hover:underline">{SITE.email}</a></li>
+                <li className="flex items-start gap-3"><Icon name="pin" className="mt-0.5 size-5 shrink-0 text-deep-current" /><a href={SITE.mapsUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">{SITE.address[0]}<br />{SITE.address[1]}</a></li>
               </ul>
             </div>
             <SupportForm topics={SUPPORT.contact.topics} />

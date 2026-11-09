@@ -16,11 +16,10 @@ import { DEFAULT_CONTENT, isLive, todayIST } from '@/lib/site-content';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
-/** Collection rows: the hero's accent and features per product, and the transparent cutout once it is in public/. */
+/** Collection rows: each card's own copy and facts, and the transparent cutout once it is in public/. */
 const fitItems = (): FitItem[] => HOME.collection.cards.map(c => {
-  const slide = HERO_SLIDES.find(h => h.key === c.slug)!;
   const cutout = existsSync(join(process.cwd(), 'public', c.cutout));
-  return { ...c, src: cutout ? c.cutout : c.image, cutout, feats: slide.feats };
+  return { ...c, src: cutout ? c.cutout : c.image, cutout };
 });
 
 /** Help-choosing cards: the section photo once it is in public/, otherwise the fallback. */

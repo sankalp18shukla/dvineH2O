@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Icon } from '../ui/Icon';
+import { CHAT_OPEN, CHAT_STATE } from './events';
 import styles from './ChatWidget.module.css';
 
 type Msg = { from: 'user' | 'bot' | 'agent'; text: string; at: string; links?: { href: string; label: string }[] };
@@ -28,6 +29,13 @@ export function ChatWidget({ whatsapp }: { whatsapp: string | null }) {
   const list = useRef<HTMLDivElement>(null);
 
   useEffect(() => { try { const s = JSON.parse(localStorage.getItem(KEY) ?? 'null'); if (s?.ref) { setLive({ ref: s.ref, token: s.token }); } } catch {} }, []);
+  // the phone dock carries its own chat button; it opens this panel and steps aside while it is open
+  useEffect(() => {
+    const show = () => setOpen(true);
+    window.addEventListener(CHAT_OPEN, show);
+    return () => window.removeEventListener(CHAT_OPEN, show);
+  }, []);
+  useEffect(() => { window.dispatchEvent(new CustomEvent(CHAT_STATE, { detail: open })); }, [open]);
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
@@ -78,7 +86,7 @@ export function ChatWidget({ whatsapp }: { whatsapp: string | null }) {
   };
 
   return (
-    <div data-open={open} className={`${styles.root} no-print fixed right-4 bottom-[calc(16px+var(--action-bar,0px))] z-40 font-sans transition-[bottom] duration-300 sm:right-6 sm:bottom-[calc(24px+var(--action-bar,0px))]`}>
+    <div data-open={open} className={`${styles.root} no-print fixed right-4 bottom-[calc(16px+env(safe-area-inset-bottom,0px)+var(--action-bar,0px))] z-40 font-sans transition-[bottom] duration-300 sm:right-6 sm:bottom-[calc(24px+var(--action-bar,0px))]`}>
       <div role="dialog" aria-label="Chat with DVINE H2O" aria-hidden={!open} inert={!open} className={`${styles.panel} flex h-[min(600px,calc(100svh-120px))] w-[min(380px,calc(100vw-32px))] flex-col overflow-hidden text-white`}>
           <div className={styles.orbs} aria-hidden="true"><i /><i /><i /></div>
           <div className="flex items-center gap-2.5 px-4 pt-4 pb-2">

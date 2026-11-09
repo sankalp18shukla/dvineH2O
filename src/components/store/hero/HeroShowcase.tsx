@@ -21,6 +21,16 @@ const PLACEMENT = [
   { desk: { cx: .78, cy: .78, h: 1.36, w: .32 }, tilt: SYSTEM_TILT, rest: -0.55, sway: 0.18, sq: { cx: .68, cy: .17, w: .16 } },
 ];
 
+/** The three together (a promotion slide set to "lineup"): Crystal on the left, Titan in the middle, Hyper on the
+    right, smaller than on their own slides and all standing on one floor line (each box's bottom edge), clear of
+    the copy. Order follows HERO_SLIDES: 0 Hyper, 1 Crystal, 2 Titan. delay: seconds after the first one rises. */
+const FLOOR = .8;
+const LINEUP = [
+  { desk: { cx: .9, cy: FLOOR - .16, h: .32, w: .075 }, mob: { cx: .83, h: .46, w: .2 }, tilt: -0.1, rest: 0.25, delay: .24 },
+  { desk: { cx: .615, cy: FLOOR - .2, h: .4, w: .17 }, mob: { cx: .22, h: .5, w: .34 }, tilt: 0, rest: -0.45, delay: .12 },
+  { desk: { cx: .765, cy: FLOOR - .29, h: .58, w: .16 }, mob: { cx: .53, h: .8, w: .3 }, tilt: 0, rest: -0.4, delay: 0 },
+];
+
 /** Looping brush line from the brand book's "Brand Elements" page. */
 const SQUIGGLE = 'M150 22c22-14 44 2 36 22-9 22-48 18-70 4-26-16-60-14-80 8-24 26-8 62 26 64 34 2 52-26 82-26 40 0 66 30 58 62-7 30-46 40-70 22-20-15-6-44 22-42 34 2 58 40 48 92';
 
@@ -38,7 +48,7 @@ export function HeroShowcase({ slides, promos = [] }: { slides: Slide[]; promos?
   const showOnStage = (n: number) => {
     const e = entries[n];
     if (e.kind === 'product') stage.current?.show(e.idx);
-    else stage.current?.show(-1, (THEMES[e.p.theme] ?? THEMES.volt).accent);
+    else stage.current?.show(e.p.fit === 'lineup' ? -2 : -1, (THEMES[e.p.theme] ?? THEMES.volt).accent);
   };
   const durationOf = (n: number) => { const e = entries[n]; return e?.kind === 'promo' ? e.p.duration * 1000 : AUTOPLAY; };
   const hero = useRef<HTMLElement>(null);
@@ -97,7 +107,8 @@ export function HeroShowcase({ slides, promos = [] }: { slides: Slide[]; promos?
         const first = entries[state.current.current];
         const st = await mod.createStage({
           canvas: canvas.current, hero: hero.current, models: slides.map(x => x.model), accents: slides.map(x => x.accent), squiggle: SQUIGGLE,
-          placement: PLACEMENT, copyFor: i => hero.current!.querySelectorAll<HTMLElement>('[data-copy]')[i],
+          placement: PLACEMENT, lineup: LINEUP, copyFor: i => hero.current!.querySelectorAll<HTMLElement>('[data-copy]')[i],
+          lineupCopy: () => hero.current?.querySelector<HTMLElement>('[data-lineup-copy]') ?? undefined,
           onFirstLoad: () => setLoaded(true), initial: first.kind === 'product' ? first.idx : 0,
         });
         // unmounted while it was being built (React's dev double-mount, fast refresh): drop it, or two stages

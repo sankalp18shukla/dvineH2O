@@ -35,9 +35,13 @@ const LOOK: Record<string, { tone: 'glacier' | 'flash' | 'volt'; sticker: string
 const setOpen = (heading: Element | Element[], v: number) =>
   gsap.utils.toArray<HTMLElement>(heading).forEach(h => h.style.setProperty('--open', String(v)));
 const shut = (heading: Element | Element[]) => setOpen(heading, 0);
+// written through a setter, not onUpdate: ScrollTrigger re-renders the timeline with callbacks suppressed when
+// it refreshes (resize, late images), which left headings shut while the rest of the panel showed. fromTo keeps
+// the 0 → 1 range fixed when invalidateOnRefresh re-records start values.
 const openUp = (heading: Element | Element[]) => {
-  const o = { v: 0 };
-  return gsap.to(o, { v: 1, duration: 1, ease: 'power4.inOut', onUpdate: () => setOpen(heading, o.v) });
+  let cur = 0;
+  const o = { get v() { return cur; }, set v(x: number) { cur = x; setOpen(heading, x); } };
+  return gsap.fromTo(o, { v: 0 }, { v: 1, duration: 1, ease: 'power4.inOut' });
 };
 /** Back to the stylesheet's resting value (fully open), for when a layout's animations are torn down. */
 const release = (root: HTMLElement) => root.querySelectorAll<HTMLElement>('.lk').forEach(h => h.style.removeProperty('--open'));

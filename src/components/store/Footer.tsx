@@ -6,7 +6,7 @@ import { FooterWaves } from './FooterWaves';
 const SOCIAL_ICON: Record<(typeof SOCIAL)[number]['key'], React.ReactNode> = {
   instagram: <><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4.2" /><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none" /></>,
   linkedin: <><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M7.5 10.5v6M7.5 7.5v.01M11.5 16.5v-6M11.5 13.2c0-1.6 1-2.7 2.5-2.7s2.5 1 2.5 2.7v3.3" /></>,
-  youtube: <><rect x="2.5" y="5.5" width="19" height="13" rx="4" /><path d="m10.5 9.5 4 2.5-4 2.5z" fill="currentColor" /></>,
+  whatsapp: <><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z" /><path d="M9 9.5c.5 2 2.5 4 4.5 4.5l1-1.2 1.8.8-.3 1.4c-3 .3-7-3.7-6.7-6.7l1.4-.3.8 1.8z" /></>,
 };
 
 /** Site footer. Fixed behind the page (`.page-card`) so the page lifts off it; FooterReveal decides when it fits. */
@@ -22,7 +22,7 @@ export function Footer() {
             <ul className="mt-7 flex gap-3" aria-label="DVINE H2O on social media">
               {SOCIAL.map(s => (
                 <li key={s.key}>
-                  <a href={s.href} aria-label={`DVINE H2O on ${s.label}`} className="glare grid size-11 place-items-center rounded-full bg-gradient-to-br from-white/[0.16] to-white/[0.04] text-white/85 shadow-[0_8px_24px_-8px_rgb(0_0_0/0.5)] backdrop-blur-md transition-[background-color,color,transform] duration-300 hover:-translate-y-0.5 hover:bg-white/10 hover:text-white">
+                  <a href={s.href} target="_blank" rel="noopener noreferrer" aria-label={`DVINE H2O on ${s.label}`} className="glare grid size-11 place-items-center rounded-full bg-gradient-to-br from-white/[0.16] to-white/[0.04] text-white/85 shadow-[0_8px_24px_-8px_rgb(0_0_0/0.5)] backdrop-blur-md transition-[background-color,color,transform] duration-300 hover:-translate-y-0.5 hover:bg-white/10 hover:text-white">
                     <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{SOCIAL_ICON[s.key]}</svg>
                   </a>
                 </li>
@@ -34,7 +34,7 @@ export function Footer() {
               <div key={col.title}>
                 <h2 className="font-sans text-sm font-semibold text-white">{col.title}</h2>
                 <ul className="mt-4 space-y-2.5 font-sans text-sm text-white/65">
-                  {col.links.map(l => <li key={l.href}><Link href={l.href} className="hover:text-white">{l.label}</Link></li>)}
+                  {col.links.map(l => <li key={l.href}>{l.href.startsWith('http') ? <a href={l.href} target="_blank" rel="noopener noreferrer" className="hover:text-white">{l.label}</a> : <Link href={l.href} className="hover:text-white">{l.label}</Link>}</li>)}
                 </ul>
               </div>
             ))}

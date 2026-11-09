@@ -10,7 +10,11 @@ export const SITE = {
   name: 'DVINE H2O',
   tagline: 'The future of hydration',
   phone: '1800 202 4504',
-  email: 'care@dvineh2o.com',
+  email: 'reachout@dvineh2o.com',
+  whatsapp: '918984163478',
+  whatsappUrl: 'https://wa.me/918984163478',
+  address: ['1st Floor, Block 1, Bhawani Mall,', 'Sahid Nagar, Bhubaneswar 751007'],
+  mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Bhawani+Mall+Sahid+Nagar+Bhubaneswar+751007',
   description: 'DVINE H2O makes functional hydration systems: Crystal for the home, Hyper hydrogen water bottle for the day, and Titan 111 for shared spaces.',
 };
 
@@ -33,14 +37,13 @@ export const FOOTER = [
   { title: 'Shop', links: [{ href: '/home-water-systems', label: 'Crystal' }, { href: '/hydrogen-bottles', label: 'Hyper' }, { href: '/for-business', label: 'Titan 111' }, { href: '/for-business#bulk', label: 'Bulk and gifting' }] },
   { title: 'Learn', links: [{ href: '/#about', label: 'Meet DVINE' }, { href: '/hydrogen-bottles#how-it-works', label: 'How Hyper works' }, { href: '/water-testing#book', label: 'Book a water test' }, { href: '/water-testing#upload', label: 'Upload a report' }] },
   { title: 'Help', links: [{ href: '/track', label: 'Track my order' }, { href: '/support#manuals', label: 'Manuals and warranty' }, { href: '/support#contact', label: 'Service request' }, { href: '/book-demo', label: 'Book a demo' }] },
-  { title: 'Contact', links: [{ href: 'tel:18002024504', label: '1800 202 4504' }, { href: 'mailto:care@dvineh2o.com', label: 'care@dvineh2o.com' }, { href: '/support#contact', label: 'Send an enquiry' }, { href: '/for-business#enquiry', label: 'Request a quote' }] },
+  { title: 'Contact', links: [{ href: 'tel:18002024504', label: '1800 202 4504' }, { href: 'mailto:reachout@dvineh2o.com', label: 'reachout@dvineh2o.com' }, { href: 'https://wa.me/918984163478', label: 'WhatsApp us' }, { href: '/support#contact', label: 'Send an enquiry' }, { href: '/for-business#enquiry', label: 'Request a quote' }] },
 ];
 
-// TODO: replace '#' with DVINE's profile URLs once the team shares them
 export const SOCIAL = [
-  { key: 'instagram', label: 'Instagram', href: '#' },
-  { key: 'linkedin', label: 'LinkedIn', href: '#' },
-  { key: 'youtube', label: 'YouTube', href: '#' },
+  { key: 'instagram', label: 'Instagram', href: 'https://www.instagram.com/dvineh2o/' },
+  { key: 'linkedin', label: 'LinkedIn', href: 'https://www.linkedin.com/company/dvineh2o/' },
+  { key: 'whatsapp', label: 'WhatsApp', href: 'https://wa.me/918984163478' },
 ] as const;
 
 export const POLICY_LINKS = [
@@ -97,20 +100,47 @@ export const HOME = {
   collection: {
     title: '*Find the* right fit.',
     body: 'One for your kitchen, one to take along and one for larger spaces. Start with where you’ll drink it.',
-    // `cutout` is the transparent product PNG; until it is in public/, the section falls back to `image`
+    // `cutout` is the transparent product PNG; until it is in public/, the section falls back to `image`.
+    // Copy and facts here are written from the catalogue's "who it's for" angle (Collection, Living with DVINE,
+    // product spreads) so they don't repeat the hero, which covers the hardware.
     cards: [
-      { slug: 'crystal', href: '/home-water-systems', title: 'Crystal', where: 'At home', desc: 'Home Water System', body: 'A water system for your home. Explore filtration, ionisation and four water modes.', cta: 'Shop Crystal', cutout: '/images/crystal_product.png', image: '/images/crystal.webp' },
-      { slug: 'hyper', href: '/hydrogen-bottles', title: 'Hyper', where: 'On the go', desc: 'Hydrogen Water Bottle', body: 'A hydrogen water bottle you can take along. Explore its operation and care.', cta: 'Shop Hyper', cutout: '/images/hyper_product.png', image: '/images/hyper.webp' },
-      { slug: 'titan', href: '/for-business', title: 'Titan', where: 'For larger spaces', desc: 'Semi-commercial Water System', body: 'A water system for larger spaces. Discuss capacity for your workplace or property.', cta: 'Explore Titan', cutout: '/images/titan_product.png', image: '/images/titan.webp' },
+      { slug: 'crystal', href: '/home-water-systems', title: 'Crystal', where: 'At home', desc: 'Home Water System',
+        body: 'Made for the home where every object earns its place: water for drinking, for cooking and for infant feeds, from one system.',
+        feats: [
+          { title: 'Drinking water', sub: 'Alkaline, pH 8.5–9.5' },
+          { title: 'Kitchen and nursery', sub: 'Neutral water for cooking and infants' },
+          { title: '5-year Assured Care', sub: 'Installed by factory-trained technicians' },
+        ],
+        cta: 'Shop Crystal', cutout: '/images/crystal_product.png', image: '/images/crystal.webp' },
+      { slug: 'hyper', href: '/hydrogen-bottles', title: 'Hyper', where: 'On the go', desc: 'Hydrogen Water Bottle',
+        body: 'Hydrogen-rich water wherever your day happens. It fits the routine you already have, in the gym bag or on the desk.',
+        feats: [
+          { title: 'Three modes', sub: 'H2 generation, auto clean, standby' },
+          { title: 'One-touch timer', sub: 'With auto shut-off' },
+          { title: 'Leak-proof body', sub: 'Built for daily and travel use' },
+        ],
+        cta: 'Shop Hyper', cutout: '/images/hyper_product.png', image: '/images/hyper.webp' },
+      { slug: 'titan', href: '/for-business', title: 'Titan', where: 'For larger spaces', desc: 'Semi-commercial Water System',
+        body: 'For when a household becomes a compound and an office becomes a statement. Crystal’s ionisation, grown to institutional scale.',
+        feats: [
+          { title: '120 litres an hour', sub: 'Continuous output' },
+          { title: 'Multiple water modes', sub: 'Alkaline, neutral and functional' },
+          { title: 'Pan-India service', sub: 'Certified engineers, 5-year care' },
+        ],
+        cta: 'Explore Titan', cutout: '/images/titan_product.png', image: '/images/titan.webp' },
     ],
   },
   technology: {
     title: '*See what happens* inside.',
     body: 'Crystal filters incoming water before the ionisation stage. Five platinum-coated titanium plates carry out electrolysis, while the touchscreen brings the operating information into view.',
-    // one step per part of the inside video; `fact`/`note` is the figure set opposite the copy on wide screens
+    // one step per part of the inside video; `fact`/`note` is the figure set opposite the copy on wide screens.
+    // `refs` annotate a phrase of `body` (matched exactly) with a numbered link to the supporting paper (opens in a new tab).
+    // The PDFs in public/research/ are placeholders until the real studies are in.
     labels: [
-      { title: 'Filtration', body: 'Incoming water passes through PureCore multi-stage filtration first. Sediment and impurities stay behind in the cartridges.', fact: 'PureCore', note: 'multi-stage filtration' },
-      { title: 'Ionisation', body: 'In the ionisation chamber, five platinum-coated titanium plates carry out electrolysis on the filtered water.', fact: '5 plates', note: 'platinum-coated titanium' },
+      { title: 'Filtration', body: 'Incoming water passes through PureCore multi-stage filtration first. Sediment and impurities stay behind in the cartridges.', fact: 'PureCore', note: 'multi-stage filtration',
+        refs: [{ text: 'PureCore multi-stage filtration', href: '/research/filtration-study.pdf', label: 'Filtration performance study (PDF)' }] },
+      { title: 'Ionisation', body: 'In the ionisation chamber, five platinum-coated titanium plates carry out electrolysis on the filtered water.', fact: '5 plates', note: 'platinum-coated titanium',
+        refs: [{ text: 'carry out electrolysis', href: '/research/electrolysis-study.pdf', label: 'Electrolysis study (PDF)' }] },
       { title: 'Touchscreen', body: 'Choose hot, ambient or alkaline water with a tap. pH, ORP and filter status are shown at the machine.', fact: 'pH · ORP', note: 'and filter status on screen' },
     ],
   },
@@ -145,8 +175,11 @@ export const CRYSTAL = {
   features: {
     title: '*The details that make* Crystal work.',
     cards: [
-      { icon: 'plates5', title: 'Five-plate ionisation', body: 'Platinum-coated titanium plates carry out electrolysis.' },
-      { icon: 'filter', title: 'Multi-stage filtration', body: 'PureCore prepares incoming water before ionisation.' },
+      // `refs`: a phrase of `body` linked to its supporting paper (placeholder PDFs in public/research/ for now)
+      { icon: 'plates5', title: 'Five-plate ionisation', body: 'Platinum-coated titanium plates carry out electrolysis.',
+        refs: [{ text: 'carry out electrolysis', href: '/research/electrolysis-study.pdf', label: 'Electrolysis study (PDF)' }] },
+      { icon: 'filter', title: 'Multi-stage filtration', body: 'PureCore prepares incoming water before ionisation.',
+        refs: [{ text: 'PureCore prepares incoming water', href: '/research/filtration-study.pdf', label: 'Filtration performance study (PDF)' }] },
       { icon: 'modes', title: 'Four water modes', body: 'Choose from Hot, Neutral, Alkaline and High-Alkaline settings.' },
       { icon: 'screen', title: 'Touchscreen controls', body: 'View pH, ORP and filter status at the machine.' },
     ],
@@ -172,7 +205,7 @@ export const CRYSTAL = {
       { icon: 'home', title: 'Counter space', body: 'A level counter beside your sink, with room above for the dispenser.' },
       { icon: 'drop', title: 'Water inlet', body: 'A cold-water connection the technician can tap into.' },
       { icon: 'battery', title: 'Power point', body: 'A grounded socket within reach of the unit.' },
-      { icon: 'wrench', title: 'Drain line', body: 'A drain or sink outlet for the waste-water line.' },
+      { icon: 'drain', title: 'Drain line', body: 'A drain or sink outlet for the waste-water line.' },
     ],
     setup: { title: '*Check my* setup.', body: 'Tell us about your kitchen and attach a photo of the counter and water connection. Our team will check the setup with you before you order.' },
   },

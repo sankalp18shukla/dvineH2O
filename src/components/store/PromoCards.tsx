@@ -40,15 +40,21 @@ function Card({ c, wide, i }: { c: PromoCard; wide: boolean; i: number }) {
  * Optional promotion block straight after the hero (Admin › Homepage & promotions): one wide banner, or two
  * or three cards side by side. Each card is a brand-colour block in a pinned frame (the frame opens with the
  * scroll, PinFrames.tsx) with its photo or video, a pinned label, the title and a call to action.
+ * The product pages use it too (Product pages tab), with the product's colour on the heading.
  */
-export function PromoCards({ promo, cards }: { promo: SiteContent['promo']; cards: PromoCard[] }) {
+export function PromoCards({ promo, cards, id = 'promo-title', tone = 'flash', wrap = 'frame-x', className = '' }: {
+  promo: Pick<SiteContent['promo'], 'title' | 'body'>; cards: PromoCard[];
+  id?: string; tone?: 'volt' | 'glacier' | 'blue' | 'flash' | 'ultra';
+  /** outer width: the home page's frame inset, or the inner pages' container */
+  wrap?: 'frame-x' | 'container-x'; className?: string;
+}) {
   if (!cards.length) return null;
   const wide = cards.length === 1;
   return (
-    <section className={`frame-x ${s.section}`} aria-labelledby={promo.title ? 'promo-title' : undefined} aria-label={promo.title ? undefined : 'Offers'}>
+    <section className={`${wrap} ${s.section} ${className}`} aria-labelledby={promo.title ? id : undefined} aria-label={promo.title ? undefined : 'Offers'}>
       {(promo.title || promo.body) && (
         <div className={s.head} data-reveal>
-          {promo.title && <Lockup id="promo-title" title={promo.title} tone="flash" size="md" />}
+          {promo.title && <Lockup id={id} title={promo.title} tone={tone} size="md" />}
           {promo.body && <p className="lede max-w-xl">{promo.body}</p>}
         </div>
       )}

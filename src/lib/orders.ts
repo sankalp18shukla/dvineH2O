@@ -1,7 +1,7 @@
-import { and, eq, inArray, lt, sql } from 'drizzle-orm';
+import { and, eq, gt, inArray, lt, sql } from 'drizzle-orm';
 import { db, type Tx } from './db';
 import {
-  carts, cartEvents, orders, orderItems, orderEvents, payments, products, warranties, installations, shipments, refunds, waterTests,
+  carts, cartEvents, orders, orderItems, orderEvents, payments, products, warranties, installations, shipments, refunds, waterTests, enquiries,
   type Address,
 } from './db/schema';
 import { orderNumber, randomToken } from './numbering';
@@ -12,9 +12,12 @@ import { findOrCreateCustomer } from './customers';
 import { issueInvoice, issueCreditNote } from './invoice';
 import { notify, templates, links } from './notify';
 import { formatINR } from './money';
-import { createRzpOrder, createRzpRefund, razorpayEnabled, verifyPaymentSignature } from './razorpay';
+import { createRzpOrder, createRzpRefund, verifyPaymentSignature } from './razorpay';
+import { createPhonePePayment, createPhonePeRefund, fetchPhonePeRefund, fetchPhonePeStatus, merchantOrderId, phonepeEnabled, summarise } from './phonepe';
+import { activeGateway } from './payments-mode';
 import { qualifyReferral, voidReferral } from './referrals';
 import { priceCart } from './cart-pricing';
+import { splitInclusive } from './gst';
 
 export type OrderStatus = typeof orders.$inferSelect['status'];
 
@@ -83,6 +86,54 @@ export async function createOrderFromCart(input: CheckoutInput) {
   });
 }
 
+/* ─────────────── Quote-led sales (Titan): accepted quote → secure payment link ─────────────── */
+
+type QuoteInput = {
+  enquiryId: number; productId: number; qty: number; amount: number;   // amount: agreed total in paise, GST included
+  contact: { name: string; email: string; phone: string };
+  shipping: Address; gstin?: string; validDays: number; note?: string; staffId: number;
+};
+
+/**
+ * Turns an accepted quote into a pending-payment order with its own pay link.
+ * The order then follows the normal flow: payment → invoice, warranty, installation, fulfilment.
+ */
+export async function createQuoteOrder(input: QuoteInput) {
+  return db.transaction(async tx => {
+    const e = await tx.query.enquiries.findFirst({ where: eq(enquiries.id, input.enquiryId) });
+    if (!e) throw new CheckoutError('Enquiry not found.');
+    const product = await tx.query.products.findFirst({ where: eq(products.id, input.productId) });
+    if (!product) throw new CheckoutError('Choose a product.');
+    if (input.qty < 1 || input.amount < 100) throw new CheckoutError('Enter a quantity and the agreed amount.');
+
+    const customer = e.customerId
+      ? (await tx.query.customers.findFirst({ where: (c, { eq }) => eq(c.id, e.customerId!) }))!
+      : await findOrCreateCustomer({ name: input.contact.name, email: input.contact.email, phone: input.contact.phone, city: input.shipping.city, state: input.shipping.state, pincode: input.shipping.pincode }, tx);
+    if (!e.customerId) await tx.update(enquiries).set({ customerId: customer.id }).where(eq(enquiries.id, e.id));
+
+    const { tax } = splitInclusive(input.amount, product.gstRate);
+    const number = await orderNumber(tx);
+    const billing = { ...input.shipping, gstin: input.gstin || undefined };
+    const [order] = await tx.insert(orders).values({
+      number, accessToken: randomToken(), customerId: customer.id,
+      contactName: input.contact.name, contactEmail: input.contact.email, contactPhone: input.contact.phone,
+      shippingAddress: input.shipping, billingAddress: billing, deliveryOption: 'quote',
+      subtotal: input.amount, discount: 0, shipping: 0, taxTotal: tax, total: input.amount,
+      customerNote: `Quote ${e.ref}`, internalNote: input.note || null,
+      reservationExpiresAt: new Date(Date.now() + input.validDays * 86_400_000),
+    }).returning();
+    await tx.insert(orderItems).values({ orderId: order.id, productId: product.id, sku: product.sku, name: product.name, hsn: product.hsn, qty: input.qty, unitPrice: Math.round(input.amount / input.qty), discount: 0, taxRate: product.gstRate, taxAmount: tax, lineTotal: input.amount });
+    try { await reserve(tx, product.id, input.qty, number); }
+    catch (err) { if (err instanceof StockError) throw new CheckoutError(`${err.message} Add stock in Inventory, or mark the product build-to-order.`); throw err; }
+    await tx.insert(orderEvents).values({ orderId: order.id, status: 'pending_payment', note: `Payment link created from quote ${e.ref}`, actor: `staff:${input.staffId}` });
+    await tx.update(enquiries).set({
+      quoteStatus: 'accepted', quoteValue: input.amount, outcomeRef: number, outcomeProduct: product.shortName,
+      status: ['new', 'contacted'].includes(e.status) ? 'qualified' : e.status,
+    }).where(eq(enquiries.id, e.id));
+    return order;
+  });
+}
+
 /* ─────────────────────────── Payments ─────────────────────────── */
 
 type PayTarget = { purpose: 'order'; order: typeof orders.$inferSelect } | { purpose: 'water_test'; test: typeof waterTests.$inferSelect };
@@ -96,7 +147,23 @@ export async function startPayment(target: PayTarget) {
   const attempt = Number(prev[0].n) + 1;
   const receipt = target.purpose === 'order' ? target.order.number : target.test.ref;
 
-  if (razorpayEnabled()) {
+  const gateway = activeGateway();
+  const link = { purpose: target.purpose, orderId: target.purpose === 'order' ? refId : null, waterTestId: target.purpose === 'water_test' ? refId : null };
+
+  if (gateway === 'phonepe') {
+    const mid = merchantOrderId(receipt, attempt);
+    const token = target.purpose === 'order' ? target.order.accessToken : target.test.accessToken;
+    const site = (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').replace(/\/$/, '');
+    const pp = await createPhonePePayment({
+      merchantOrderId: mid, amount, message: `DVINE H2O ${receipt}`,
+      redirectUrl: `${site}/checkout/phonepe/return?m=${encodeURIComponent(mid)}&t=${encodeURIComponent(token)}`,
+      meta: { udf1: target.purpose, udf2: receipt },
+    });
+    const [p] = await db.insert(payments).values({ ...link, gateway: 'phonepe', gatewayOrderId: mid, gatewayPaymentId: null, amount, attempt, status: 'created' }).returning();
+    return { mode: 'phonepe' as const, paymentId: p.id, gatewayOrderId: mid, amount, receipt, redirectUrl: pp.redirectUrl };
+  }
+
+  if (gateway === 'razorpay') {
     const rz = await createRzpOrder(amount, receipt, { purpose: target.purpose, ref: receipt });
     const [p] = await db.insert(payments).values({ purpose: target.purpose, orderId: target.purpose === 'order' ? refId : null, waterTestId: target.purpose === 'water_test' ? refId : null, gateway: 'razorpay', gatewayOrderId: rz.id, amount, attempt, status: 'created' }).returning();
     return { mode: 'razorpay' as const, paymentId: p.id, keyId: process.env.RAZORPAY_KEY_ID!, gatewayOrderId: rz.id, amount, receipt };
@@ -109,6 +176,19 @@ export async function startPayment(target: PayTarget) {
 export async function confirmRazorpayPayment(gatewayOrderId: string, gatewayPaymentId: string, signature: string, method?: string) {
   if (!verifyPaymentSignature(gatewayOrderId, gatewayPaymentId, signature)) throw new Error('Payment signature mismatch');
   return applyPaymentSuccess(gatewayOrderId, gatewayPaymentId, method);
+}
+
+/**
+ * Confirms a PhonePe payment with the Order Status API (never trusting the browser redirect)
+ * and applies the outcome. Returns the PhonePe state.
+ */
+export async function syncPhonePePayment(gatewayOrderId: string) {
+  const s = await fetchPhonePeStatus(gatewayOrderId);
+  const d = summarise(s);
+  if (s.state === 'COMPLETED') await applyPaymentSuccess(gatewayOrderId, d.transactionId ?? s.orderId ?? gatewayOrderId, d.method);
+  else if (s.state === 'FAILED') await applyPaymentFailure(gatewayOrderId, { gatewayPaymentId: d.transactionId ?? s.orderId, code: d.errorCode, description: d.errorDescription ?? 'Payment failed', stage: 'phonepe', method: d.method });
+  else await db.update(payments).set({ status: 'pending', method: d.method }).where(and(eq(payments.gatewayOrderId, gatewayOrderId), inArray(payments.status, ['created', 'pending'])));
+  return s.state;
 }
 
 /** Marks a payment successful and fulfils whatever it pays for. Safe to call more than once (webhook + callback). */
@@ -165,6 +245,7 @@ async function markOrderPaid(tx: Tx, orderId: number) {
   if (order.couponCode) await consumeCoupon(tx, order.couponCode);
   if (order.referralCode) await qualifyReferral(tx, orderId);
   if (order.cartId) await tx.update(carts).set({ status: 'converted', convertedOrderId: orderId }).where(eq(carts.id, order.cartId));
+  await tx.update(enquiries).set({ status: 'converted' }).where(eq(enquiries.outcomeRef, order.number));
   await issueInvoice(tx, orderId);
 }
 
@@ -226,6 +307,11 @@ export async function refundOrder(orderId: number, amount: number, reason: strin
   if (pay.gateway === 'razorpay' && pay.gatewayPaymentId) {
     const r = await createRzpRefund(pay.gatewayPaymentId, amount, { order: order.number, reason });
     gatewayRefundId = r.id; status = r.status === 'processed' ? 'processed' : 'pending';
+  } else if (pay.gateway === 'phonepe' && pay.gatewayOrderId) {
+    gatewayRefundId = `RF-${order.number}-${randomToken(4).replace(/[^A-Za-z0-9]/g, '')}`.slice(0, 63);
+    const r = await createPhonePeRefund(gatewayRefundId, pay.gatewayOrderId, amount);
+    if (r.state === 'FAILED') throw new Error('PhonePe declined the refund. Check the PhonePe dashboard and try again.');
+    status = r.state === 'COMPLETED' ? 'processed' : 'pending';
   } else gatewayRefundId = `test_rfnd_${randomToken(6)}`;
 
   await db.transaction(async tx => {
@@ -241,11 +327,25 @@ export async function refundOrder(orderId: number, amount: number, reason: strin
 export async function runMaintenance() {
   const commerce = await getCommerce();
   const now = new Date();
+  // PhonePe: settle any attempt still open (customer closed the tab, webhook missed) before releasing stock.
+  let reconciled = 0;
+  if (phonepeEnabled()) {
+    const open = await db.query.payments.findMany({ where: and(eq(payments.gateway, 'phonepe'), inArray(payments.status, ['created', 'pending']), lt(payments.createdAt, new Date(now.getTime() - 3 * 60_000)), gt(payments.createdAt, new Date(now.getTime() - 2 * 86_400_000))) });
+    for (const p of open) { try { await syncPhonePePayment(p.gatewayOrderId!); reconciled++; } catch (e) { console.error('phonepe reconcile', p.gatewayOrderId, e); } }
+    const pendingRefunds = await db.select({ r: refunds }).from(refunds).innerJoin(payments, eq(refunds.paymentId, payments.id)).where(and(eq(payments.gateway, 'phonepe'), eq(refunds.status, 'pending')));
+    for (const { r } of pendingRefunds) {
+      try {
+        const st = await fetchPhonePeRefund(r.gatewayRefundId!);
+        if (st.state === 'COMPLETED') await db.update(refunds).set({ status: 'processed', completedAt: new Date() }).where(eq(refunds.id, r.id));
+        else if (st.state === 'FAILED') await db.update(refunds).set({ status: 'failed' }).where(eq(refunds.id, r.id));
+      } catch (e) { console.error('phonepe refund status', r.gatewayRefundId, e); }
+    }
+  }
   const stale = await db.query.orders.findMany({ where: and(eq(orders.status, 'pending_payment'), lt(orders.reservationExpiresAt, now)) });
   for (const o of stale) await cancelOrder(o.id, 'system', 'Payment not completed in time');
   const cutoff = new Date(now.getTime() - commerce.abandonmentMinutes * 60_000);
   const abandoned = await db.update(carts).set({ status: 'abandoned' })
     .where(and(inArray(carts.status, ['active', 'checkout']), lt(carts.lastActivityAt, cutoff), sql`exists (select 1 from cart_items ci where ci.cart_id = ${carts.id})`))
     .returning({ id: carts.id });
-  return { releasedOrders: stale.length, abandonedCarts: abandoned.length };
+  return { releasedOrders: stale.length, abandonedCarts: abandoned.length, phonepeReconciled: reconciled };
 }

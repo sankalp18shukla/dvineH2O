@@ -2,6 +2,8 @@ import { requireStaff } from '@/lib/auth';
 import { getCompany, getCommerce } from '@/lib/settings';
 import { INDIAN_STATES } from '@/lib/gst';
 import { razorpayEnabled } from '@/lib/razorpay';
+import { phonepeEnabled, phonepeMode } from '@/lib/phonepe';
+import { activeGateway, GATEWAY_LABEL } from '@/lib/payments-mode';
 import { shiprocketEnabled } from '@/lib/shiprocket';
 import { PageHead, Panel } from '@/components/admin/ui';
 import { AdminForm, AdminError } from '@/components/admin/AdminForm';
@@ -41,13 +43,15 @@ export default async function Settings() {
           </Panel>
           <Panel title="Integrations">
             <ul className="grid gap-3 font-sans text-sm">
-              <li className="flex items-center justify-between"><span>Razorpay payments</span><Status value={razorpayEnabled() ? 'active' : 'pending'} label={razorpayEnabled() ? 'Connected' : 'Test mode'} /></li>
+              <li className="flex items-center justify-between"><span>Payments now go through</span><Status value={activeGateway() === 'test' ? 'pending' : 'active'} label={GATEWAY_LABEL[activeGateway()] + (activeGateway() === 'test' ? ' (no money moves)' : '')} /></li>
+              <li className="flex items-center justify-between"><span>PhonePe</span><Status value={phonepeEnabled() ? 'active' : 'pending'} label={phonepeEnabled() ? (phonepeMode() === 'production' ? 'Connected · live' : 'Connected · sandbox') : 'Not set up'} /></li>
+              <li className="flex items-center justify-between"><span>Razorpay</span><Status value={razorpayEnabled() ? 'active' : 'pending'} label={razorpayEnabled() ? 'Connected' : 'Not set up'} /></li>
               <li className="flex items-center justify-between"><span>Shiprocket shipping</span><Status value={shiprocketEnabled() ? 'active' : 'pending'} label={shiprocketEnabled() ? 'Connected' : 'Manual'} /></li>
               <li className="flex items-center justify-between"><span>Email (SMTP)</span><Status value={process.env.SMTP_HOST ? 'active' : 'pending'} label={process.env.SMTP_HOST ? 'Connected' : 'Logging only'} /></li>
               <li className="flex items-center justify-between"><span>WhatsApp Cloud API</span><Status value={process.env.WHATSAPP_TOKEN ? 'active' : 'pending'} label={process.env.WHATSAPP_TOKEN ? 'Connected' : 'Logging only'} /></li>
             </ul>
             <div className="mt-4 rounded-xl bg-paper p-3 font-mono text-[12px] leading-relaxed">
-              Razorpay webhook: {site}/api/webhooks/razorpay<br />Shiprocket webhook: {site}/api/webhooks/shiprocket?token=…<br />Maintenance cron: POST {site}/api/cron/maintenance
+              PhonePe webhook: {site}/api/webhooks/phonepe<br />Razorpay webhook: {site}/api/webhooks/razorpay<br />Shiprocket webhook: {site}/api/webhooks/shiprocket?token=…<br />Maintenance cron: POST {site}/api/cron/maintenance
             </div>
             <p className="mt-2 font-sans text-[12px] text-muted">Keys are set as environment variables on the server, never here. See the README.</p>
           </Panel>

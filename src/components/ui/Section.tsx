@@ -16,7 +16,7 @@ export function SectionHead({ tone = 'volt', title, body, align = 'left', size =
   return (
     <div className="mb-12 sm:mb-16" data-reveal>
       {/* the headline's column takes what the lede leaves, never sized by the headline itself (see LockupFit.tsx) */}
-      <div className={`grid gap-8 ${body ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,28rem)] lg:items-end lg:gap-16' : ''}`}>
+      <div className={`grid grid-cols-[minmax(0,1fr)] gap-8 ${body ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,28rem)] lg:items-end lg:gap-16' : ''}`}>
         <Lockup id={id} title={title} tone={tone} size={size} />
         {body && <p className="lede max-w-md lg:justify-self-end">{body}</p>}
       </div>

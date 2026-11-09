@@ -44,6 +44,7 @@ export const PERMISSIONS = {
   refunds: ['admin'],
   service: ['admin', 'operations', 'support'],
   marketing: ['admin'],
+  content: ['admin', 'operations'],
   reports: ['admin', 'operations'],
   audit: ['admin'],
   settings: ['admin'],

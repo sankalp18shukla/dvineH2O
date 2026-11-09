@@ -14,12 +14,13 @@ import { isLive, type Ribbon as RibbonData } from '@/lib/site-content';
  * `framed`: a light bar sitting above the home hero card — logo and actions line up with the
  * card's inner edge, the primary links sit centred between them.
  */
-export async function Header({ overlay = false, framed = false, home = false, ribbon }: { overlay?: boolean; framed?: boolean; home?: boolean; ribbon?: RibbonData }) {
+/** `shop`: a product page, where a ribbon set to "Homepage and product pages" shows too. */
+export async function Header({ overlay = false, framed = false, home = false, shop = false, ribbon }: { overlay?: boolean; framed?: boolean; home?: boolean; shop?: boolean; ribbon?: RibbonData }) {
   // No database yet (frontend-only preview): render as a signed-out visitor with an empty cart.
   const [count, customer, content] = await Promise.all([cartCount().catch(() => 0), getCustomer().catch(() => null), ribbon ? null : getLiveContent()]);
   // announcement ribbon (Admin › Homepage & promotions): the home page passes its own, so ?preview=1 shows the draft
   const rb = ribbon ?? content!.ribbon;
-  const band = rb.enabled && isLive(rb) && (home || rb.scope === 'all') ? <Ribbon ribbon={rb} /> : null;
+  const band = rb.enabled && isLive(rb) && (home || rb.scope === 'all' || (shop && rb.scope === 'shop')) ? <Ribbon ribbon={rb} /> : null;
   const actions = (
     <div className="ml-auto flex items-center gap-1 justify-self-end">
       <Link href="/search" className="grid size-11 place-items-center rounded-full hover:bg-current/10" aria-label="Search"><Icon name="search" /></Link>

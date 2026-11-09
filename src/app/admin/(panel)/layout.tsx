@@ -23,6 +23,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const all: (NavItem & { p: Permission })[] = [
     { href: '/admin', label: 'Overview', icon: 'dashboard', p: 'overview' },
     { href: '/admin/orders', label: 'Orders', icon: 'box', p: 'orders', badge: toShip + openReturns },
+    { href: '/admin/content', label: 'Homepage & promotions', icon: 'sparkle', p: 'content' },
     { href: '/admin/products', label: 'Products', icon: 'tag', p: 'products' },
     { href: '/admin/inventory', label: 'Inventory', icon: 'inbox', p: 'inventory' },
     { href: '/admin/customers', label: 'Customers', icon: 'users', p: 'customers' },

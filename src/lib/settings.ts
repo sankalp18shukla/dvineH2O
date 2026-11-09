@@ -19,7 +19,7 @@ export type Commerce = {
 export const DEFAULT_COMPANY: Company = {
   legalName: 'DVINE H2O', tradeName: 'DVINE H2O', gstin: '', pan: '',
   address: '', city: '', state: '', pincode: '',
-  phone: '1800 202 4504', email: 'care@dvineh2o.com', invoicePrefix: 'DVH', confirmed: false,
+  phone: '1800 202 4504', email: 'reachout@dvineh2o.com', invoicePrefix: 'DVH', confirmed: false,
 };
 export const DEFAULT_COMMERCE: Commerce = {
   shippingFee: 0, freeShippingAbove: 0, reservationMinutes: 30, abandonmentMinutes: 60, returnWindowDays: 7, cancelBefore: 'packed',

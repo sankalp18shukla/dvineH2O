@@ -11,9 +11,14 @@ import { EnquiryForm } from '@/components/forms/EnquiryForm';
 import { SectionHead } from '@/components/ui/Section';
 import { Icon } from '@/components/ui/Icon';
 import { Cta, Words } from '@/components/ui/Cta';
-import { Lockup, Squiggle } from '@/components/ui/Brand';
+import { Lockup } from '@/components/ui/Brand';
+import { TuckedSquiggle } from '@/components/store/TuckedSquiggle';
+import { FrameTuckSquiggle } from '@/components/store/FrameTuckSquiggle';
 import { BUSINESS, SITE } from '@/lib/content';
 import { getProduct } from '@/lib/catalog';
+import { getProductPromos } from '@/lib/site-content.server';
+import { PromoCards } from '@/components/store/PromoCards';
+import { OfferTicket } from '@/components/store/OfferTicket';
 import { productJsonLd } from '@/lib/seo';
 import css from '@/components/store/Bands.module.css';
 
@@ -33,14 +38,16 @@ function Callout({ c, n, side }: { c: (typeof BUSINESS.titan.features)[number]; 
   );
 }
 
-export default async function BusinessPage() {
-  const titan = await getProduct('titan');
+export default async function BusinessPage({ searchParams }: { searchParams: Promise<{ preview?: string }> }) {
+  const [titan, promo] = await Promise.all([getProduct('titan'), searchParams.then(q => getProductPromos('titan', q.preview))]);
+  // optional promotion cards (Admin › Homepage & promotions › Product pages), after the hero or near the end
+  const banner = promo.banner && <PromoCards promo={promo.banner} cards={promo.banner.cards} id="offers-title" tone="volt" wrap="container-x" />;
   const f = BUSINESS.titan.features;
   const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
   const years = titan && titan.warrantyMonths >= 12 ? `${titan.warrantyMonths / 12}-year` : '5-year';
   return (
     <>
-      <Header framed />
+      <Header framed shop ribbon={promo.ribbon} />
       <SmoothScroll />
       <main id="main">
         {titan && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(titan, '/for-business')) }} />}
@@ -53,6 +60,7 @@ export default async function BusinessPage() {
               <p className="text-[44px] leading-none font-bold tracking-[-0.04em]">Priced on quotation</p>
               <p className="mt-3 text-[13.5px] text-muted">{titan?.quoteNote ?? 'Priced on quotation after a site discussion.'}</p>
             </div>
+            {promo.offer && <OfferTicket offer={promo.offer} codeHint="Quote it when you enquire" />}
             <div className="cta-row">
               <Cta href="#enquiry" tone="volt">Request a Quote</Cta>
               <Cta href="/book-demo?product=titan" kind="glass">Book a Demo</Cta>
@@ -65,6 +73,8 @@ export default async function BusinessPage() {
           </div>
         </ProductHero>
 
+        {promo.banner?.placement === 'hero' && banner}
+
         {/* 02 · Meet Titan: the machine in the middle, its four details around it lighting up one by one, over the
             Glacier wave band, as Crystal's key features */}
         <section id="titan" className="on-glacier relative overflow-clip pt-32 pb-[clamp(200px,22vw,320px)] text-ink sm:pt-44" aria-labelledby="t-title">
@@ -75,9 +85,9 @@ export default async function BusinessPage() {
               <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[0]} n={0} side="l" /><Callout c={f[2]} n={2} side="l" /></div>
               <div className="relative order-first mx-auto aspect-[3/5] w-full max-w-[360px] lg:order-none" data-speed="-.4">
                 <span className={`${css.ring} absolute inset-x-[2%] top-[22%] aspect-square rounded-full`} aria-hidden="true" />
-                <span className={`${css.disc} absolute inset-x-[2%] top-[22%] aspect-square rounded-full bg-white/70 shadow-[inset_0_-30px_60px_-30px_rgb(4_22_74/.18)]`} aria-hidden="true" />
-                <Squiggle className="pointer-events-none absolute top-[8%] -right-12 w-36 text-deep-current" />
-                <Image src="/images/titan_product.png" alt="TitanForce 111, front view" fill sizes="360px" className="object-contain object-bottom drop-shadow-[0_30px_30px_rgb(4_22_74/.3)]" />
+                <span className={`${css.disc} absolute z-[1] inset-x-[2%] top-[22%] aspect-square rounded-full shadow-[inset_0_-30px_60px_-30px_rgb(4_22_74/.18)]`} aria-hidden="true" data-tuck-disc />
+                <TuckedSquiggle className="top-[20%] -right-12 w-36 text-deep-current" />
+                <Image src="/images/titan_product.png" alt="TitanForce 111, front view" fill sizes="360px" data-tuck-product className="z-[3] object-contain object-bottom drop-shadow-[0_30px_30px_rgb(4_22_74/.3)]" />
               </div>
               <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[1]} n={1} side="r" /><Callout c={f[3]} n={3} side="r" /></div>
             </LightUp>
@@ -117,7 +127,7 @@ export default async function BusinessPage() {
           <WaveBand tone="glacier" interactive knot />
           <div className="container-x relative grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-20">
             <div className="relative lg:sticky lg:top-32 lg:self-start">
-              <Squiggle className="pointer-events-none absolute -top-14 -right-10 z-[3] hidden w-44 text-deep-current lg:block" />
+              <FrameTuckSquiggle className="-top-14 -right-10 z-[3] hidden w-44 text-deep-current lg:block" />
               <div className="pin-frame relative aspect-[4/5]" style={{ ['--pin' as string]: 'var(--color-flash)' }}>
                 <div className="absolute inset-0 overflow-hidden"><Image src="/images/titan-display.webp" alt="The SmartFlow multi-mode display on TitanForce 111" fill sizes="(min-width:1024px) 45vw, 100vw" className="scale-[1.14] object-cover" data-speed=".3" /></div>
               </div>
@@ -185,7 +195,7 @@ export default async function BusinessPage() {
               <Lockup id="bulk-title" title={BUSINESS.bulk.title} tone="flash" size="md" />
               <p className="lede mt-9" data-words><Words text={BUSINESS.bulk.body} /></p>
               <div className="relative mt-12">
-                <Squiggle className="pointer-events-none absolute -top-14 -right-10 z-[3] hidden w-40 text-deep-current lg:block" />
+                <FrameTuckSquiggle className="-top-14 -right-9 z-[3] hidden w-40 text-deep-current lg:block" />
                 <div className="pin-frame relative aspect-[16/11]" style={{ ['--pin' as string]: 'var(--color-flash)' }}>
                   <div className="absolute inset-0 overflow-hidden"><Image src="/images/collection.webp" alt="Crystal, Titan and Hyper together" fill sizes="(min-width:1024px) 40vw, 100vw" className="scale-[1.14] object-cover" data-speed=".3" /></div>
                 </div>
@@ -196,6 +206,8 @@ export default async function BusinessPage() {
             </div>
           </div>
         </section>
+
+        {promo.banner?.placement === 'faq' && banner}
 
         {/* 08 · Dealers and distributors: pointed to the partner page, which takes the enquiry */}
         <section id="distributors" className="section" aria-labelledby="dist-title">
@@ -211,7 +223,7 @@ export default async function BusinessPage() {
           </div>
         </section>
       </main>
-      <ActionBar watch="hero-actions" title="TitanForce 111" sub="Priced on quotation" action={{ label: 'Request a Quote', href: '#enquiry' }} />
+      <ActionBar tone="volt" watch="hero-actions" title="TitanForce 111" badge={promo.offer?.tag ? { text: promo.offer.tag, theme: promo.offer.theme } : undefined} sub="Priced on quotation" action={{ label: 'Request a Quote', href: '#enquiry' }} />
     </>
   );
 }

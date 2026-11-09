@@ -40,7 +40,8 @@
 @keyframes bob { 0%, 100% { translate: 0 0; rotate: 0deg; } 30% { translate: 0 -3px; rotate: -6deg; } 60% { translate: 0 1px; rotate: 4deg; } }
 
 /* the circle behind a product breathes, and a hairline ring around it breathes out of step */
-.disc { animation: breathe 7s ease-in-out infinite; }
+/* opaque (the white-70 tint over Glacier, mixed solid) so the squiggle's tail is hidden behind it, not seen through it */
+.disc { background: color-mix(in srgb, #fff 70%, var(--color-glacier)); animation: breathe 7s ease-in-out infinite; }
 .ring { border: 1.5px solid rgb(4 22 74 / .16); animation: breathe-ring 7s ease-in-out infinite; }
 @keyframes breathe { 0%, 100% { scale: 1; translate: 0 0; } 50% { scale: 1.04; translate: 0 -8px; } }
 @keyframes breathe-ring { 0%, 100% { scale: 1.08; opacity: .9; } 50% { scale: 1.015; opacity: .35; } }

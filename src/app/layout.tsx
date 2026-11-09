@@ -28,7 +28,9 @@ export const viewport: Viewport = { themeColor: '#06195A', width: 'device-width'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-IN" className={`${bricolage.variable} ${garamond.variable}`} suppressHydrationWarning>
+    // data-scroll-behavior: Next turns the CSS smooth scroll off while it resets to the top on a route change,
+    // so a new page opens at its top at once instead of gliding up from the old page's position
+    <html lang="en-IN" className={`${bricolage.variable} ${garamond.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         {/* enables reveal-on-scroll only when JS runs, so content is never hidden without it */}
         <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />

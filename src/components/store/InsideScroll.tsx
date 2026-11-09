@@ -5,6 +5,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Lockup } from '@/components/ui/Brand';
 import { Icon } from '@/components/ui/Icon';
+import { splitCited, type Ref } from '@/components/ui/Cited';
 import fit from './FitShowcase.module.css';
 import s from './InsideScroll.module.css';
 
@@ -27,7 +28,7 @@ const HOLD = 1;
 /** The stage's shape off the section: inset from the sides with rounded corners, as it arrives and as it leaves. */
 const CARD = 'inset(0% 4% 0% 4% round 36px)', BLEED = 'inset(0% 0% 0% 0% round 0px)';
 
-type Step = { title: string; body: string; fact: string; note: string };
+type Step = { title: string; body: string; fact: string; note: string; refs?: Ref[] };
 
 // --open is written straight to the element (see FitShowcase.tsx for why it isn't tweened as a CSS variable)
 const setOpen = (h: Element, v: number) => (h as HTMLElement).style.setProperty('--open', String(v));
@@ -134,7 +135,21 @@ export function InsideScroll({ title, steps, cta }: { title: string; steps: Step
                 <li key={st.title} className={s.step}>
                   <Lockup as="h3" title={st.title} size="sm" className={`${s.title} ${s.open}`} />
                   <p className={s.body}>
-                    {st.body.split(' ').map((w, j) => <span key={j} className={s.word}>{w} </span>)}
+                    {splitCited(st.body, st.refs).map((part, j) => {
+                      const ws = part.text.split(' ').filter(Boolean);
+                      // inside a citation the last word drops its space, so the underline stops at the word and the pin sits on it
+                      const words = ws.map((w, k) => <span key={`${j}-${k}`} className={s.word}>{w}{part.ref && k === ws.length - 1 ? '' : ' '}</span>);
+                      if (!part.ref) return words;
+                      // numbered across the section, in reading order
+                      const n = steps.slice(0, i).reduce((c, x) => c + (x.refs?.length ?? 0), 0) + st.refs!.indexOf(part.ref) + 1;
+                      return (
+                        <a key={j} href={part.ref.href} target="_blank" rel="noopener" className={s.cite}
+                          aria-label={`${part.text.trim()}: ${part.ref.label}, opens in a new tab`} title={part.ref.label}>
+                          <span className={s.citeText}>{words}</span>
+                          <sup className={s.citeMark} aria-hidden="true">{n}</sup>{' '}
+                        </a>
+                      );
+                    })}
                   </p>
                   {i === steps.length - 1 && (
                     <div className={s.action}>

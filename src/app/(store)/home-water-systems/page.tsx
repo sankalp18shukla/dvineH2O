@@ -15,17 +15,21 @@ import { EnquiryForm } from '@/components/forms/EnquiryForm';
 import { SectionHead } from '@/components/ui/Section';
 import { Faq } from '@/components/ui/Faq';
 import { Icon } from '@/components/ui/Icon';
+import { Cited } from '@/components/ui/Cited';
 import { Cta, Words } from '@/components/ui/Cta';
 import { CRYSTAL } from '@/lib/content';
 import { getProduct } from '@/lib/catalog';
+import { getProductPromos } from '@/lib/site-content.server';
+import { PromoCards } from '@/components/store/PromoCards';
 import { formatINR } from '@/lib/money';
 import { productJsonLd } from '@/lib/seo';
 import { Facts, Lockup, Squiggle } from '@/components/ui/Brand';
+import { TuckedSquiggle } from '@/components/store/TuckedSquiggle';
 import { WaveBand } from '@/components/store/WaveBand';
 import { LightUp } from '@/components/store/LightUp';
 import css from './crystal.module.css';
 
-/** Rendered per request: reads the catalog, which needs a live database. */
+/** Rendered per request: reads the catalog, which needs a live database, and the dated promotions (?preview=1 shows staff the draft). */
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = { title: 'Crystal home water system', description: CRYSTAL.hero.body, alternates: { canonical: '/home-water-systems' } };
@@ -39,24 +43,26 @@ const FLOW = [
 ];
 
 /** One feature callout on the Crystal diagram: an animated icon chip, title and line. `n` is its turn to light up. */
-function Callout({ c, n, side }: { c: (typeof CRYSTAL.features.cards)[number]; n: number; side: 'l' | 'r' }) {
+function Callout({ c, n, side, cite }: { c: (typeof CRYSTAL.features.cards)[number]; n: number; side: 'l' | 'r'; cite?: number }) {
   return (
     <div className={`${css.callout} relative flex flex-col ${side === 'l' ? 'lg:items-end lg:text-right' : 'lg:items-start'}`} data-light={n} data-rise>
       <span className={css.chip} style={{ ['--d' as string]: `${n * -1.2}s` }}><Icon name={c.icon} className="size-6" strokeWidth={1.4} /></span>
       <h3 className="mt-5 font-sans text-[22px] font-bold tracking-[-0.03em] sm:text-[26px]">{c.title}</h3>
-      <p className="mt-2 max-w-[19rem] text-[17px] leading-snug text-ink/75">{c.body}</p>
+      <p className="mt-2 max-w-[19rem] text-[17px] leading-snug text-ink/75">{'refs' in c ? <Cited text={c.body} refs={c.refs} start={cite} /> : c.body}</p>
     </div>
   );
 }
 
-export default async function CrystalPage() {
-  const p = await getProduct('crystal');
+export default async function CrystalPage({ searchParams }: { searchParams: Promise<{ preview?: string }> }) {
+  const [p, promo] = await Promise.all([getProduct('crystal'), searchParams.then(q => getProductPromos('crystal', q.preview))]);
   if (!p) notFound();
+  // optional promotion cards (Admin › Homepage & promotions › Product pages), after the hero or before the questions
+  const banner = promo.banner && <PromoCards promo={promo.banner} cards={promo.banner.cards} id="offers-title" tone="glacier" wrap="container-x" />;
   const guide = p.manualUrl ?? '/support/crystal';
   const f = CRYSTAL.features.cards;
   return (
     <>
-      <Header framed />
+      <Header framed shop ribbon={promo.ribbon} />
       <SmoothScroll />
       <main id="main">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(p, '/home-water-systems')) }} />
@@ -64,8 +70,10 @@ export default async function CrystalPage() {
         {/* 01 · Hero: gallery left, purchase right */}
         <ProductHero name="Crystal" title="Home water system" tone="glacier" sticker={'Soft Launching\n“My Water Era.”'} body={CRYSTAL.hero.body}
           cutout="/images/crystal_product.png" images={p.images ?? CRYSTAL.hero.gallery} alt="Crystal home water system">
-          <BuyBox p={p} tone="glacier" secondary={{ href: '/book-demo?product=crystal', label: 'Book a Demo' }} />
+          <BuyBox p={p} tone="glacier" offer={promo.offer} secondary={{ href: '/book-demo?product=crystal', label: 'Book a Demo' }} />
         </ProductHero>
+
+        {promo.banner?.placement === 'hero' && banner}
 
         {/* 02 · Key features: Crystal in the middle, the four details around it, over the Glacier wave band (its edges
             are wave lines that drift with the scroll and part around the pointer, as on the home page's Meet DVINE) */}
@@ -75,12 +83,12 @@ export default async function CrystalPage() {
             <SectionHead id="feat-title" tone="blue" title={CRYSTAL.features.title} align="center" />
             {/* the four light up one by one with the scroll, row by row: top left, top right, bottom left, bottom right */}
             <LightUp armClass={css.armed} litClass={css.lit} className="grid items-center gap-12 lg:grid-cols-[1fr_minmax(260px,400px)_1fr] lg:gap-[clamp(64px,7vw,128px)]">
-              <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[0]} n={0} side="l" /><Callout c={f[1]} n={2} side="l" /></div>
+              <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[0]} n={0} side="l" cite={1} /><Callout c={f[1]} n={2} side="l" cite={2} /></div>
               <div className="relative order-first mx-auto aspect-[4/5] w-full max-w-[400px] lg:order-none" data-speed="-.4">
                 <span className={`${css.ring} absolute inset-x-[4%] top-[12%] aspect-square rounded-full`} aria-hidden="true" />
-                <span className={`${css.disc} absolute inset-x-[4%] top-[12%] aspect-square rounded-full bg-white/70 shadow-[inset_0_-30px_60px_-30px_rgb(4_22_74/.18)]`} aria-hidden="true" />
-                <Squiggle className="pointer-events-none absolute -top-4 -right-10 w-36 text-deep-current" />
-                <Image src="/images/crystal_product.png" alt="Crystal, front view" fill sizes="400px" className="object-contain object-bottom drop-shadow-[0_30px_30px_rgb(4_22_74/.3)]" />
+                <span className={`${css.disc} absolute z-[1] inset-x-[4%] top-[12%] aspect-square rounded-full shadow-[inset_0_-30px_60px_-30px_rgb(4_22_74/.18)]`} aria-hidden="true" data-tuck-disc />
+                <TuckedSquiggle className="top-[6%] -right-6 w-36 text-deep-current" />
+                <Image src="/images/crystal_product.png" alt="Crystal, front view" fill sizes="400px" data-tuck-product className="z-[3] object-contain object-bottom drop-shadow-[0_30px_30px_rgb(4_22_74/.3)]" />
               </div>
               <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[2]} n={1} side="r" /><Callout c={f[3]} n={3} side="r" /></div>
             </LightUp>
@@ -178,6 +186,8 @@ export default async function CrystalPage() {
 
         <Reviews productId={p.id} name="Crystal" />
 
+        {promo.banner?.placement === 'faq' && banner}
+
         {/* 07 · Questions and purchase reminder */}
         <section id="faq" className="section" aria-labelledby="faq-title">
           <div className="container-x">
@@ -190,7 +200,7 @@ export default async function CrystalPage() {
           </div>
         </section>
       </main>
-      <ActionBar watch="buy" title="Crystal" sub={`${formatINR(p.price)} · inclusive of GST`} action={p.available > 0 ? { label: 'Add to Cart', productId: p.id } : { label: 'Talk to DVINE', href: '/support#contact' }} />
+      <ActionBar watch="buy" title="Crystal" badge={promo.offer?.tag ? { text: promo.offer.tag, theme: promo.offer.theme } : undefined} sub={`${formatINR(p.price)} · incl. GST`} action={p.available > 0 ? { label: 'Add to Cart', productId: p.id } : { label: 'Talk to DVINE', href: '/support#contact' }} />
     </>
   );
 }

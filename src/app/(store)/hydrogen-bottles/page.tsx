@@ -15,27 +15,32 @@ import { Faq } from '@/components/ui/Faq';
 import { Cta, Words } from '@/components/ui/Cta';
 import { HYPER } from '@/lib/content';
 import { getProduct } from '@/lib/catalog';
+import { getProductPromos } from '@/lib/site-content.server';
+import { PromoCards } from '@/components/store/PromoCards';
 import { formatINR } from '@/lib/money';
 import { productJsonLd } from '@/lib/seo';
-import { Lockup, Squiggle } from '@/components/ui/Brand';
+import { Lockup } from '@/components/ui/Brand';
+import { FrameTuckSquiggle } from '@/components/store/FrameTuckSquiggle';
 import { HyperAssembly } from '@/components/store/HyperAssembly';
 import { WaveBand } from '@/components/store/WaveBand';
 import { LightUp } from '@/components/store/LightUp';
 import { FinishPicker, FinishProvider } from '@/components/store/BottleFinish';
 import css from './hyper.module.css';
 
-/** Rendered per request: reads the catalog, which needs a live database. */
+/** Rendered per request: reads the catalog, which needs a live database, and the dated promotions (?preview=1 shows staff the draft). */
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = { title: 'Hyper hydrogen water bottle', description: HYPER.hero.body, alternates: { canonical: '/hydrogen-bottles' } };
 
-export default async function HyperPage() {
-  const p = await getProduct('hyper');
+export default async function HyperPage({ searchParams }: { searchParams: Promise<{ preview?: string }> }) {
+  const [p, promo] = await Promise.all([getProduct('hyper'), searchParams.then(q => getProductPromos('hyper', q.preview))]);
   if (!p) notFound();
+  // optional promotion cards (Admin › Homepage & promotions › Product pages), after the hero or before the questions
+  const banner = promo.banner && <PromoCards promo={promo.banner} cards={promo.banner.cards} id="offers-title" tone="flash" wrap="container-x" />;
   const guide = p.manualUrl ?? '/support/hyper';
   return (
     <>
-      <Header framed />
+      <Header framed shop ribbon={promo.ribbon} />
       <SmoothScroll />
       <main id="main">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(p, '/hydrogen-bottles')) }} />
@@ -46,9 +51,11 @@ export default async function HyperPage() {
           <ProductHero name="Hyper" title="Hydrogen water bottle" tone="flash" sticker="Sip Check." body={HYPER.hero.body}
             cutout="/images/hyper_product.png" shell="/images/hyper_shell.png" axis={-41} images={p.images ?? HYPER.hero.gallery} alt="Hyper hydrogen water bottle">
             <FinishPicker />
-            <BuyBox p={p} tone="flash" />
+            <BuyBox p={p} tone="flash" offer={promo.offer} />
           </ProductHero>
         </FinishProvider>
+
+        {promo.banner?.placement === 'hero' && banner}
 
         {/* 02 · Everyday use: three tall photos, staggered, drifting at their own pace */}
         <section className="section overflow-hidden" aria-labelledby="day-title">
@@ -127,7 +134,7 @@ export default async function HyperPage() {
               </div>
             </div>
             <div className="relative grid gap-12">
-              <Squiggle className="pointer-events-none absolute -top-16 -right-10 z-[3] hidden w-48 text-deep-current lg:block" />
+              <FrameTuckSquiggle className="-top-16 -right-11 z-[3] hidden w-48 text-deep-current lg:block" />
               <div className="pin-frame relative aspect-[16/10]" style={{ ['--pin' as string]: 'var(--color-flash)' }}>
                 <div className="absolute inset-0 overflow-hidden"><Image src="/images/brand-hand-bottle.webp" alt="Hyper held in one hand" fill sizes="(min-width:1024px) 50vw, 100vw" className="scale-[1.14] object-cover" data-speed=".3" /></div>
               </div>
@@ -137,6 +144,8 @@ export default async function HyperPage() {
         </section>
 
         <Reviews productId={p.id} name="Hyper" flow />
+
+        {promo.banner?.placement === 'faq' && banner}
 
         {/* 06 · Questions and purchase reminder */}
         <section id="faq" className="section" aria-labelledby="faq-title">
@@ -150,7 +159,7 @@ export default async function HyperPage() {
           </div>
         </section>
       </main>
-      <ActionBar watch="buy" title="Hyper" sub={`${formatINR(p.price)} · inclusive of GST`} action={p.available > 0 ? { label: 'Add to Cart', productId: p.id } : { label: 'Ask a Question', href: '/support#contact' }} />
+      <ActionBar tone="flash" watch="buy" title="Hyper" badge={promo.offer?.tag ? { text: promo.offer.tag, theme: promo.offer.theme } : undefined} sub={`${formatINR(p.price)} · incl. GST`} action={p.available > 0 ? { label: 'Add to Cart', productId: p.id } : { label: 'Ask a Question', href: '/support#contact' }} />
     </>
   );
 }

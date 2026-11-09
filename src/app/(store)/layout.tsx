@@ -8,6 +8,8 @@ import { ScrollCopy } from '@/components/store/ScrollCopy';
 import { Glare } from '@/components/store/Glare';
 import { ChatWidget } from '@/components/store/ChatWidget';
 import { CartDrawer } from '@/components/store/CartDrawer';
+import { IntentPrefetch } from '@/components/store/IntentPrefetch';
+import { SITE } from '@/lib/content';
 
 export default function StoreLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,7 +18,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
       <div className="page-card">{children}</div>
       <Footer />
       <FooterReveal />
-      <ChatWidget whatsapp={process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || null} />
+      <ChatWidget whatsapp={process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || SITE.whatsapp} />
       <CartDrawer />
       <Reveal />
       <PinFrames />
@@ -24,6 +26,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
       <TagReveal />
       <ScrollCopy />
       <Glare />
+      <IntentPrefetch />
     </>
   );
 }

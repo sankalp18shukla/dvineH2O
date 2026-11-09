@@ -35,7 +35,8 @@
 }
 
 /* the circle behind Crystal breathes, and a hairline ring around it breathes out of step, like a slow ripple */
-.disc { animation: breathe 7s ease-in-out infinite; }
+/* opaque (the white-70 tint over Glacier, mixed solid) so the squiggle's tail is hidden behind it, not seen through it */
+.disc { background: color-mix(in srgb, #fff 70%, var(--color-glacier)); animation: breathe 7s ease-in-out infinite; }
 .ring { border: 1.5px solid rgb(4 22 74 / .16); animation: breathe-ring 7s ease-in-out infinite; }
 @keyframes breathe {
   0%, 100% { scale: 1; translate: 0 0; }

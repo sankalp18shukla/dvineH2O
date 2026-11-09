@@ -89,6 +89,21 @@
   pointer-events: none;
 }
 
+/* phones: a smaller launcher, and none at all while the dock (ActionBar) shows, which has its own chat button */
+@media (max-width: 767px) {
+  .launcher { width: 56px; height: 56px; }
+  :global(html.has-dock) .root:not([data-open="true"]) .launcher { transform: scale(0.4); opacity: 0; pointer-events: none; visibility: hidden;
+    transition: transform 0.3s var(--ease-out), opacity 0.2s ease, visibility 0s 0.3s; }
+}
+/* a tap must not leave the launcher swollen and sparkling (hover sticks on touch) */
+@media (hover: none) {
+  .launcher:hover { transform: none; }
+  .launcher:hover .lines { opacity: 1; transform: none; }
+  .launcher:hover .sparkles { opacity: 0; transform: scale(0.4) rotate(-45deg); }
+  .launcher:hover .starBig, .launcher:hover .starSmall { animation: none; }
+  .launcher:active { transform: scale(0.94); }
+}
+
 /* ───────────── Panel ───────────── */
 
 /* grows out of the button's corner */
