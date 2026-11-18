@@ -1,0 +1,14 @@
+.why { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px; border: 1px solid var(--color-line); border-radius: 999px; background: #fff; font-family: var(--font-sans); font-size: 13.5px; font-weight: 600; color: var(--color-ink); transition: border-color .25s, background-color .25s; }
+.whyArrow { transition: transform .3s var(--ease-out-soft); }
+@media (hover: hover) { .why:hover { border-color: var(--color-ink); } .why:hover .whyArrow { transform: translateX(3px); } }
+.why:active { background: var(--color-mist); }
+
+.list { border-top: 2px solid var(--color-ink); --acc: var(--color-glacier); }
+.list:global(.is-flash) { --acc: var(--color-flash); }
+.list:global(.is-volt) { --acc: var(--color-voltage); }
+.row { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; padding: 22px 0; border-bottom: 1px solid var(--color-line); }
+.n { display: none; font-family: var(--font-serif); font-style: italic; font-size: 34px; line-height: 1; color: var(--color-muted); }
+@media (min-width: 768px) { .row { grid-template-columns: 72px 1fr auto; gap: 24px; padding: 28px 0; } .n { display: block; } }
+.go { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--color-ink); color: #fff; transition: background-color .3s, color .3s, transform .3s var(--ease-out-soft); }
+@media (hover: hover) { .row:hover .go { background: var(--acc); color: var(--color-ink); transform: translateX(4px); } }
+.row:active .go { background: var(--acc); color: var(--color-ink); }

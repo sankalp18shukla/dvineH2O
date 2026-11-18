@@ -1,17 +1,20 @@
 # DVINE H2O — website, store and operations dashboard
 
-Next.js 15 (App Router) + React 19 + TypeScript + Tailwind CSS 4, with a Drizzle ORM / SQLite (libSQL) database.
+Next.js 15 (App Router) + React 19 + TypeScript + Tailwind CSS 4, on **Supabase**: Postgres (via Drizzle ORM), Auth and Storage.
+Setup, dashboard settings and the security model are in **[docs/supabase.md](docs/supabase.md)**.
 One codebase covers the public website, the e-commerce flow, the customer account and the admin dashboard
 described in the *Website brief* and the *E-Commerce Database & Dashboard Requirements*.
 
 ```
 npm install
-cp .env.example .env.local      # then set AUTH_SECRET at minimum
-npm run db:setup                # create tables + seed the 3 SKUs, test options, pincodes, first admin
+cp .env.example .env.local      # Supabase URL + keys, DATABASE_URL / DATABASE_ADMIN_URL, APP_SECRET (see docs/supabase.md)
+npm run db:setup                # tables, security, storage buckets + seed (3 SKUs, promotions, test options, pincodes, first admin)
+npm run db:check                # confirms the security set-up against your project
 npm run dev                     # http://localhost:3000   ·   admin: http://localhost:3000/admin
 ```
 
-Seeded admin: `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` from `.env.local` (defaults `admin@dvineh2o.com` / `ChangeMe!2026` — change it).
+First admin: `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` (12+ characters) from `.env.local`. At first sign-in the admin sets up an authenticator app (two-step sign-in is required for every team account).
+`npm run db:import` copies the homepage promotions, products and settings from the old local SQLite database (`-- --all` for everything).
 With no gateway keys set (dev, or `ALLOW_TEST_PAYMENTS=true`), checkout uses a built-in test gateway (simulate success / failure).
 
 ---
@@ -28,6 +31,7 @@ With no gateway keys set (dev, or `ALLOW_TEST_PAYMENTS=true`), checkout uses a b
 | Water testing | `/water-testing` | Pincode availability, test options with parameters/price/turnaround, booking (paid or free), report upload (private), FAQ |
 | Support | `/support`, `/support/[product]` | Search, product guides, order help, manuals/warranty, contact form (service topics become service tickets), FAQ |
 | Book a demo, Search, Track order, Policies, 404 | `/book-demo`, `/search`, `/track`, `/policies/*` | Policies are drafts for legal review |
+| Blog | `/blog`, `/blog/[slug]` | Articles by topic (benefits, price and value, case studies, hydration), a featured post, and the team's articles on other sites. Linked from the footer only. Each product page shows a "Why this price?" button under the price and a "Worth reading" strip, both fed by the blog |
 | Chat | every page | Rule-based assistant over the site content → "Talk to a person" hands over to a live agent in Admin › Enquiries (transcript stored in the CRM); optional WhatsApp hand-off |
 
 Copy comes from the content document and lives in `src/lib/content.ts`. Prices, stock, specs, images and brochure/manual/video links are edited in Admin › Products.
@@ -50,11 +54,11 @@ Copy comes from the content document and lives in `src/lib/content.ts`. Prices, 
 Orders (cancel, return, review, installation slot), invoices & credit notes, warranties, service requests (with rating), water tests & enquiries, referral code + rewards, profile & addresses. Registering with the same email/phone claims earlier guest orders and enquiries (one customer record).
 
 ### Admin dashboard `/admin`
-Role-based (Admin / Operations / Support — see Settings › Staff for the matrix). Every change is written to the audit log.
+Role-based (Admin / Operations / Support — see Settings › Staff for the matrix). Every team account signs in with a password **and** an authenticator app; sessions last 12 hours. Every change is written to the append-only audit log.
 
 | Screen | What it does |
 |---|---|
-| Overview | Date-filtered sales snapshot (orders, units, gross, discounts, GST, refunds, net, AOV), daily chart, order pipeline, all 12 KPIs from the requirements doc, product snapshot per SKU, cart/checkout/payment funnel + failure reasons, customers, water testing & enquiries, post-purchase, "needs attention" |
+| Overview | New service requests (banner + live list; an email too when `TEAM_ALERT_EMAIL` is set). Date-filtered sales snapshot (orders, units, gross, discounts, GST, refunds, net, AOV), daily chart, order pipeline, all 12 KPIs from the requirements doc, product snapshot per SKU, cart/checkout/payment funnel + failure reasons, customers, water testing & enquiries, post-purchase, "needs attention" |
 | Orders | Filter/search, status moves, shipments (Shiprocket or manual), serials, installation, refunds, returns, exceptions, internal notes, invoice |
 | Products | Price/MRP/GST/HSN, sale mode (cart vs enquiry), status, warranty, installation/serial flags, content, specs, images, brochure/manual/video |
 | Inventory | On-hand / reserved / available per SKU, inward / adjustment / damage with reason, serial intake, movement history |
@@ -63,6 +67,7 @@ Role-based (Admin / Operations / Support — see Settings › Staff for the matr
 | Water tests | Bookings, status, payment, lab-report upload (notifies customer), recommendation, conversion to order; edit test options |
 | Payments & refunds | Every attempt with gateway refs and failure reasons; refunds |
 | Warranty & service | Tickets (assign, priority, resolution, parts, rating), installations, warranties |
+| Blog | Write, preview, publish and unpublish posts (formatting buttons, photos, tables), link a post to a product, pick the featured post, list articles published on other sites |
 | Reviews · Coupons & referrals | Moderation; coupon CRUD; referral programme settings and log |
 | Reports & export | 11 date-filtered CSV exports (orders, items, payments, refunds, invoices, customers, enquiries, water tests, stock, service, warranties) |
 | Notifications · Audit log · Settings | Message log; audit trail; company/GST details, store rules, integrations, pincodes, staff |
@@ -73,7 +78,9 @@ Role-based (Admin / Operations / Support — see Settings › Staff for the matr
 ```
 src/app/(store)/…        public pages + account          src/app/admin/…        dashboard
 src/app/actions/*.ts     server actions (forms)            src/app/api/…          webhooks, cron, chat, exports, private files
-src/lib/db/schema.ts     the whole data model             src/lib/orders.ts      order/payment/refund/fulfilment logic
+supabase/migrations/     SQL: tables, RLS, grants, triggers, buckets   src/lib/db/schema.ts   typed mirror of it (Drizzle)
+src/lib/auth.ts          Supabase Auth sessions, staff MFA  src/lib/security.ts    rate limits, constant-time checks, origin checks
+src/lib/orders.ts        order/payment/refund/fulfilment logic
 src/lib/content.ts       all page copy                    src/lib/metrics.ts     dashboard KPIs
 src/components/store/…   storefront UI (hero in hero/)    src/components/admin/… dashboard UI
 public/models/*.glb      3D models (meshopt-compressed)   public/images/*.webp   imagery from the catalog & brand book
@@ -99,8 +106,11 @@ See `.env.example`. Key variables:
 
 | Variable | Purpose |
 |---|---|
-| `AUTH_SECRET` | Signs login sessions. Required in production (long random string). |
-| `DATABASE_URL`, `DATABASE_AUTH_TOKEN` | `file:./data/dvine.db` locally; `libsql://…` for Turso in production |
+| `APP_SECRET` | Keys the hashes of IPs / rate-limit identifiers. 32+ random characters, required in production. |
+| `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` | Supabase Auth and Storage. Server-side only (never `NEXT_PUBLIC_`). |
+| `DATABASE_URL` | Supabase transaction pooler, signed in as the least-privilege `dvine_app` role. What the site uses. |
+| `DATABASE_ADMIN_URL`, `DATABASE_APP_PASSWORD` | Only for `db:migrate` / `db:seed` / `db:import` / `db:check` from your machine. Never on the host. |
+| `STAFF_SESSION_HOURS` | Team session length (default 12). `STAFF_MFA_REQUIRED=false` turns two-step off outside production only. |
 | `PAYMENT_GATEWAY` | `phonepe` or `razorpay`; blank picks PhonePe if configured |
 | `PHONEPE_ENV`, `PHONEPE_CLIENT_ID`, `PHONEPE_CLIENT_SECRET`, `PHONEPE_CLIENT_VERSION` | PhonePe Standard Checkout (`sandbox` or `production`) |
 | `PHONEPE_WEBHOOK_USERNAME`, `PHONEPE_WEBHOOK_PASSWORD` | Verifies PhonePe webhooks |
@@ -112,9 +122,9 @@ See `.env.example`. Key variables:
 | `ALLOW_TEST_PAYMENTS` | Built-in test gateway when no gateway keys are set. **Keep `false` in production.** |
 
 ## Deploying
-**Option A — Vercel + Turso (managed):** create a Turso database, set `DATABASE_URL`/`DATABASE_AUTH_TOKEN`, run `npm run db:setup` once against it, deploy. Move uploads (`src/lib/uploads.ts`) to S3/R2/Vercel Blob, since serverless disks aren't persistent. Add a Vercel Cron hitting `POST /api/cron/maintenance` every 10 minutes with `Authorization: Bearer $CRON_SECRET`.
+**Vercel + Supabase:** follow [docs/supabase.md](docs/supabase.md): create the project, run `npm run db:setup` from your machine, set the Auth settings and email templates, then set the env vars on Vercel and deploy. Files go to Supabase Storage, so nothing depends on the server's disk. Schedule `POST /api/cron/maintenance` every 10 minutes with `Authorization: Bearer $CRON_SECRET` (Vercel Cron, or Supabase pg_cron — SQL in the doc).
 
-**Option B — single VPS (matches the brief's 10 GB hosting):** `npm ci && npm run build && npm run db:setup && npm start` behind Nginx + Let's Encrypt, with `data/` on persistent disk and a nightly backup of `data/` (database + private uploads). Crontab: `*/10 * * * * cd /srv/dvine && npm run cron`.
+A VPS works the same way (`npm ci && npm run build && npm start` behind Nginx + Let's Encrypt), with the database and files still on Supabase.
 
 Then configure:
 - PhonePe Business Dashboard › Developer Settings › Webhooks → `https://<domain>/api/webhooks/phonepe`, with the username/password from `PHONEPE_WEBHOOK_USERNAME`/`PASSWORD`; events `checkout.order.completed`, `checkout.order.failed`, `pg.refund.completed`, `pg.refund.failed`. Run the maintenance cron: it also reconciles PhonePe payments the customer never returned from.
@@ -130,17 +140,18 @@ Then configure:
 5. **Warranty for Hyper** is seeded as 12 months (Crystal/Titan 5 years per the catalog). Confirm.
 6. **Policies** (`/policies/*`) are drafts for legal review: what to send and check is in [docs/legal-review.md](docs/legal-review.md). The pages no longer carry a draft banner, so don't launch before that review is done. HSN codes are suggestions. Confirm with your CA.
 7. Upload brochures, manuals and demo videos (Admin › Products) and replace the stand-in fonts.
-8. Change the seeded admin password, set `AUTH_SECRET`, and set `ALLOW_TEST_PAYMENTS=false`.
+8. Set `APP_SECRET` and `CRON_SECRET`, remove `SEED_ADMIN_PASSWORD`, set `ALLOW_TEST_PAYMENTS=false`, finish the Supabase dashboard settings (email confirmation, TOTP, SMTP, email templates, Data API off) and get all ✓ from `npm run db:check`.
 9. **Demo reviews**: the Crystal page shows 8 made-up reviews while there are no real ones (dev only, or wherever `DEMO_REVIEWS=1` is set). Leave `DEMO_REVIEWS` unset in production and delete the `DEMO` list in `src/components/store/Reviews.tsx` before launch.
+11. **Blog**: the five starter articles are drafts for DVINE to check, especially any health wording (same review as item 6). Add the performance report and case studies in Admin › Blog once the client sends them; the two PDFs in `public/research/` are still placeholders.
 10. PhonePe: test end to end with sandbox keys (`PHONEPE_ENV=sandbox`), then switch to live keys and `PHONEPE_ENV=production`. PhonePe must whitelist the live domain before production payments work.
 
 ## Testing
 ```
 npm run build && npm start &        # or npm run dev
-set -a; source .env.local; set +a    # the test signs in with SEED_ADMIN_* from your env
+set -a; source .env.local; set +a    # the test signs in with SEED_ADMIN_* and confirms its own sign-up via SUPABASE_SECRET_KEY
 BASE=http://localhost:3000 node tests/e2e.mjs
 ```
-The suite creates real orders and enquiries — run it against a throwaway copy of the database, not one you care about.
+The suite creates real orders, enquiries and accounts — run it against a **staging Supabase project**, never the live one. At the admin's first sign-in it enrols an authenticator and keeps the secret in `tests/out/admin-totp.txt`.
 Covers guest checkout with a failed-then-successful payment, coupons, invoice, tracking, Crystal with GST number and installation, Titan consultation, paid water test, report upload, service ticket, demo, chat bot + live agent reply, search, registration claiming guest orders, all account pages, admin shipping → delivery, partial refund + credit note, review moderation, inventory, all admin screens, CSV exports, and access control.
 
 ## Not built yet (by design, per the requirements doc §13)

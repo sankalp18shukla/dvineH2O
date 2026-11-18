@@ -1,34 +1,42 @@
 /**
- * DVINE H2O transaction database.
+ * DVINE H2O transaction database — Supabase Postgres, private schema `dvine`.
  * Follows "DVINE H2O — E-Commerce Database & Dashboard Requirements":
  * one SKU record per product, a single customer record across orders and enquiries,
  * and clean order / payment / inventory / shipping / warranty data.
  *
- * Money is stored as integer paise. Rates are stored in basis points (1800 = 18%).
+ * The SQL source of truth (tables, constraints, RLS, grants, integrity triggers) is supabase/migrations/.
+ * This file mirrors it for typed queries; keep the two in step.
+ *
+ * Money is stored as integer paise (bigint). Rates are stored in basis points (1800 = 18%).
  */
-import { sqliteTable, text, integer, uniqueIndex, index } from 'drizzle-orm/sqlite-core';
+import { pgSchema, text, integer, bigint, boolean, jsonb, timestamp, uuid, uniqueIndex, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
-const id = () => integer('id').primaryKey({ autoIncrement: true });
-const createdAt = () => integer('created_at', { mode: 'timestamp_ms' }).notNull().$defaultFn(() => new Date());
-const updatedAt = () => integer('updated_at', { mode: 'timestamp_ms' }).notNull().$defaultFn(() => new Date()).$onUpdateFn(() => new Date());
-const ts = (name: string) => integer(name, { mode: 'timestamp_ms' });
-const json = <T>(name: string) => text(name, { mode: 'json' }).$type<T>();
+export const dvine = pgSchema('dvine');
+const table = dvine.table;
+
+const id = () => integer('id').primaryKey().generatedByDefaultAsIdentity();
+const ts = (name: string) => timestamp(name, { withTimezone: true, mode: 'date' });
+const createdAt = () => ts('created_at').notNull().defaultNow();
+const updatedAt = () => ts('updated_at').notNull().defaultNow().$onUpdateFn(() => new Date());
+const json = <T>(name: string) => jsonb(name).$type<T>();
+const money = (name: string) => bigint(name, { mode: 'number' });
+const bool = (name: string) => boolean(name);
 
 /* ───────────── Staff (admin dashboard users) ───────────── */
-export const staff = sqliteTable('staff', {
+export const staff = table('staff', {
   id: id(),
   name: text('name').notNull(),
+  authUserId: uuid('auth_user_id').unique(),       // Supabase Auth user (auth.users.id)
   email: text('email').notNull().unique(),
-  passwordHash: text('password_hash').notNull(),
   role: text('role', { enum: ['admin', 'operations', 'support'] }).notNull().default('support'),
-  active: integer('active', { mode: 'boolean' }).notNull().default(true),
+  active: bool('active').notNull().default(true),
   lastLoginAt: ts('last_login_at'),
   createdAt: createdAt(),
 });
 
 /* ───────────── Customers (single profile across orders + enquiries) ───────────── */
-export const customers = sqliteTable('customers', {
+export const customers = table('customers', {
   id: id(),
   name: text('name').notNull(),
   email: text('email'),
@@ -37,10 +45,10 @@ export const customers = sqliteTable('customers', {
   state: text('state'),
   pincode: text('pincode'),
   gstin: text('gstin'),
-  passwordHash: text('password_hash'), // null for guest-only customers
+  authUserId: uuid('auth_user_id').unique(),       // Supabase Auth user; null for guest-only customers
   consentTermsAt: ts('consent_terms_at'),
   consentPrivacyAt: ts('consent_privacy_at'),
-  consentMarketing: integer('consent_marketing', { mode: 'boolean' }).notNull().default(false),
+  consentMarketing: bool('consent_marketing').notNull().default(false),
   referralCode: text('referral_code').unique(),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
@@ -48,7 +56,7 @@ export const customers = sqliteTable('customers', {
 
 export type Address = { name: string; phone: string; line1: string; line2?: string; city: string; state: string; pincode: string; gstin?: string };
 
-export const addresses = sqliteTable('addresses', {
+export const addresses = table('addresses', {
   id: id(),
   customerId: integer('customer_id').notNull().references(() => customers.id),
   type: text('type', { enum: ['shipping', 'billing'] }).notNull().default('shipping'),
@@ -59,12 +67,13 @@ export const addresses = sqliteTable('addresses', {
   city: text('city').notNull(),
   state: text('state').notNull(),
   pincode: text('pincode').notNull(),
-  isDefault: integer('is_default', { mode: 'boolean' }).notNull().default(false),
+  gstin: text('gstin'),
+  isDefault: bool('is_default').notNull().default(false),
   createdAt: createdAt(),
 });
 
 /* ───────────── Product master (3 SKUs) ───────────── */
-export const products = sqliteTable('products', {
+export const products = table('products', {
   id: id(),
   sku: text('sku').notNull().unique(),
   slug: text('slug').notNull().unique(),          // hyper | crystal | titan
@@ -72,18 +81,18 @@ export const products = sqliteTable('products', {
   shortName: text('short_name').notNull(),        // Hyper
   saleMode: text('sale_mode', { enum: ['cart', 'enquiry'] }).notNull().default('cart'),
   status: text('status', { enum: ['active', 'draft', 'archived'] }).notNull().default('active'),
-  mrp: integer('mrp').notNull().default(0),
-  price: integer('price').notNull().default(0),   // selling price, GST inclusive
-  priceConfirmed: integer('price_confirmed', { mode: 'boolean' }).notNull().default(false),
+  mrp: money('mrp').notNull().default(0),
+  price: money('price').notNull().default(0),   // selling price, GST inclusive
+  priceConfirmed: bool('price_confirmed').notNull().default(false),
   gstRate: integer('gst_rate').notNull().default(1800),
   hsn: text('hsn'),
   quoteNote: text('quote_note'),                  // Titan: "Price on site assessment"
   onHand: integer('on_hand').notNull().default(0),
   reserved: integer('reserved').notNull().default(0),
   reorderLevel: integer('reorder_level').notNull().default(5),
-  buildToOrder: integer('build_to_order', { mode: 'boolean' }).notNull().default(false),
-  trackSerials: integer('track_serials', { mode: 'boolean' }).notNull().default(false),
-  requiresInstallation: integer('requires_installation', { mode: 'boolean' }).notNull().default(false),
+  buildToOrder: bool('build_to_order').notNull().default(false),
+  trackSerials: bool('track_serials').notNull().default(false),
+  requiresInstallation: bool('requires_installation').notNull().default(false),
   warrantyMonths: integer('warranty_months').notNull().default(12),
   maxPerOrder: integer('max_per_order').notNull().default(10),
   tagline: text('tagline'),
@@ -98,7 +107,7 @@ export const products = sqliteTable('products', {
   updatedAt: updatedAt(),
 });
 
-export const stockMovements = sqliteTable('stock_movements', {
+export const stockMovements = table('stock_movements', {
   id: id(),
   productId: integer('product_id').notNull().references(() => products.id),
   type: text('type', { enum: ['inward', 'sale', 'return', 'adjustment', 'damage', 'reserve', 'release'] }).notNull(),
@@ -111,7 +120,7 @@ export const stockMovements = sqliteTable('stock_movements', {
   createdAt: createdAt(),
 }, t => [index('stock_product_idx').on(t.productId)]);
 
-export const serialUnits = sqliteTable('serial_units', {
+export const serialUnits = table('serial_units', {
   id: id(),
   productId: integer('product_id').notNull().references(() => products.id),
   serial: text('serial').notNull().unique(),
@@ -121,29 +130,29 @@ export const serialUnits = sqliteTable('serial_units', {
 });
 
 /* ───────────── Cart → checkout ───────────── */
-export const carts = sqliteTable('carts', {
+export const carts = table('carts', {
   id: id(),
   token: text('token').notNull().unique(),        // cookie value
   customerId: integer('customer_id').references(() => customers.id),
   status: text('status', { enum: ['active', 'checkout', 'converted', 'abandoned'] }).notNull().default('active'),
   couponCode: text('coupon_code'),
   checkoutStartedAt: ts('checkout_started_at'),
-  lastActivityAt: integer('last_activity_at', { mode: 'timestamp_ms' }).notNull().$defaultFn(() => new Date()),
+  lastActivityAt: ts('last_activity_at').notNull().defaultNow(),
   convertedOrderId: integer('converted_order_id'),
   createdAt: createdAt(),
 });
 
-export const cartItems = sqliteTable('cart_items', {
+export const cartItems = table('cart_items', {
   id: id(),
   cartId: integer('cart_id').notNull().references(() => carts.id),
   productId: integer('product_id').notNull().references(() => products.id),
   qty: integer('qty').notNull(),
-  unitPrice: integer('unit_price').notNull(),
+  unitPrice: money('unit_price').notNull(),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 }, t => [uniqueIndex('cart_item_unique').on(t.cartId, t.productId)]);
 
-export const cartEvents = sqliteTable('cart_events', {
+export const cartEvents = table('cart_events', {
   id: id(),
   cartId: integer('cart_id').notNull().references(() => carts.id),
   productId: integer('product_id'),
@@ -156,7 +165,7 @@ export const cartEvents = sqliteTable('cart_events', {
 export const ORDER_STATUSES = ['pending_payment', 'confirmed', 'processing', 'packed', 'shipped', 'delivered', 'cancelled', 'returned'] as const;
 export const PAYMENT_STATUSES = ['pending', 'paid', 'failed', 'refunded', 'partially_refunded'] as const;
 
-export const orders = sqliteTable('orders', {
+export const orders = table('orders', {
   id: id(),
   number: text('number').notNull().unique(),       // DV-26-000123
   accessToken: text('access_token').notNull(),     // lets a guest view their confirmation
@@ -170,11 +179,11 @@ export const orders = sqliteTable('orders', {
   shippingAddress: json<Address>('shipping_address').notNull(),
   billingAddress: json<Address>('billing_address').notNull(),
   deliveryOption: text('delivery_option').notNull().default('standard'),
-  subtotal: integer('subtotal').notNull(),        // sum of line totals before discount (GST incl.)
-  discount: integer('discount').notNull().default(0),
-  shipping: integer('shipping').notNull().default(0),
-  taxTotal: integer('tax_total').notNull(),       // GST contained in the total
-  total: integer('total').notNull(),
+  subtotal: money('subtotal').notNull(),        // sum of line totals before discount (GST incl.)
+  discount: money('discount').notNull().default(0),
+  shipping: money('shipping').notNull().default(0),
+  taxTotal: money('tax_total').notNull(),       // GST contained in the total
+  total: money('total').notNull(),
   couponCode: text('coupon_code'),
   referralCode: text('referral_code'),
   customerNote: text('customer_note'),
@@ -188,7 +197,7 @@ export const orders = sqliteTable('orders', {
   updatedAt: updatedAt(),
 }, t => [index('orders_customer_idx').on(t.customerId), index('orders_status_idx').on(t.status)]);
 
-export const orderItems = sqliteTable('order_items', {
+export const orderItems = table('order_items', {
   id: id(),
   orderId: integer('order_id').notNull().references(() => orders.id),
   productId: integer('product_id').notNull().references(() => products.id),
@@ -196,15 +205,15 @@ export const orderItems = sqliteTable('order_items', {
   name: text('name').notNull(),                  // snapshot
   hsn: text('hsn'),
   qty: integer('qty').notNull(),
-  unitPrice: integer('unit_price').notNull(),
-  discount: integer('discount').notNull().default(0),
+  unitPrice: money('unit_price').notNull(),
+  discount: money('discount').notNull().default(0),
   taxRate: integer('tax_rate').notNull(),
-  taxAmount: integer('tax_amount').notNull(),
-  lineTotal: integer('line_total').notNull(),     // after discount, GST incl.
+  taxAmount: money('tax_amount').notNull(),
+  lineTotal: money('line_total').notNull(),     // after discount, GST incl.
   serials: json<string[]>('serials'),
 });
 
-export const orderEvents = sqliteTable('order_events', {
+export const orderEvents = table('order_events', {
   id: id(),
   orderId: integer('order_id').notNull().references(() => orders.id),
   status: text('status').notNull(),
@@ -214,7 +223,7 @@ export const orderEvents = sqliteTable('order_events', {
 });
 
 /* ───────────── Payments, refunds ───────────── */
-export const payments = sqliteTable('payments', {
+export const payments = table('payments', {
   id: id(),
   purpose: text('purpose', { enum: ['order', 'water_test'] }).notNull().default('order'),
   orderId: integer('order_id').references(() => orders.id),
@@ -222,7 +231,7 @@ export const payments = sqliteTable('payments', {
   gateway: text('gateway', { enum: ['phonepe', 'razorpay', 'test'] }).notNull(),
   gatewayOrderId: text('gateway_order_id'),
   gatewayPaymentId: text('gateway_payment_id'),
-  amount: integer('amount').notNull(),
+  amount: money('amount').notNull(),
   method: text('method'),
   status: text('status', { enum: ['created', 'pending', 'success', 'failed'] }).notNull().default('created'),
   attempt: integer('attempt').notNull().default(1),
@@ -233,21 +242,21 @@ export const payments = sqliteTable('payments', {
   updatedAt: updatedAt(),
 }, t => [index('payments_gw_order_idx').on(t.gatewayOrderId)]);
 
-export const refunds = sqliteTable('refunds', {
+export const refunds = table('refunds', {
   id: id(),
   orderId: integer('order_id').notNull().references(() => orders.id),
   paymentId: integer('payment_id').references(() => payments.id),
-  amount: integer('amount').notNull(),
+  amount: money('amount').notNull(),
   gatewayRefundId: text('gateway_refund_id'),
   status: text('status', { enum: ['pending', 'processed', 'failed'] }).notNull().default('pending'),
   reason: text('reason'),
   initiatedBy: integer('initiated_by').references(() => staff.id),
-  initiatedAt: createdAt(),
+  initiatedAt: ts('initiated_at').notNull().defaultNow(),
   completedAt: ts('completed_at'),
 });
 
 /* ───────────── Shipping, cancellations, returns, exceptions ───────────── */
-export const shipments = sqliteTable('shipments', {
+export const shipments = table('shipments', {
   id: id(),
   orderId: integer('order_id').notNull().references(() => orders.id),
   provider: text('provider', { enum: ['shiprocket', 'manual'] }).notNull().default('manual'),
@@ -265,7 +274,7 @@ export const shipments = sqliteTable('shipments', {
   updatedAt: updatedAt(),
 });
 
-export const returns = sqliteTable('returns', {
+export const returns = table('returns', {
   id: id(),
   orderId: integer('order_id').notNull().references(() => orders.id),
   orderItemId: integer('order_item_id').references(() => orderItems.id),
@@ -277,7 +286,7 @@ export const returns = sqliteTable('returns', {
   updatedAt: updatedAt(),
 });
 
-export const orderExceptions = sqliteTable('order_exceptions', {
+export const orderExceptions = table('order_exceptions', {
   id: id(),
   orderId: integer('order_id').notNull().references(() => orders.id),
   type: text('type', { enum: ['delivery_failure', 'damaged', 'address_issue', 'other'] }).notNull(),
@@ -288,7 +297,7 @@ export const orderExceptions = sqliteTable('order_exceptions', {
 });
 
 /* ───────────── Invoices (GST) ───────────── */
-export const invoices = sqliteTable('invoices', {
+export const invoices = table('invoices', {
   id: id(),
   orderId: integer('order_id').notNull().references(() => orders.id),
   kind: text('kind', { enum: ['invoice', 'credit_note'] }).notNull().default('invoice'),
@@ -299,22 +308,22 @@ export const invoices = sqliteTable('invoices', {
   sellerGstin: text('seller_gstin'),
   buyerGstin: text('buyer_gstin'),
   placeOfSupply: text('place_of_supply').notNull(),
-  taxable: integer('taxable').notNull(),
-  cgst: integer('cgst').notNull().default(0),
-  sgst: integer('sgst').notNull().default(0),
-  igst: integer('igst').notNull().default(0),
-  total: integer('total').notNull(),
-  issuedAt: createdAt(),
+  taxable: money('taxable').notNull(),
+  cgst: money('cgst').notNull().default(0),
+  sgst: money('sgst').notNull().default(0),
+  igst: money('igst').notNull().default(0),
+  total: money('total').notNull(),
+  issuedAt: ts('issued_at').notNull().defaultNow(),
 }, t => [uniqueIndex('invoice_fy_seq').on(t.kind, t.fy, t.seq)]);
 
 /* ───────────── Referrals ───────────── */
-export const referrals = sqliteTable('referrals', {
+export const referrals = table('referrals', {
   id: id(),
   referrerId: integer('referrer_id').notNull().references(() => customers.id),
   referredCustomerId: integer('referred_customer_id').references(() => customers.id),
   orderId: integer('order_id').references(() => orders.id),
   code: text('code').notNull(),
-  discount: integer('discount').notNull().default(0),          // what the friend saved
+  discount: money('discount').notNull().default(0),          // what the friend saved
   status: text('status', { enum: ['pending', 'qualified', 'rewarded', 'void'] }).notNull().default('pending'),
   rewardCouponCode: text('reward_coupon_code'),
   createdAt: createdAt(),
@@ -322,31 +331,31 @@ export const referrals = sqliteTable('referrals', {
 });
 
 /* ───────────── Coupons, serviceability ───────────── */
-export const coupons = sqliteTable('coupons', {
+export const coupons = table('coupons', {
   id: id(),
   code: text('code').notNull().unique(),
   type: text('type', { enum: ['percent', 'flat'] }).notNull(),
-  value: integer('value').notNull(),             // percent (e.g. 10) or paise
-  minOrder: integer('min_order').notNull().default(0),
-  maxDiscount: integer('max_discount'),
+  value: money('value').notNull(),             // percent (e.g. 10) or paise
+  minOrder: money('min_order').notNull().default(0),
+  maxDiscount: money('max_discount'),
   appliesTo: json<string[]>('applies_to'),       // product slugs; null = all cart products
   startsAt: ts('starts_at'),
   endsAt: ts('ends_at'),
   usageLimit: integer('usage_limit'),
   usedCount: integer('used_count').notNull().default(0),
-  active: integer('active', { mode: 'boolean' }).notNull().default(true),
+  active: bool('active').notNull().default(true),
   ownerCustomerId: integer('owner_customer_id'),               // referral reward coupons are personal
   note: text('note'),
   createdAt: createdAt(),
 });
 
-export const pincodes = sqliteTable('pincodes', {
+export const pincodes = table('pincodes', {
   pincode: text('pincode').primaryKey(),
   city: text('city').notNull(),
   state: text('state').notNull(),
-  serviceable: integer('serviceable', { mode: 'boolean' }).notNull().default(true),
-  installation: integer('installation', { mode: 'boolean' }).notNull().default(true),
-  waterTesting: integer('water_testing', { mode: 'boolean' }).notNull().default(false),
+  serviceable: bool('serviceable').notNull().default(true),
+  installation: bool('installation').notNull().default(true),
+  waterTesting: bool('water_testing').notNull().default(false),
   deliveryDays: integer('delivery_days').notNull().default(5),
 });
 
@@ -355,7 +364,7 @@ export const ENQUIRY_TYPES = ['product', 'demo', 'water_test', 'consultation', '
 export const ENQUIRY_STATUSES = ['new', 'contacted', 'qualified', 'converted', 'lost', 'closed'] as const;
 export const INTERESTS = ['hyper', 'crystal', 'titan', 'multiple', 'not_sure'] as const;
 
-export const enquiries = sqliteTable('enquiries', {
+export const enquiries = table('enquiries', {
   id: id(),
   ref: text('ref').notNull().unique(),           // EQ-26-00042
   customerId: integer('customer_id').references(() => customers.id),
@@ -371,18 +380,18 @@ export const enquiries = sqliteTable('enquiries', {
   message: text('message'),
   data: json<Record<string, unknown>>('data'),  // form-specific fields, chat transcript, etc.
   preferredAt: text('preferred_at'),
-  quoteValue: integer('quote_value'),
+  quoteValue: money('quote_value'),
   quoteStatus: text('quote_status', { enum: ['none', 'draft', 'sent', 'accepted', 'declined'] }).notNull().default('none'),
   outcomeProduct: text('outcome_product'),
   outcomeRef: text('outcome_ref'),               // order number / quote reference
   source: text('source'),                        // page the form was sent from
   assignedTo: integer('assigned_to').references(() => staff.id),
-  consent: integer('consent', { mode: 'boolean' }).notNull().default(false),
+  consent: bool('consent').notNull().default(false),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 }, t => [index('enquiries_type_idx').on(t.type), index('enquiries_status_idx').on(t.status)]);
 
-export const enquiryNotes = sqliteTable('enquiry_notes', {
+export const enquiryNotes = table('enquiry_notes', {
   id: id(),
   enquiryId: integer('enquiry_id').notNull().references(() => enquiries.id),
   staffId: integer('staff_id').references(() => staff.id),
@@ -391,19 +400,19 @@ export const enquiryNotes = sqliteTable('enquiry_notes', {
 });
 
 /* ───────────── Water testing ───────────── */
-export const testOptions = sqliteTable('test_options', {
+export const testOptions = table('test_options', {
   id: id(),
   name: text('name').notNull(),
   summary: text('summary'),
   parameters: json<string[]>('parameters').notNull(),
   collectionMethod: text('collection_method').notNull(),
   turnaround: text('turnaround').notNull(),
-  price: integer('price').notNull().default(0),
-  active: integer('active', { mode: 'boolean' }).notNull().default(true),
+  price: money('price').notNull().default(0),
+  active: bool('active').notNull().default(true),
   sort: integer('sort').notNull().default(0),
 });
 
-export const waterTests = sqliteTable('water_tests', {
+export const waterTests = table('water_tests', {
   id: id(),
   ref: text('ref').notNull().unique(),           // WT-26-00012
   accessToken: text('access_token').notNull(),
@@ -421,7 +430,7 @@ export const waterTests = sqliteTable('water_tests', {
   preferredDate: text('preferred_date'),
   slot: text('slot'),
   status: text('status', { enum: ['requested', 'confirmed', 'collected', 'report_ready', 'completed', 'cancelled'] }).notNull().default('requested'),
-  price: integer('price').notNull().default(0),
+  price: money('price').notNull().default(0),
   paymentStatus: text('payment_status', { enum: ['not_required', 'pending', 'paid', 'refunded'] }).notNull().default('pending'),
   reportPath: text('report_path'),
   productInterest: text('product_interest', { enum: INTERESTS }),
@@ -431,7 +440,7 @@ export const waterTests = sqliteTable('water_tests', {
   updatedAt: updatedAt(),
 });
 
-export const reportUploads = sqliteTable('report_uploads', {
+export const reportUploads = table('report_uploads', {
   id: id(),
   enquiryId: integer('enquiry_id').references(() => enquiries.id),
   fileName: text('file_name').notNull(),
@@ -443,7 +452,7 @@ export const reportUploads = sqliteTable('report_uploads', {
 });
 
 /* ───────────── Post-purchase: installation, warranty, service, reviews ───────────── */
-export const installations = sqliteTable('installations', {
+export const installations = table('installations', {
   id: id(),
   orderId: integer('order_id').notNull().references(() => orders.id),
   status: text('status', { enum: ['pending', 'scheduled', 'completed', 'cancelled'] }).notNull().default('pending'),
@@ -454,7 +463,7 @@ export const installations = sqliteTable('installations', {
   createdAt: createdAt(),
 });
 
-export const warranties = sqliteTable('warranties', {
+export const warranties = table('warranties', {
   id: id(),
   orderId: integer('order_id').notNull().references(() => orders.id),
   orderItemId: integer('order_item_id').references(() => orderItems.id),
@@ -468,7 +477,7 @@ export const warranties = sqliteTable('warranties', {
   createdAt: createdAt(),
 });
 
-export const serviceTickets = sqliteTable('service_tickets', {
+export const serviceTickets = table('service_tickets', {
   id: id(),
   number: text('number').notNull().unique(),      // SR-26-00031
   customerId: integer('customer_id').references(() => customers.id),
@@ -491,7 +500,7 @@ export const serviceTickets = sqliteTable('service_tickets', {
   updatedAt: updatedAt(),
 });
 
-export const reviews = sqliteTable('reviews', {
+export const reviews = table('reviews', {
   id: id(),
   productId: integer('product_id').notNull().references(() => products.id),
   customerId: integer('customer_id').notNull().references(() => customers.id),
@@ -500,23 +509,47 @@ export const reviews = sqliteTable('reviews', {
   title: text('title'),
   body: text('body').notNull(),
   media: json<string[]>('media'),
-  verified: integer('verified', { mode: 'boolean' }).notNull().default(false),
+  verified: bool('verified').notNull().default(false),
   status: text('status', { enum: ['pending', 'approved', 'rejected'] }).notNull().default('pending'),
   createdAt: createdAt(),
 });
 
+/* ───────────── Blog ───────────── */
+export const posts = table('posts', {
+  id: id(),
+  slug: text('slug').notNull().unique(),
+  title: text('title').notNull(),
+  excerpt: text('excerpt').notNull().default(''),
+  category: text('category', { enum: ['benefits', 'value', 'case-study', 'hydration', 'guide', 'news'] }).notNull().default('hydration'),
+  product: text('product', { enum: ['crystal', 'hyper', 'titan'] }),   // offered on that product's page
+  coverImage: text('cover_image'),
+  coverAlt: text('cover_alt'),
+  body: text('body').notNull().default(''),                            // Markdown subset (src/components/ui/Markdown.tsx)
+  externalUrl: text('external_url'),                                   // set → the card links out instead of opening a post
+  source: text('source'),                                              // where an external piece was published
+  author: text('author').notNull().default('DVINE H2O editorial team'),
+  seoDescription: text('seo_description'),
+  featured: bool('featured').notNull().default(false),
+  status: text('status', { enum: ['draft', 'published'] }).notNull().default('draft'),
+  publishedAt: ts('published_at'),
+  createdBy: integer('created_by').references(() => staff.id),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+}, t => [index('posts_status_published_idx').on(t.status, t.publishedAt)]);
+
 /* ───────────── System ───────────── */
-export const auditLogs = sqliteTable('audit_logs', {
+export const auditLogs = table('audit_logs', {
   id: id(),
   staffId: integer('staff_id').references(() => staff.id),
   action: text('action').notNull(),
   entity: text('entity').notNull(),
   entityId: text('entity_id'),
   detail: json<Record<string, unknown>>('detail'),
+  ipHash: text('ip_hash'),
   createdAt: createdAt(),
 });
 
-export const notifications = sqliteTable('notifications', {
+export const notifications = table('notifications', {
   id: id(),
   channel: text('channel', { enum: ['email', 'whatsapp'] }).notNull(),
   to: text('to').notNull(),
@@ -528,14 +561,21 @@ export const notifications = sqliteTable('notifications', {
   createdAt: createdAt(),
 });
 
-export const settings = sqliteTable('settings', {
+export const settings = table('settings', {
   key: text('key').primaryKey(),
   value: json<unknown>('value').notNull(),
 });
 
-export const counters = sqliteTable('counters', {
+export const counters = table('counters', {
   key: text('key').primaryKey(),                 // e.g. order:26, invoice:2026-27
   value: integer('value').notNull().default(0),
+});
+
+/** Fixed-window rate limiting shared across server instances (see src/lib/security.ts). */
+export const rateLimits = table('rate_limits', {
+  key: text('key').primaryKey(),
+  hits: integer('hits').notNull(),
+  resetAt: ts('reset_at').notNull(),
 });
 
 /* ───────────── Relations (for relational queries) ───────────── */

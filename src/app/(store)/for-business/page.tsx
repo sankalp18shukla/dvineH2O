@@ -19,7 +19,9 @@ import { getProduct } from '@/lib/catalog';
 import { getProductPromos } from '@/lib/site-content.server';
 import { PromoCards } from '@/components/store/PromoCards';
 import { OfferTicket } from '@/components/store/OfferTicket';
-import { productJsonLd } from '@/lib/seo';
+import { jsonLd, productJsonLd } from '@/lib/seo';
+import { WorthReading, PriceStory } from '@/components/store/WorthReading';
+import { getProductReads } from '@/lib/blog.server';
 import css from '@/components/store/Bands.module.css';
 
 /** Rendered per request: reads the catalog, which needs a live database. */
@@ -39,7 +41,7 @@ function Callout({ c, n, side }: { c: (typeof BUSINESS.titan.features)[number]; 
 }
 
 export default async function BusinessPage({ searchParams }: { searchParams: Promise<{ preview?: string }> }) {
-  const [titan, promo] = await Promise.all([getProduct('titan'), searchParams.then(q => getProductPromos('titan', q.preview))]);
+  const [titan, promo, blog] = await Promise.all([getProduct('titan'), searchParams.then(q => getProductPromos('titan', q.preview)), getProductReads('titan')]);
   // optional promotion cards (Admin › Homepage & promotions › Product pages), after the hero or near the end
   const banner = promo.banner && <PromoCards promo={promo.banner} cards={promo.banner.cards} id="offers-title" tone="volt" wrap="container-x" />;
   const f = BUSINESS.titan.features;
@@ -50,7 +52,7 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
       <Header framed shop ribbon={promo.ribbon} />
       <SmoothScroll />
       <main id="main">
-        {titan && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(titan, '/for-business')) }} />}
+        {titan && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(productJsonLd(titan, '/for-business')) }} />}
 
         {/* 01 · Hero: Titan on its Voltage disc left, the quotation panel right, as the product pages */}
         <ProductHero name="Titan" title="Water for shared spaces" tone="volt" sticker={'Main Character\nHydration.'} body={BUSINESS.hero.body}
@@ -59,6 +61,7 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
             <div className="border-t-2 border-ink pt-5 font-sans">
               <p className="text-[44px] leading-none font-bold tracking-[-0.04em]">Priced on quotation</p>
               <p className="mt-3 text-[13.5px] text-muted">{titan?.quoteNote ?? 'Priced on quotation after a site discussion.'}</p>
+              {blog.price && <PriceStory slug={blog.price.slug} label="How quotations work" className="mt-4" />}
             </div>
             {promo.offer && <OfferTicket offer={promo.offer} codeHint="Quote it when you enquire" />}
             <div className="cta-row">
@@ -206,6 +209,9 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
             </div>
           </div>
         </section>
+
+        {/* blog posts about Titan: how a quotation is worked out, benefits (Admin › Blog) */}
+        <WorthReading posts={blog.reads} tone="volt" />
 
         {promo.banner?.placement === 'faq' && banner}
 

@@ -22,6 +22,7 @@ The text lives in `POLICIES` in `src/lib/content.ts`. Each page is served at `/p
 
 - Footer and checkout links point to these pages; the consent checkbox on every form ("I agree to the terms and privacy policy…") relies on them.
 - Marketing opt-in wording on forms ("Send me occasional updates from DVINE H2O").
+- The blog's starter articles (`/blog`, written in `src/lib/blog-seed.ts`, editable in Admin › Blog): the two "Benefits" posts summarise research on hydrogen and alkaline water, and every post ends with a not-medical-advice note.
 - Any health or wellness wording about ionised, alkaline or hydrogen water across the product pages.
 
 ## When it's done

@@ -35,7 +35,7 @@ export const NAV = {
 
 export const FOOTER = [
   { title: 'Shop', links: [{ href: '/home-water-systems', label: 'Crystal' }, { href: '/hydrogen-bottles', label: 'Hyper' }, { href: '/for-business', label: 'Titan 111' }, { href: '/for-business#bulk', label: 'Bulk and gifting' }] },
-  { title: 'Learn', links: [{ href: '/#about', label: 'Meet DVINE' }, { href: '/hydrogen-bottles#how-it-works', label: 'How Hyper works' }, { href: '/water-testing#book', label: 'Book a water test' }, { href: '/water-testing#upload', label: 'Upload a report' }] },
+  { title: 'Learn', links: [{ href: '/#about', label: 'Meet DVINE' }, { href: '/blog', label: 'Blog' }, { href: '/hydrogen-bottles#how-it-works', label: 'How Hyper works' }, { href: '/water-testing#book', label: 'Book a water test' }, { href: '/water-testing#upload', label: 'Upload a report' }] },
   { title: 'Help', links: [{ href: '/track', label: 'Track my order' }, { href: '/support#manuals', label: 'Manuals and warranty' }, { href: '/support#contact', label: 'Service request' }, { href: '/book-demo', label: 'Book a demo' }] },
   { title: 'Contact', links: [{ href: 'tel:18002024504', label: '1800 202 4504' }, { href: 'mailto:reachout@dvineh2o.com', label: 'reachout@dvineh2o.com' }, { href: 'https://wa.me/918984163478', label: 'WhatsApp us' }, { href: '/support#contact', label: 'Send an enquiry' }, { href: '/for-business#enquiry', label: 'Request a quote' }] },
 ];

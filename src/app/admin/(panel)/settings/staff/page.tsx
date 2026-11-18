@@ -6,13 +6,20 @@ import { PERMISSIONS } from '@/lib/session';
 import { PageHead, Panel, dt } from '@/components/admin/ui';
 import { AdminForm, AdminError } from '@/components/admin/AdminForm';
 import { SubmitButton } from '@/components/forms/SubmitButton';
-import { saveStaff } from '@/app/actions/admin';
+import { saveStaff, resetStaffMfa } from '@/app/actions/admin';
+import { supabaseAdmin } from '@/lib/supabase/admin';
 
 export const metadata = { title: 'Staff' };
 
 export default async function Staff() {
   await requireStaff('settings');
   const list = await db.query.staff.findMany({ orderBy: asc(staff.createdAt) });
+  // two-step status straight from Supabase Auth
+  const mfa = new Map<number, boolean | null>(await Promise.all(list.map(async s => {
+    if (!s.authUserId) return [s.id, null] as const;
+    const { data } = await supabaseAdmin().auth.admin.mfa.listFactors({ userId: s.authUserId }).catch(() => ({ data: null }));
+    return [s.id, !!data?.factors?.some(f => f.status === 'verified')] as const;
+  })));
   const sel = 'input min-h-9 text-[13px]';
   const Row = ({ s }: { s?: typeof list[number] }) => (
     <AdminForm action={saveStaff} className="grid gap-2 sm:grid-cols-[1fr_1.2fr_140px_1fr_auto_auto] sm:items-center">
@@ -20,7 +27,7 @@ export default async function Staff() {
       <input name="name" defaultValue={s?.name} placeholder="Name" className={sel} aria-label="Name" required />
       <div><input name="email" defaultValue={s?.email} placeholder="Email" className={sel} aria-label="Email" required /><AdminError name="email" /></div>
       <select name="role" defaultValue={s?.role ?? 'support'} className={sel} aria-label="Role"><option value="admin">Admin</option><option value="operations">Operations</option><option value="support">Support</option></select>
-      <div><input name="password" type="password" placeholder={s ? 'New password (optional)' : 'Password (10+ chars)'} className={sel} aria-label="Password" autoComplete="new-password" /><AdminError name="password" /></div>
+      <div><input name="password" type="password" placeholder={s ? 'New password (optional)' : 'Starting password (12+ chars)'} className={sel} aria-label="Password" autoComplete="new-password" /><AdminError name="password" /></div>
       <label className="flex items-center gap-1.5 font-sans text-[13px]"><input type="checkbox" name="active" defaultChecked={s?.active ?? true} className="check mt-0" />Active</label>
       <SubmitButton className="btn btn-outline btn-sm min-h-9">{s ? 'Save' : 'Add'}</SubmitButton>
     </AdminForm>
@@ -29,7 +36,7 @@ export default async function Staff() {
     <>
       <PageHead title="Staff & roles" />
       <Panel title="Team">
-        <div className="grid gap-3">{list.map(s => <div key={s.id}><Row s={s} /><p className="mt-1 font-sans text-[12px] text-muted">Last sign-in {dt(s.lastLoginAt)}</p></div>)}</div>
+        <div className="grid gap-3">{list.map(s => <div key={s.id}><Row s={s} /><div className="mt-1 flex flex-wrap items-center gap-3 font-sans text-[12px] text-muted"><span>Last sign-in {dt(s.lastLoginAt)}</span><span>{mfa.get(s.id) ? 'Two-step: on' : mfa.get(s.id) === false ? 'Two-step: set up at next sign-in' : 'No sign-in yet'}</span>{mfa.get(s.id) && <AdminForm action={resetStaffMfa} className="inline"><input type="hidden" name="id" value={s.id} /><SubmitButton className="text-[12px] font-semibold text-deep-current hover:underline" pendingLabel="Resetting…">Reset two-step (lost phone)</SubmitButton></AdminForm>}</div></div>)}</div>
         <div className="mt-6 border-t border-line pt-4"><p className="mb-2 font-sans text-sm font-semibold">Add a team member</p><Row /></div>
       </Panel>
       <Panel title="What each role can do" className="mt-6">

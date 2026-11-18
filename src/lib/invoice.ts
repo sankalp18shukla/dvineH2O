@@ -12,7 +12,7 @@ export async function issueInvoice(tx: Tx, orderId: number) {
   const order = await tx.query.orders.findFirst({ where: eq(orders.id, orderId) });
   if (!order) throw new Error('Order not found');
   const items = await tx.query.orderItems.findMany({ where: eq(orderItems.orderId, orderId) });
-  const company = await getCompany();
+  const company = await getCompany(tx);
   const tax = items.reduce((s, i) => s + i.taxAmount, 0) + (order.shipping ? splitInclusive(order.shipping, 1800).tax : 0);
   const split = gstSplit(tax, company.state, order.billingAddress.state);
   const { fy, seq, number } = await invoiceNumber(tx, 'invoice', company.invoicePrefix || 'DVH');
@@ -27,7 +27,7 @@ export async function issueInvoice(tx: Tx, orderId: number) {
 export async function issueCreditNote(tx: Tx, orderId: number, amount: number) {
   const inv = await tx.query.invoices.findFirst({ where: and(eq(invoices.orderId, orderId), eq(invoices.kind, 'invoice')) });
   if (!inv) return null;
-  const company = await getCompany();
+  const company = await getCompany(tx);
   const ratio = amount / inv.total;
   const cgst = Math.round(inv.cgst * ratio), sgst = Math.round(inv.sgst * ratio), igst = Math.round(inv.igst * ratio);
   const { fy, seq, number } = await invoiceNumber(tx, 'credit_note', company.invoicePrefix || 'DVH');

@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { pincodes } from '@/lib/db/schema';
 import { setItem, setCoupon, loadCart } from '@/lib/cart';
 import { pincode as pincodeSchema } from '@/lib/validators';
+import { limitRequest, TOO_MANY } from '@/lib/security';
 
 export async function addToCart(productId: number, qty = 1) {
   const r = await setItem(productId, qty, 'add');
@@ -19,6 +20,8 @@ export async function updateCartQty(productId: number, qty: number) {
 export async function applyCode(_: unknown, fd: FormData) {
   const code = String(fd.get('code') ?? '').trim();
   if (!code) return { error: 'Enter a code.' };
+  if (code.length > 40) return { error: 'This code is not valid.' };
+  if (!(await limitRequest('coupon'))) return { error: TOO_MANY };
   await setCoupon(code);
   revalidatePath('/cart'); revalidatePath('/checkout');
   return { ok: true };
@@ -32,6 +35,7 @@ export type PincodeResult = { ok: boolean; message: string; city?: string; days?
 export async function checkPincode(pin: string): Promise<PincodeResult> {
   const p = pincodeSchema.safeParse(pin);
   if (!p.success) return { ok: false, message: 'Enter a valid 6-digit pincode.' };
+  if (!(await limitRequest('pincode'))) return { ok: false, message: TOO_MANY };
   const row = await db.query.pincodes.findFirst({ where: eq(pincodes.pincode, p.data) });
   if (!row || !row.serviceable) return { ok: false, message: `We don't deliver to ${p.data} yet. Send us an enquiry and we'll check for you.` };
   const by = new Date(Date.now() + row.deliveryDays * 86400_000).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });

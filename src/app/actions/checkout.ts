@@ -8,6 +8,7 @@ import { getCartRow } from '@/lib/cart';
 import { getCustomer } from '@/lib/auth';
 import { createOrderFromCart, CheckoutError } from '@/lib/orders';
 import { address, email, formToObject, phone, zodErrors, type FormState } from '@/lib/validators';
+import { safeEqual } from '@/lib/security';
 
 const schema = z.object({
   email, phone, name: z.string().trim().min(2, 'Enter your name'),
@@ -60,6 +61,6 @@ export async function placeOrder(_: FormState, fd: FormData): Promise<FormState>
 /** Retry payment for an unpaid order (e.g. from the confirmation page after a failure). */
 export async function retryPayment(number: string, token: string) {
   const o = await db.query.orders.findFirst({ where: eq(orders.number, number) });
-  if (!o || o.accessToken !== token) redirect('/');
+  if (!o || !safeEqual(token, o.accessToken)) redirect('/');
   redirect(`/checkout/pay/${o.number}?t=${o.accessToken}`);
 }

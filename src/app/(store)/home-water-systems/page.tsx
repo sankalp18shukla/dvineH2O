@@ -22,11 +22,13 @@ import { getProduct } from '@/lib/catalog';
 import { getProductPromos } from '@/lib/site-content.server';
 import { PromoCards } from '@/components/store/PromoCards';
 import { formatINR } from '@/lib/money';
-import { productJsonLd } from '@/lib/seo';
+import { jsonLd, productJsonLd } from '@/lib/seo';
 import { Facts, Lockup, Squiggle } from '@/components/ui/Brand';
 import { TuckedSquiggle } from '@/components/store/TuckedSquiggle';
 import { WaveBand } from '@/components/store/WaveBand';
 import { LightUp } from '@/components/store/LightUp';
+import { WorthReading } from '@/components/store/WorthReading';
+import { getProductReads } from '@/lib/blog.server';
 import css from './crystal.module.css';
 
 /** Rendered per request: reads the catalog, which needs a live database, and the dated promotions (?preview=1 shows staff the draft). */
@@ -54,7 +56,7 @@ function Callout({ c, n, side, cite }: { c: (typeof CRYSTAL.features.cards)[numb
 }
 
 export default async function CrystalPage({ searchParams }: { searchParams: Promise<{ preview?: string }> }) {
-  const [p, promo] = await Promise.all([getProduct('crystal'), searchParams.then(q => getProductPromos('crystal', q.preview))]);
+  const [p, promo, blog] = await Promise.all([getProduct('crystal'), searchParams.then(q => getProductPromos('crystal', q.preview)), getProductReads('crystal')]);
   if (!p) notFound();
   // optional promotion cards (Admin › Homepage & promotions › Product pages), after the hero or before the questions
   const banner = promo.banner && <PromoCards promo={promo.banner} cards={promo.banner.cards} id="offers-title" tone="glacier" wrap="container-x" />;
@@ -65,15 +67,18 @@ export default async function CrystalPage({ searchParams }: { searchParams: Prom
       <Header framed shop ribbon={promo.ribbon} />
       <SmoothScroll />
       <main id="main">
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(p, '/home-water-systems')) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(productJsonLd(p, '/home-water-systems')) }} />
 
         {/* 01 · Hero: gallery left, purchase right */}
         <ProductHero name="Crystal" title="Home water system" tone="glacier" sticker={'Soft Launching\n“My Water Era.”'} body={CRYSTAL.hero.body}
           cutout="/images/crystal_product.png" images={p.images ?? CRYSTAL.hero.gallery} alt="Crystal home water system">
-          <BuyBox p={p} tone="glacier" offer={promo.offer} secondary={{ href: '/book-demo?product=crystal', label: 'Book a Demo' }} />
+          <BuyBox p={p} tone="glacier" offer={promo.offer} why={blog.price} secondary={{ href: '/book-demo?product=crystal', label: 'Book a Demo' }} />
         </ProductHero>
 
         {promo.banner?.placement === 'hero' && banner}
+
+        {/* blog posts about Crystal: benefits and what the price covers (Admin › Blog), second, right under the purchase */}
+        <WorthReading posts={blog.reads} tone="glacier" />
 
         {/* 02 · Key features: Crystal in the middle, the four details around it, over the Glacier wave band (its edges
             are wave lines that drift with the scroll and part around the pointer, as on the home page's Meet DVINE) */}

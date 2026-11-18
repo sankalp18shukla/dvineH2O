@@ -1,14 +1,16 @@
 'use server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, isNotNull } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { orders, orderEvents, returns, reviews, installations, customers, addresses, warranties } from '@/lib/db/schema';
-import { requireCustomer, hashPassword, verifyPassword } from '@/lib/auth';
+import { requireCustomer } from '@/lib/auth';
+import { supabaseServer } from '@/lib/supabase/server';
+import { limitRequest, TOO_MANY } from '@/lib/security';
 import { cancelOrder } from '@/lib/orders';
 import { createTicket } from '@/lib/enquiries';
 import { getCommerce } from '@/lib/settings';
-import { address, formToObject, name, phone, zodErrors, type FormState } from '@/lib/validators';
+import { address, formToObject, name, password, phone, zodErrors, type FormState } from '@/lib/validators';
 import { saveUpload, UploadError } from '@/lib/uploads';
 
 async function ownOrder(number: string) {
@@ -103,16 +105,26 @@ export async function updateProfile(_: FormState, fd: FormData): Promise<FormSta
   const o = formToObject(fd) as Record<string, string>;
   const p = z.object({ name, phone, marketing: z.string().optional() }).safeParse(o);
   if (!p.success) return { errors: zodErrors(p.error), data: o };
-  const clash = await db.query.customers.findFirst({ where: eq(customers.phone, p.data.phone) });
+  const clash = await db.query.customers.findFirst({ where: and(eq(customers.phone, p.data.phone), isNotNull(customers.authUserId)) });
   if (clash && clash.id !== c.id) return { errors: { phone: 'This phone number is used by another account.' }, data: o };
-  await db.update(customers).set({ name: p.data.name, phone: p.data.phone, consentMarketing: p.data.marketing === 'on' }).where(eq(customers.id, c.id));
+  const keep = { ...o, currentPassword: '', newPassword: '' };
   if (o.newPassword) {
-    if (!c.passwordHash || !(await verifyPassword(o.currentPassword ?? '', c.passwordHash))) return { errors: { currentPassword: 'Current password is incorrect' }, data: o };
-    if (o.newPassword.length < 8) return { errors: { newPassword: 'Use at least 8 characters' }, data: o };
-    await db.update(customers).set({ passwordHash: await hashPassword(o.newPassword) }).where(eq(customers.id, c.id));
+    // Re-check the current password with Supabase before changing it.
+    const np = password.safeParse(o.newPassword);
+    if (!np.success) return { errors: { newPassword: np.error.issues[0].message }, data: keep };
+    if (!(await limitRequest('login', `pw:${c.id}`))) return { message: TOO_MANY, data: keep };
+    const sb = await supabaseServer();
+    const { data: who } = await sb.auth.getUser();
+    if (!who.user?.email) return { message: 'Please sign in again.', data: keep };
+    const { error: wrong } = await sb.auth.signInWithPassword({ email: who.user.email, password: o.currentPassword ?? '' });
+    if (wrong) return { errors: { currentPassword: 'Current password is incorrect' }, data: keep };
+    const { error } = await sb.auth.updateUser({ password: np.data });
+    if (error) return { errors: { newPassword: /same/i.test(error.message) ? 'Choose a password you haven’t used here before.' : error.message }, data: keep };
+    await sb.auth.signOut({ scope: 'others' }).catch(() => {});
   }
+  await db.update(customers).set({ name: p.data.name, phone: p.data.phone, consentMarketing: p.data.marketing === 'on' }).where(eq(customers.id, c.id));
   revalidatePath('/account/profile');
-  return { ok: true, message: 'Profile saved.' };
+  return { ok: true, message: o.newPassword ? 'Profile and password saved. Other devices have been signed out.' : 'Profile saved.' };
 }
 
 export async function saveAddress(_: FormState, fd: FormData): Promise<FormState> {

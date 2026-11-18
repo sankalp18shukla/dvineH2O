@@ -8,7 +8,7 @@ import {
   orders, orderItems, orderEvents, products, shipments, installations, warranties, enquiries, enquiryNotes, waterTests, serviceTickets,
   reviews, coupons, pincodes, staff, returns, orderExceptions, serialUnits, testOptions, ENQUIRY_STATUSES,
 } from '@/lib/db/schema';
-import { requireStaff, hashPassword } from '@/lib/auth';
+import { requireStaff } from '@/lib/auth';
 import type { Permission } from '@/lib/session';
 import { audit } from '@/lib/audit';
 import { setOrderStatus, cancelOrder, refundOrder, createQuoteOrder, CheckoutError, STATUS_LABEL, type OrderStatus } from '@/lib/orders';
@@ -401,20 +401,63 @@ export const saveCommerce = guarded('settings', async (s, fd): Promise<FormState
   return { ok: true, message: 'Store settings saved.' };
 });
 
+/**
+ * Team accounts are Supabase Auth users (created here, email pre-confirmed) linked to a dvine.staff row that
+ * holds the role. Every team member must also set up an authenticator app at first sign-in.
+ */
 export const saveStaff = guarded('settings', async (s, fd): Promise<FormState | void> => {
+  const { supabaseAdmin } = await import('@/lib/supabase/admin');
+  const { password } = await import('@/lib/validators');
   const id = num(fd, 'id'); const email = str(fd, 'email').toLowerCase(); const pw = str(fd, 'password');
   const role = str(fd, 'role') as 'admin' | 'operations' | 'support';
+  const name = str(fd, 'name').slice(0, 120);
+  const active = fd.get('active') === 'on';
+  if (!name) return { errors: { name: 'Enter a name' } };
   if (!z.string().email().safeParse(email).success) return { errors: { email: 'Enter a valid email' } };
-  if (id === s.id && (role !== 'admin' || fd.get('active') !== 'on')) return { message: 'You can’t remove your own admin access.' };
+  if (!['admin', 'operations', 'support'].includes(role)) return { errors: { role: 'Choose a role' } };
+  if (id === s.id && (role !== 'admin' || !active)) return { message: 'You can’t remove your own admin access.' };
+  if (pw) { const p = password.safeParse(pw); if (!p.success || pw.length < 12) return { errors: { password: pw.length < 12 ? 'Use at least 12 characters' : p.error!.issues[0].message } }; }
+  const admin = supabaseAdmin().auth.admin;
+
   if (id) {
-    await db.update(staff).set({ name: str(fd, 'name'), email, role, active: fd.get('active') === 'on', ...(pw ? { passwordHash: await hashPassword(pw) } : {}) }).where(eq(staff.id, id));
+    const row = await db.query.staff.findFirst({ where: eq(staff.id, id) });
+    if (!row) throw new Error('Not found');
+    if (row.authUserId) {
+      const attrs: Parameters<typeof admin.updateUserById>[1] = {};
+      if (email !== row.email) { attrs.email = email; attrs.email_confirm = true; }
+      if (pw) attrs.password = pw;
+      if (active !== row.active) attrs.ban_duration = active ? 'none' : '876000h'; // deactivated staff can't refresh a session
+      if (Object.keys(attrs).length) {
+        const { error } = await admin.updateUserById(row.authUserId, attrs);
+        if (error) return { errors: { email: error.message } };
+      }
+    }
+    await db.update(staff).set({ name, email, role, active }).where(eq(staff.id, id));
   } else {
-    if (pw.length < 10) return { errors: { password: 'Use at least 10 characters' } };
-    try { await db.insert(staff).values({ name: str(fd, 'name'), email, role, passwordHash: await hashPassword(pw) }); } catch { return { errors: { email: 'A staff member with this email exists' } }; }
+    if (!pw) return { errors: { password: 'Set a starting password (12+ characters). They can change it later.' } };
+    if (await db.query.staff.findFirst({ where: eq(staff.email, email) })) return { errors: { email: 'A staff member with this email exists' } };
+    const { data, error } = await admin.createUser({ email, password: pw, email_confirm: true, user_metadata: { name } });
+    if (error || !data.user) return { errors: { email: /already|exists|registered/i.test(error?.message ?? '') ? 'This email already has a customer account. Use a separate work email.' : (error?.message ?? 'Could not create the account') } };
+    try { await db.insert(staff).values({ name, email, role, active, authUserId: data.user.id }); }
+    catch (e) { await admin.deleteUser(data.user.id).catch(() => {}); throw e; }
   }
-  await audit(s.id, id ? 'staff.update' : 'staff.create', 'staff', id || email, { role });
+  await audit(s.id, id ? 'staff.update' : 'staff.create', 'staff', id || email, { role, active, passwordChanged: !!pw });
   revalidatePath('/admin/settings/staff');
-  return { ok: true, message: 'Staff saved.' };
+  return { ok: true, message: id ? 'Staff saved.' : `Account created. ${name.split(' ')[0]} signs in at /admin and sets up an authenticator app.` };
+});
+
+/** For a lost phone: removes a team member's authenticator so they enrol a new one at their next sign-in. */
+export const resetStaffMfa = guarded('settings', async (s, fd): Promise<FormState | void> => {
+  const { supabaseAdmin } = await import('@/lib/supabase/admin');
+  const id = num(fd, 'id');
+  const row = await db.query.staff.findFirst({ where: eq(staff.id, id) });
+  if (!row?.authUserId) throw new Error('This team member has no sign-in yet.');
+  const admin = supabaseAdmin().auth.admin;
+  const { data } = await admin.mfa.listFactors({ userId: row.authUserId });
+  for (const f of data?.factors ?? []) await admin.mfa.deleteFactor({ userId: row.authUserId, id: f.id });
+  await audit(s.id, 'staff.mfa_reset', 'staff', id);
+  revalidatePath('/admin/settings/staff');
+  return { ok: true, message: `Two-step sign-in reset for ${row.name}. They’ll set up a new authenticator next time.` };
 });
 
 /* ─────────────── Customers ─────────────── */

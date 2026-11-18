@@ -18,13 +18,15 @@ import { getProduct } from '@/lib/catalog';
 import { getProductPromos } from '@/lib/site-content.server';
 import { PromoCards } from '@/components/store/PromoCards';
 import { formatINR } from '@/lib/money';
-import { productJsonLd } from '@/lib/seo';
+import { jsonLd, productJsonLd } from '@/lib/seo';
 import { Lockup } from '@/components/ui/Brand';
 import { FrameTuckSquiggle } from '@/components/store/FrameTuckSquiggle';
 import { HyperAssembly } from '@/components/store/HyperAssembly';
 import { WaveBand } from '@/components/store/WaveBand';
 import { LightUp } from '@/components/store/LightUp';
 import { FinishPicker, FinishProvider } from '@/components/store/BottleFinish';
+import { WorthReading } from '@/components/store/WorthReading';
+import { getProductReads } from '@/lib/blog.server';
 import css from './hyper.module.css';
 
 /** Rendered per request: reads the catalog, which needs a live database, and the dated promotions (?preview=1 shows staff the draft). */
@@ -33,7 +35,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Hyper hydrogen water bottle', description: HYPER.hero.body, alternates: { canonical: '/hydrogen-bottles' } };
 
 export default async function HyperPage({ searchParams }: { searchParams: Promise<{ preview?: string }> }) {
-  const [p, promo] = await Promise.all([getProduct('hyper'), searchParams.then(q => getProductPromos('hyper', q.preview))]);
+  const [p, promo, blog] = await Promise.all([getProduct('hyper'), searchParams.then(q => getProductPromos('hyper', q.preview)), getProductReads('hyper')]);
   if (!p) notFound();
   // optional promotion cards (Admin › Homepage & promotions › Product pages), after the hero or before the questions
   const banner = promo.banner && <PromoCards promo={promo.banner} cards={promo.banner.cards} id="offers-title" tone="flash" wrap="container-x" />;
@@ -43,7 +45,7 @@ export default async function HyperPage({ searchParams }: { searchParams: Promis
       <Header framed shop ribbon={promo.ribbon} />
       <SmoothScroll />
       <main id="main">
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(p, '/hydrogen-bottles')) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(productJsonLd(p, '/hydrogen-bottles')) }} />
 
         {/* 01 · Hero: gallery left, purchase right. Picking a finish repaints the bottle on the stage in place: a wavy
             fill line runs up the metal in the new colour (BottleFinish.tsx); the glass, logo and drops stay the photo's. */}
@@ -51,11 +53,14 @@ export default async function HyperPage({ searchParams }: { searchParams: Promis
           <ProductHero name="Hyper" title="Hydrogen water bottle" tone="flash" sticker="Sip Check." body={HYPER.hero.body}
             cutout="/images/hyper_product.png" shell="/images/hyper_shell.png" axis={-41} images={p.images ?? HYPER.hero.gallery} alt="Hyper hydrogen water bottle">
             <FinishPicker />
-            <BuyBox p={p} tone="flash" offer={promo.offer} />
+            <BuyBox p={p} tone="flash" offer={promo.offer} why={blog.price} />
           </ProductHero>
         </FinishProvider>
 
         {promo.banner?.placement === 'hero' && banner}
+
+        {/* blog posts about Hyper: benefits and what the price covers (Admin › Blog), second, right under the purchase */}
+        <WorthReading posts={blog.reads} tone="flash" />
 
         {/* 02 · Everyday use: three tall photos, staggered, drifting at their own pace */}
         <section className="section overflow-hidden" aria-labelledby="day-title">

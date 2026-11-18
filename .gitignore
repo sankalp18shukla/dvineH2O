@@ -16,3 +16,8 @@ tests/out
 
 # local screenshots
 /*.png
+
+# Supabase CLI local state
+supabase/.temp
+supabase/.branches
+.env*.local

@@ -5,6 +5,7 @@ import { getCustomer, getStaff } from '@/lib/auth';
 import { getCompany } from '@/lib/settings';
 import { InvoiceDoc } from '@/components/Invoice';
 import { PrintButton } from '@/components/PrintButton';
+import { safeEqual } from '@/lib/security';
 
 export const metadata: Metadata = { title: 'Invoice', robots: { index: false } };
 
@@ -13,7 +14,7 @@ export default async function InvoicePage({ params, searchParams }: { params: Pr
   const o = await loadOrder(number);
   if (!o) notFound();
   const [c, s] = await Promise.all([getCustomer(), getStaff()]);
-  if (o.accessToken !== t && o.customerId !== c?.id && !s) notFound();
+  if (!safeEqual(t, o.accessToken) && o.customerId !== c?.id && !s) notFound();
   return (
     <main className="min-h-screen bg-paper py-8 print:bg-white print:py-0">
       <div className="no-print mx-auto mb-4 flex max-w-[860px] justify-end px-4"><PrintButton /></div>

@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import { db } from './db';
+import { db, type DB, type Tx } from './db';
 import { settings } from './db/schema';
 
 export type Company = {
@@ -25,12 +25,13 @@ export const DEFAULT_COMMERCE: Commerce = {
   shippingFee: 0, freeShippingAbove: 0, reservationMinutes: 30, abandonmentMinutes: 60, returnWindowDays: 7, cancelBefore: 'packed',
 };
 
-export async function getSetting<T>(key: string, fallback: T): Promise<T> {
-  const row = await db.query.settings.findFirst({ where: eq(settings.key, key) });
+/** Pass `q` (the open transaction) when called inside db.transaction, so it doesn't need a second connection. */
+export async function getSetting<T>(key: string, fallback: T, q: DB | Tx = db): Promise<T> {
+  const row = await q.query.settings.findFirst({ where: eq(settings.key, key) });
   return row ? { ...fallback, ...(row.value as object) } as T : fallback;
 }
-export const getCompany = () => getSetting<Company>('company', DEFAULT_COMPANY);
-export const getCommerce = () => getSetting<Commerce>('commerce', DEFAULT_COMMERCE);
+export const getCompany = (q?: DB | Tx) => getSetting<Company>('company', DEFAULT_COMPANY, q);
+export const getCommerce = (q?: DB | Tx) => getSetting<Commerce>('commerce', DEFAULT_COMMERCE, q);
 
 export async function setSetting(key: string, value: unknown) {
   await db.insert(settings).values({ key, value }).onConflictDoUpdate({ target: settings.key, set: { value } });

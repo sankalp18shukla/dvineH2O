@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import { desc, eq } from 'drizzle-orm';
+import { asc, desc, eq, inArray } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { orders, products } from '@/lib/db/schema';
+import { orders, products, serviceTickets } from '@/lib/db/schema';
 import { requireStaff } from '@/lib/auth';
 import { overview, parseRange } from '@/lib/metrics';
 import { getCompany } from '@/lib/settings';
@@ -12,20 +12,25 @@ import { formatINR } from '@/lib/money';
 import { Kpi, PageHead, Panel, TableWrap, pct, dt } from '@/components/admin/ui';
 import { Status, humanize } from '@/components/ui/Status';
 import { Icon } from '@/components/ui/Icon';
+import { AutoRefresh } from '@/components/admin/AutoRefresh';
+import { can } from '@/lib/session';
 import { STATUS_LABEL } from '@/lib/orders';
 import { ENQUIRY_LABEL } from '@/lib/enquiries';
 
 const RANGES = [['today', 'Today'], ['7d', '7 days'], ['30d', '30 days'], ['month', 'This month']] as const;
 
 export default async function Overview({ searchParams }: { searchParams: Promise<{ range?: string; from?: string; to?: string; denied?: string }> }) {
-  await requireStaff('overview');
+  const me = await requireStaff('overview');
   const sp = await searchParams;
   const r = parseRange(sp.range, sp.from, sp.to);
-  const [m, company, unconfirmed, recent] = await Promise.all([
+  const [m, company, unconfirmed, recent, tickets] = await Promise.all([
     overview(r), getCompany(),
     db.query.products.findMany({ where: eq(products.priceConfirmed, false) }),
     db.query.orders.findMany({ orderBy: desc(orders.createdAt), limit: 6 }),
+    // service requests nobody has finished yet: unassigned ones first, then the oldest
+    can(me.role, 'service') ? db.query.serviceTickets.findMany({ where: inArray(serviceTickets.status, ['open', 'assigned', 'in_progress']), orderBy: [asc(serviceTickets.status), asc(serviceTickets.createdAt)], limit: 6, with: { product: true } }) : [],
   ]);
+  const waiting = tickets.filter(t => t.status === 'open').length;
   const warnings = [
     activeGateway() === 'test' && 'Payments are in TEST MODE. Add PhonePe (or Razorpay) keys to take real payments.',
     activeGateway() === 'phonepe' && phonepeEnabled() && phonepeMode() !== 'production' && 'PhonePe is in SANDBOX mode. Set PHONEPE_ENV=production with live keys to take real payments.',
@@ -47,6 +52,13 @@ export default async function Overview({ searchParams }: { searchParams: Promise
         </form>
       } />
       {sp.denied && <p className="mb-4 rounded-xl bg-[#FFE3E3] px-4 py-3 font-sans text-sm text-[#8A0E18]">Your role doesn’t have access to that page.</p>}
+      {waiting > 0 && (
+        <Link href="/admin/service" className="mb-4 flex items-center gap-3 rounded-xl bg-flash px-4 py-3 font-sans text-sm font-semibold text-white hover:opacity-95">
+          <Icon name="bell" className="size-5 shrink-0" />
+          <span className="flex-1">{waiting === 1 ? '1 new service request is' : `${waiting}${tickets.length === 6 && waiting === 6 ? '+' : ''} new service requests are`} waiting to be picked up.</span>
+          <span className="flex items-center gap-1">Open <Icon name="chevron" className="size-4" /></span>
+        </Link>
+      )}
       {warnings.length > 0 && <ul className="mb-6 grid gap-2">{warnings.map(w => <li key={w} className="flex items-start gap-2 rounded-xl bg-[#FFF4D6] px-4 py-2.5 font-sans text-sm text-[#7A4B00]"><Icon name="alert" className="mt-0.5 size-4 shrink-0" />{w}</li>)}</ul>}
 
       {/* Sales snapshot */}
@@ -124,6 +136,23 @@ export default async function Overview({ searchParams }: { searchParams: Promise
             <Kpi label="Service rating" value={m.post.avgRating ? `${m.post.avgRating.toFixed(1)} / 5` : '—'} />
           </div>
         </Panel>
+        {can(me.role, 'service') && (
+          <Panel title="Service requests" actions={<span className="flex items-center gap-4"><AutoRefresh seconds={60} /><Link href="/admin/service" className="link text-sm">All tickets</Link></span>}>
+            {tickets.length === 0 ? <p className="py-6 text-center font-sans text-sm text-muted">No open service requests.</p> : (
+              <ul className="-my-2 divide-y divide-line/70 font-sans text-sm">
+                {tickets.map(t => (
+                  <li key={t.id}>
+                    <Link href={`/admin/service?ticket=${t.id}`} className="flex items-center gap-3 py-2.5 hover:opacity-80">
+                      <span className={`size-2 shrink-0 rounded-full ${t.status === 'open' ? 'bg-flash' : 'bg-[#C9D2E3]'}`} aria-hidden="true" />
+                      <span className="min-w-0 flex-1"><span className="block truncate font-semibold">{t.number} · {t.product?.shortName ?? 'General'} · {t.name}</span><span className="block truncate text-[12.5px] text-muted">{t.issue}</span></span>
+                      <span className="shrink-0 text-right text-[12px] text-muted">{dt(t.createdAt)}<span className="block">{t.status === 'open' ? <b className="text-[#B0005F]">New</b> : humanize(t.status)}{(t.priority === 'high' || t.priority === 'urgent') && <b className="text-[#A1101B]"> · {t.priority}</b>}</span></span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Panel>
+        )}
         <Panel title="Needs attention">
           <ul className="grid gap-2 font-sans text-sm">
             {[[`${m.pipeline.confirmed + m.pipeline.processing} orders to pack and ship`, '/admin/orders?status=confirmed', m.pipeline.confirmed + m.pipeline.processing],

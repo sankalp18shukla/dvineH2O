@@ -8,6 +8,7 @@ import { createEnquiry, createWaterTest, createTicket } from '@/lib/enquiries';
 import { getCustomer } from '@/lib/auth';
 import { email, formToObject, name, optional, phone, pincode, zodErrors, type FormState } from '@/lib/validators';
 import { saveUpload, UploadError } from '@/lib/uploads';
+import { limitRequest, TOO_MANY } from '@/lib/security';
 
 const consent = z.literal('on', { errorMap: () => ({ message: 'Please agree so we can contact you about this request.' }) });
 const interest = z.enum(INTERESTS).default('not_sure');
@@ -29,6 +30,7 @@ export async function submitEnquiry(_: FormState, fd: FormData): Promise<FormSta
   if (o.website) return { ok: true, message: 'Thanks.' }; // honeypot
   const p = enquirySchema.safeParse(o);
   if (!p.success) return { errors: zodErrors(p.error), data: o };
+  if (!(await limitRequest('form'))) return { message: TOO_MANY, data: o };
   const d = p.data;
   // optional site / kitchen photos (up to 3), kept private and attached to the enquiry for the team
   const photos = fd.getAll('photos').filter((f): f is File => f instanceof File && f.size > 0).slice(0, 3);
@@ -60,6 +62,7 @@ export async function bookWaterTest(_: FormState, fd: FormData): Promise<FormSta
   const o = formToObject(fd) as Record<string, string>;
   const p = testSchema.safeParse(o);
   if (!p.success) return { errors: zodErrors(p.error), data: o };
+  if (!(await limitRequest('form'))) return { message: TOO_MANY, data: o };
   const d = p.data;
   const day = new Date(d.preferredDate + 'T00:00:00');
   const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -78,6 +81,7 @@ export async function uploadReport(_: FormState, fd: FormData): Promise<FormStat
   if (!p.success) return { errors: zodErrors(p.error), data: o };
   const file = fd.get('report');
   if (!(file instanceof File) || !file.size) return { errors: { report: 'Attach your report (PDF, JPG or PNG).' }, data: o };
+  if (!(await limitRequest('upload'))) return { message: TOO_MANY, data: o };
   let saved;
   try { saved = await saveUpload(file, { allowed: ['application/pdf', 'image/jpeg', 'image/png'], maxMb: 10, visibility: 'private', folder: 'reports' }); }
   catch (e) { if (e instanceof UploadError) return { errors: { report: e.message }, data: o }; throw e; }
@@ -97,6 +101,7 @@ export async function supportRequest(_: FormState, fd: FormData): Promise<FormSt
     message: z.string().trim().min(10, 'Tell us a little more (at least 10 characters)').max(3000), product: optional(z.enum(['hyper', 'crystal', 'titan'])), consent,
   }).safeParse(o);
   if (!p.success) return { errors: zodErrors(p.error), data: o };
+  if (!(await limitRequest('form'))) return { message: TOO_MANY, data: o };
   const d = p.data;
   const isEmail = d.contact.includes('@');
   const ph = isEmail ? null : phone.safeParse(d.contact);
@@ -119,6 +124,7 @@ export async function trackOrder(_: FormState, fd: FormData): Promise<FormState>
   const number = String(o.number ?? '').trim().toUpperCase();
   const contact = String(o.contact ?? '').trim().toLowerCase();
   if (!number || !contact) return { errors: { ...(number ? {} : { number: 'Enter your order number' }), ...(contact ? {} : { contact: 'Enter the email or phone used for the order' }) }, data: o };
+  if (!(await limitRequest('track'))) return { message: TOO_MANY, data: o };
   const ph = phone.safeParse(contact);
   const order = await db.query.orders.findFirst({ where: and(eq(orders.number, number), or(eq(orders.contactEmail, contact), eq(orders.contactPhone, ph.success ? ph.data : contact))) });
   if (!order) return { message: 'We could not find an order with those details. Check the order number in your confirmation message.', data: o };

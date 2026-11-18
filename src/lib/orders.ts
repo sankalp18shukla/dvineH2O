@@ -1,7 +1,7 @@
 import { and, eq, gt, inArray, lt, sql } from 'drizzle-orm';
 import { db, type Tx } from './db';
 import {
-  carts, cartEvents, orders, orderItems, orderEvents, payments, products, warranties, installations, shipments, refunds, waterTests, enquiries,
+  carts, cartEvents, cartItems, orders, orderItems, orderEvents, payments, products, warranties, installations, shipments, refunds, waterTests, enquiries,
   type Address,
 } from './db/schema';
 import { orderNumber, randomToken } from './numbering';
@@ -57,7 +57,7 @@ export async function createOrderFromCart(input: CheckoutInput) {
     if (!items.length) throw new CheckoutError('Your cart is empty.');
 
     const lines: PriceLine[] = items.map(i => ({ productId: i.productId, slug: i.product.slug, sku: i.product.sku, name: i.product.name, hsn: i.product.hsn, qty: i.qty, unitPrice: i.product.price, gstRate: i.product.gstRate }));
-    const totals = await priceCart(lines, cart.couponCode, input.customerId ?? null);
+    const totals = await priceCart(lines, cart.couponCode, input.customerId ?? null, tx);
     const isReferral = 'isReferral' in totals && !!totals.isReferral;
 
     const customer = input.customerId
@@ -345,7 +345,9 @@ export async function runMaintenance() {
   for (const o of stale) await cancelOrder(o.id, 'system', 'Payment not completed in time');
   const cutoff = new Date(now.getTime() - commerce.abandonmentMinutes * 60_000);
   const abandoned = await db.update(carts).set({ status: 'abandoned' })
-    .where(and(inArray(carts.status, ['active', 'checkout']), lt(carts.lastActivityAt, cutoff), sql`exists (select 1 from cart_items ci where ci.cart_id = ${carts.id})`))
+    .where(and(inArray(carts.status, ['active', 'checkout']), lt(carts.lastActivityAt, cutoff), sql`exists (select 1 from ${cartItems} ci where ci.cart_id = ${carts.id})`))
     .returning({ id: carts.id });
+  const { purgeRateLimits } = await import('./security');
+  await purgeRateLimits().catch(e => console.error('rate-limit purge', e));
   return { releasedOrders: stale.length, abandonedCarts: abandoned.length, phonepeReconciled: reconciled };
 }

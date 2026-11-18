@@ -1,8 +1,12 @@
 // End-to-end smoke test of the main journeys. Run against a running server:
 //   BASE=http://localhost:3000 node tests/e2e.mjs
-// Needs test payments enabled (no Razorpay keys) and the seeded admin account.
+// Needs test payments enabled (no gateway keys) and the seeded admin account (SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD).
+// With Supabase email confirmation on, set SUPABASE_URL + SUPABASE_SECRET_KEY so the test can confirm its own sign-up.
+// Staff two-step sign-in: the test enrols / answers TOTP itself and keeps the secret in OUT/admin-totp.txt
+// (or set ADMIN_TOTP_SECRET), or run the server with STAFF_MFA_REQUIRED=false (never in production).
 import { chromium } from 'playwright';
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 const BASE = process.env.BASE ?? 'http://localhost:3000';
 const OUT = process.env.OUT ?? 'tests/out/';
 fs.mkdirSync(OUT, { recursive: true });
@@ -10,6 +14,25 @@ const PDF = OUT + 'sample-report.pdf';
 fs.writeFileSync(PDF, '%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n');
 const ADMIN = { email: process.env.SEED_ADMIN_EMAIL ?? 'admin@dvineh2o.com', password: process.env.SEED_ADMIN_PASSWORD ?? 'ChangeMe!2026' };
 const run = Date.now().toString().slice(-6);
+
+/** RFC 6238 TOTP (SHA-1, 6 digits, 30 s) from a base32 secret. */
+function totp(secret) {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'; let bits = '';
+  for (const c of secret.replace(/=+$/, '').toUpperCase()) bits += alphabet.indexOf(c).toString(2).padStart(5, '0');
+  const key = Buffer.from(bits.match(/.{8}/g).map(b => parseInt(b, 2)));
+  const msg = Buffer.alloc(8); msg.writeBigUInt64BE(BigInt(Math.floor(Date.now() / 30000)));
+  const h = crypto.createHmac('sha1', key).update(msg).digest(); const o = h[h.length - 1] & 15;
+  return String((h.readUInt32BE(o) & 0x7fffffff) % 1e6).padStart(6, '0');
+}
+const SUPA = { url: (process.env.SUPABASE_URL ?? '').replace(/\/$/, ''), key: process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY };
+async function confirmEmail(email) {
+  if (!SUPA.url || !SUPA.key) throw new Error('email confirmation is on: set SUPABASE_URL and SUPABASE_SECRET_KEY for the test');
+  const h = { apikey: SUPA.key, Authorization: `Bearer ${SUPA.key}`, 'Content-Type': 'application/json' };
+  const list = await (await fetch(`${SUPA.url}/auth/v1/admin/users?per_page=200`, { headers: h })).json();
+  const u = (list.users ?? []).find(x => x.email === email); if (!u) throw new Error('sign-up user not found');
+  const r = await fetch(`${SUPA.url}/auth/v1/admin/users/${u.id}`, { method: 'PUT', headers: h, body: JSON.stringify({ email_confirm: true }) });
+  if (!r.ok) throw new Error('could not confirm: ' + r.status);
+}
 
 const b = await chromium.launch({ executablePath: process.env.CHROME ?? undefined, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const ctx = await b.newContext({ viewport: { width: 1360, height: 900 } });
@@ -151,7 +174,13 @@ await step('Register account (claims guest orders)', async () => {
   await p.goto(BASE + '/account/register');
   await p.fill('#f-name', 'Asha Verma'); await p.fill('#f-email', asha.email); await p.fill('#f-phone', asha.phone); await p.fill('#f-password', 'longpassword1');
   await p.check('#f-consent'); await p.getByRole('button', { name: 'Create account' }).click();
-  await p.waitForURL(/\/account$/); await p.getByText(/Hello, Asha/).waitFor(); await p.getByText(/DV-\d{2}-\d{6}/).first().waitFor();
+  const outcome = await Promise.race([p.waitForURL(/\/account(\?|$)/).then(() => 'in'), p.getByText(/Almost there/).waitFor().then(() => 'confirm')]);
+  if (outcome === 'confirm') {
+    await confirmEmail(asha.email);
+    await p.goto(BASE + '/account/login'); await p.fill('#f-identifier', asha.email); await p.fill('#f-password', 'longpassword1');
+    await p.getByRole('button', { name: 'Sign in' }).click(); await p.waitForURL(/\/account(\?|$)/);
+  }
+  await p.getByText(/Hello, Asha/).waitFor(); await p.getByText(/DV-\d{2}-\d{6}/).first().waitFor();
   await p.screenshot({ path: OUT + 'account.png', fullPage: true });
 });
 for (const path of ['/account/orders', '/account/warranties', '/account/service', '/account/bookings', '/account/referrals', '/account/profile'])
@@ -160,8 +189,21 @@ for (const path of ['/account/orders', '/account/warranties', '/account/service'
 const a = await ctx.newPage(); watch(a, 'admin'); pages.admin = a;
 await step('Admin login', async () => {
   await a.goto(BASE + '/admin'); await a.waitForURL(/admin\/login/);
-  await a.fill('#f-email', ADMIN.email); await a.fill('#f-password', ADMIN.password); await a.getByRole('button', { name: 'Sign in' }).click();
-  await a.waitForURL(BASE + '/admin'); await a.getByRole('heading', { name: 'Overview' }).waitFor();
+  await a.fill('#f-email', ADMIN.email); await a.fill('#f-password', ADMIN.password); await a.getByRole('button', { name: 'Continue' }).click();
+  await a.waitForURL(/\/admin(\/login\/mfa)?$/);
+  if (a.url().endsWith('/mfa')) {
+    const store = OUT + 'admin-totp.txt';
+    let secret = process.env.ADMIN_TOTP_SECRET ?? (fs.existsSync(store) ? fs.readFileSync(store, 'utf8').trim() : '');
+    const setup = a.getByRole('button', { name: 'Set up authenticator' });
+    if (await setup.isVisible()) {
+      await setup.click(); await a.getByText('Can’t scan?').click();
+      secret = (await a.locator('details code').textContent()).trim(); fs.writeFileSync(store, secret);
+    }
+    if (!secret) throw new Error('admin has an authenticator: set ADMIN_TOTP_SECRET');
+    await a.fill('#f-code', totp(secret)); await a.getByRole('button', { name: 'Verify and sign in' }).click();
+    await a.waitForURL(BASE + '/admin');
+  }
+  await a.getByRole('heading', { name: 'Overview' }).waitFor();
   await a.screenshot({ path: OUT + 'admin-overview.png', fullPage: true });
 });
 await step('Admin: ship + deliver Hyper order', async () => {
@@ -221,6 +263,12 @@ await step('Security: admin + exports blocked when signed out', async () => {
   const r = await anon.request.get(BASE + '/api/admin/export?type=orders', { maxRedirects: 0 }); if (r.status() !== 403) throw new Error('export not blocked: ' + r.status());
   const pg = await anon.newPage(); await pg.goto(BASE + '/admin/orders'); if (!pg.url().includes('/admin/login')) throw new Error('admin not protected');
   const f = await anon.request.get(BASE + '/api/admin/files/1'); if (f.status() !== 404) throw new Error('report file exposed');
+  const m = await anon.request.post(BASE + '/api/admin/media', { data: { action: 'sign', name: 'x.png', size: 10, type: 'image/png' } }); if (m.status() !== 403) throw new Error('media upload not blocked: ' + m.status());
+  const h = (await anon.request.get(BASE + '/')).headers();
+  for (const k of ['content-security-policy', 'x-content-type-options', 'referrer-policy', 'x-frame-options']) if (!h[k]) throw new Error('missing header ' + k);
+  if (h['x-powered-by']) throw new Error('x-powered-by is exposed');
+  const acct = (await anon.request.get(BASE + '/account/login')).headers(); if (!acct['cache-control']?.includes('no-store')) throw new Error('account pages are cacheable');
+  const tr = await anon.request.get(BASE + '/order/DV-00-000001?t=wrong', { maxRedirects: 0 }); if (tr.status() !== 404) throw new Error('order page answered a wrong token: ' + tr.status());
   await anon.close();
 });
 

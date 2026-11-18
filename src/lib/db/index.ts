@@ -1,14 +1,30 @@
-import { drizzle } from 'drizzle-orm/libsql';
-import { createClient } from '@libsql/client';
+import 'server-only';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
 import * as schema from './schema';
 
+/**
+ * Supabase Postgres, reached only from the server.
+ *
+ * DATABASE_URL should be the Supavisor *transaction* pooler (port 6543) signed in as the least-privilege
+ * `dvine_app` role (user `dvine_app.<project-ref>`), e.g.
+ *   postgresql://dvine_app.abcd1234:<password>@aws-0-ap-south-1.pooler.supabase.com:6543/postgres
+ * Transaction pooling does not support prepared statements, hence `prepare: false`.
+ */
 const globalForDb = globalThis as unknown as { __dvineDb?: ReturnType<typeof make> };
 
 function make() {
-  const client = createClient({
-    // On Vercel without a DATABASE_URL the bundle is read-only, so use an empty in-memory DB instead of crashing.
-    url: process.env.DATABASE_URL || (process.env.VERCEL ? ':memory:' : 'file:./data/dvine.db'),
-    authToken: process.env.DATABASE_AUTH_TOKEN || undefined,
+  const url = process.env.DATABASE_URL;
+  // Without a URL (e.g. `next build`, a frontend-only preview) every query fails fast and callers fall back to defaults.
+  if (!url) console.warn('[db] DATABASE_URL is not set: database calls will fail and pages will use their built-in defaults.');
+  const client = postgres(url || 'postgres://unset@127.0.0.1:1/unset', {
+    prepare: false,
+    max: Number(process.env.DATABASE_POOL_MAX ?? 5),
+    idle_timeout: 20,
+    connect_timeout: 10,
+    ssl: url && !/@(localhost|127\.0\.0\.1)[:/]/.test(url) ? 'require' : false,
+    connection: { application_name: 'dvine-web' },
+    onnotice: () => {},
   });
   return drizzle(client, { schema });
 }

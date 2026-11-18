@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { and, desc, eq, like, or } from 'drizzle-orm';
+import { and, desc, eq, ilike, or } from 'drizzle-orm';
+import { likeTerm } from '@/lib/validators';
 import { db } from '@/lib/db';
 import { enquiries, ENQUIRY_TYPES, ENQUIRY_STATUSES, INTERESTS } from '@/lib/db/schema';
 import { requireStaff } from '@/lib/auth';
@@ -16,7 +17,7 @@ export default async function Enquiries({ searchParams }: { searchParams: Promis
     sp.type && (ENQUIRY_TYPES as readonly string[]).includes(sp.type) ? eq(enquiries.type, sp.type as typeof ENQUIRY_TYPES[number]) : undefined,
     sp.status && (ENQUIRY_STATUSES as readonly string[]).includes(sp.status) ? eq(enquiries.status, sp.status as typeof ENQUIRY_STATUSES[number]) : undefined,
     sp.interest && (INTERESTS as readonly string[]).includes(sp.interest) ? eq(enquiries.productInterest, sp.interest as typeof INTERESTS[number]) : undefined,
-    sp.q ? or(like(enquiries.name, `%${sp.q}%`), like(enquiries.phone, `%${sp.q}%`), like(enquiries.email, `%${sp.q}%`), like(enquiries.ref, `%${sp.q.toUpperCase()}%`), like(enquiries.company, `%${sp.q}%`)) : undefined,
+    sp.q ? or(ilike(enquiries.name, likeTerm(sp.q)), ilike(enquiries.phone, likeTerm(sp.q)), ilike(enquiries.email, likeTerm(sp.q)), ilike(enquiries.ref, likeTerm(sp.q)), ilike(enquiries.company, likeTerm(sp.q))) : undefined,
   ].filter(Boolean);
   const list = await db.query.enquiries.findMany({ where: conds.length ? and(...(conds as NonNullable<typeof conds[number]>[])) : undefined, orderBy: desc(enquiries.createdAt), limit: 200, with: { assignee: true } });
   return (

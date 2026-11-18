@@ -4,7 +4,7 @@
  */
 import { and, eq, gte, inArray, lt, sql, isNotNull } from 'drizzle-orm';
 import { db } from './db';
-import { orders, orderItems, payments, refunds, products, carts, customers, enquiries, waterTests, ORDER_STATUSES } from './db/schema';
+import { orders, orderItems, payments, refunds, products, carts, cartItems, cartEvents, customers, enquiries, waterTests, installations, warranties, serviceTickets, reviews, returns, orderExceptions, shipments, ORDER_STATUSES } from './db/schema';
 import { available, stockState } from './inventory';
 
 export type Range = { from: Date; to: Date; label: string; key: string };
@@ -30,6 +30,7 @@ const pct = (a: number, b: number) => (b ? a / b : 0);
 
 export async function overview(r: Range) {
   const inRange = (col: Parameters<typeof gte>[0]) => and(gte(col, r.from), lt(col, r.to));
+  const from = sql`${r.from.toISOString()}::timestamptz`, to = sql`${r.to.toISOString()}::timestamptz`;
   const confirmedStatuses = ['confirmed', 'processing', 'packed', 'shipped', 'delivered', 'returned', 'cancelled'] as const;
 
   // Orders placed (paid) in range — counts cancellations as confirmed orders, per the KPI definition
@@ -63,15 +64,15 @@ export async function overview(r: Range) {
     created: sql<number>`count(*)`,
     abandoned: sql<number>`sum(case when ${carts.status} = 'abandoned' then 1 else 0 end)`,
     checkouts: sql<number>`sum(case when ${carts.checkoutStartedAt} is not null then 1 else 0 end)`,
-  }).from(carts).where(and(inRange(carts.createdAt), sql`exists (select 1 from cart_events ce where ce.cart_id = ${carts.id} and ce.action = 'add')`));
-  const [abandonedValue] = await db.select({ v: sql<number>`coalesce(sum(ci.qty * ci.unit_price),0)` }).from(sql`cart_items ci join carts c on c.id = ci.cart_id`).where(sql`c.status = 'abandoned' and c.created_at >= ${r.from.getTime()} and c.created_at < ${r.to.getTime()}`);
+  }).from(carts).where(and(inRange(carts.createdAt), sql`exists (select 1 from ${cartEvents} ce where ce.cart_id = ${carts.id} and ce.action = 'add')`));
+  const [abandonedValue] = await db.select({ v: sql<number>`coalesce(sum(${cartItems.qty} * ${cartItems.unitPrice}),0)` }).from(cartItems).innerJoin(carts, eq(carts.id, cartItems.cartId)).where(and(eq(carts.status, 'abandoned'), inRange(carts.createdAt)));
   const [pay] = await db.select({ attempts: sql<number>`count(*)`, success: sql<number>`sum(case when ${payments.status} = 'success' then 1 else 0 end)`, failed: sql<number>`sum(case when ${payments.status} = 'failed' then 1 else 0 end)` })
     .from(payments).where(and(inRange(payments.createdAt), inArray(payments.status, ['success', 'failed', 'pending'])));
   const [createdAttempts] = await db.select({ c: sql<number>`count(*)` }).from(payments).where(and(inRange(payments.createdAt), eq(payments.status, 'created')));
   const failReasons = await db.select({ reason: sql<string>`coalesce(${payments.errorDescription}, ${payments.errorCode}, 'Unknown')`, c: sql<number>`count(*)` }).from(payments).where(and(inRange(payments.createdAt), eq(payments.status, 'failed'))).groupBy(sql`1`).orderBy(sql`2 desc`).limit(5);
 
   // Customers
-  const [cust] = await db.select({ total: sql<number>`count(*)`, newInRange: sql<number>`sum(case when ${customers.createdAt} >= ${r.from.getTime()} and ${customers.createdAt} < ${r.to.getTime()} then 1 else 0 end)` }).from(customers);
+  const [cust] = await db.select({ total: sql<number>`count(*)`, newInRange: sql<number>`sum(case when ${customers.createdAt} >= ${from} and ${customers.createdAt} < ${to} then 1 else 0 end)` }).from(customers);
   const completedByCustomer = await db.select({ c: orders.customerId, k: sql<number>`count(*)`, spend: sql<number>`sum(${orders.total})` }).from(orders).where(inArray(orders.status, ['delivered', 'shipped', 'confirmed', 'processing', 'packed'])).groupBy(orders.customerId);
   const buyers = completedByCustomer.length;
   const repeat = completedByCustomer.filter(x => n(x.k) >= 2).length;
@@ -88,23 +89,23 @@ export async function overview(r: Range) {
 
   // Post-purchase
   const [post] = await db.select({
-    instPending: sql<number>`(select count(*) from installations where status in ('pending','scheduled'))`,
-    instDone: sql<number>`(select count(*) from installations where status = 'completed' and completed_at >= ${r.from.getTime()} and completed_at < ${r.to.getTime()})`,
-    warrActive: sql<number>`(select count(*) from warranties where status = 'active' and expires_at > ${Date.now()})`,
-    ticketsOpen: sql<number>`(select count(*) from service_tickets where status in ('open','assigned','in_progress'))`,
-    reviewsPending: sql<number>`(select count(*) from reviews where status = 'pending')`,
-    returnsOpen: sql<number>`(select count(*) from returns where status in ('requested','approved','received'))`,
-    exceptionsOpen: sql<number>`(select count(*) from order_exceptions where status = 'open')`,
-    refundsPending: sql<number>`(select count(*) from refunds where status = 'pending')`,
-    shipDelayed: sql<number>`(select count(*) from shipments where status in ('delayed','exception','rto'))`,
-    avgRating: sql<number>`(select coalesce(avg(rating),0) from service_tickets where rating is not null)`,
-  }).from(sql`(select 1)`);
+    instPending: sql<number>`(select count(*) from ${installations} where status in ('pending','scheduled'))`,
+    instDone: sql<number>`(select count(*) from ${installations} where status = 'completed' and completed_at >= ${from} and completed_at < ${to})`,
+    warrActive: sql<number>`(select count(*) from ${warranties} where status = 'active' and expires_at > now())`,
+    ticketsOpen: sql<number>`(select count(*) from ${serviceTickets} where status in ('open','assigned','in_progress'))`,
+    reviewsPending: sql<number>`(select count(*) from ${reviews} where status = 'pending')`,
+    returnsOpen: sql<number>`(select count(*) from ${returns} where status in ('requested','approved','received'))`,
+    exceptionsOpen: sql<number>`(select count(*) from ${orderExceptions} where status = 'open')`,
+    refundsPending: sql<number>`(select count(*) from ${refunds} where status = 'pending')`,
+    shipDelayed: sql<number>`(select count(*) from ${shipments} where status in ('delayed','exception','rto'))`,
+    avgRating: sql<number>`(select coalesce(avg(rating),0) from ${serviceTickets} where rating is not null)`,
+  }).from(sql`(select 1) as one`);
 
   // Return rate (orders): returned ÷ delivered-or-returned
   const delivered = pipeline.delivered + pipeline.returned;
 
   // Daily series for the chart
-  const daily = await db.select({ d: sql<string>`date(${orders.placedAt} / 1000, 'unixepoch', 'localtime')`, total: sql<number>`sum(${orders.total})`, c: sql<number>`count(*)` })
+  const daily = await db.select({ d: sql<string>`to_char(${orders.placedAt} at time zone 'Asia/Kolkata', 'YYYY-MM-DD')`, total: sql<number>`sum(${orders.total})`, c: sql<number>`count(*)` })
     .from(orders).where(and(placed, sql`${orders.status} != 'cancelled'`)).groupBy(sql`1`).orderBy(sql`1`);
 
   return {

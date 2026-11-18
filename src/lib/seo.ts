@@ -9,3 +9,6 @@ export function productJsonLd(p: Product, path: string) {
     ...(p.reviewCount ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: p.rating.toFixed(1), reviewCount: p.reviewCount } } : {}),
   };
 }
+
+/** JSON for a <script type="application/ld+json"> block: `<` escaped so text can never close the tag. */
+export const jsonLd = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');

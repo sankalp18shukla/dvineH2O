@@ -1,0 +1,40 @@
+/* Article body. Garamond for reading, the sans for headings, brand accents on links, quotes and tables. */
+.post { font-family: var(--font-serif); font-size: 20px; line-height: 1.62; color: var(--color-ink); overflow-wrap: break-word; }
+.post > * + * { margin-top: 1.15em; }
+.post h2 { font-family: var(--font-sans); font-weight: 700; font-size: clamp(26px, 3.2vw, 34px); line-height: 1.08; letter-spacing: -0.03em; margin-top: 2.1em; padding-top: .7em; border-top: 2px solid var(--color-ink); }
+.post h3 { font-family: var(--font-sans); font-weight: 700; font-size: 22px; line-height: 1.2; letter-spacing: -0.02em; margin-top: 1.7em; }
+.post > :first-child { margin-top: 0; }
+.post > h2:first-child { border-top: 0; padding-top: 0; }
+.post a { font-weight: 600; color: var(--color-deep-current); text-decoration: underline; text-decoration-color: rgb(4 111 237 / .35); text-underline-offset: 4px; }
+.post a:hover { text-decoration-color: currentColor; }
+.post strong { font-weight: 700; }
+.post ul, .post ol { padding-left: 1.3em; }
+.post ul { list-style: none; padding-left: 0; }
+.post ul > li { position: relative; padding-left: 1.5em; }
+.post ul > li::before { content: ""; position: absolute; left: .15em; top: .62em; width: 8px; height: 8px; border-radius: 50%; background: var(--color-deep-current); }
+.post ol { list-style: decimal; }
+.post ol > li::marker { font-family: var(--font-sans); font-weight: 700; font-size: .8em; }
+.post li + li { margin-top: .5em; }
+.post blockquote { position: relative; background: var(--color-glacier); padding: 1.1em 1.3em; font-style: italic; font-size: 1.12em; line-height: 1.4; }
+.post blockquote::before { content: ""; position: absolute; left: 0; top: -10px; width: 1.5px; height: calc(100% + 10px); background: var(--color-ink); }
+.post blockquote::after { content: ""; position: absolute; left: -3.25px; top: -14px; width: 8px; height: 8px; border-radius: 50%; background: var(--color-flash); }
+.post hr { border: 0; border-top: 1px solid var(--color-line); margin-block: 2.2em; }
+.post figure img { display: block; width: 100%; height: auto; }
+.post figcaption { margin-top: .6em; font-family: var(--font-sans); font-size: 13.5px; color: var(--color-muted); }
+
+.table { overflow-x: auto; }
+.table table { width: 100%; border-collapse: collapse; font-family: var(--font-sans); font-size: 15.5px; line-height: 1.4; }
+.table th { text-align: left; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .12em; color: var(--color-muted); padding: 0 16px 10px 0; border-bottom: 2px solid var(--color-ink); }
+.table td { padding: 13px 16px 13px 0; border-bottom: 1px solid var(--color-line); vertical-align: top; }
+.table td:first-child { font-weight: 700; }
+
+/* phones: each table row becomes a small card, so nothing scrolls sideways */
+@media (max-width: 640px) {
+  .post { font-size: 18.5px; }
+  .table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .table tr { display: block; padding: 12px 0; border-bottom: 1px solid var(--color-line); }
+  .table tbody tr:first-child { border-top: 2px solid var(--color-ink); }
+  .table td { display: block; padding: 0; border: 0; }
+  .table td + td { margin-top: 4px; color: var(--color-muted); }
+  .table td + td::before { content: attr(data-label) ": "; font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; }
+}

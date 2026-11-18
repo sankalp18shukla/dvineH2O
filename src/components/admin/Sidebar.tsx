@@ -1,25 +1,29 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Icon } from '../ui/Icon';
 import { Logo } from '../ui/Logo';
 
-export type NavItem = { href: string; label: string; icon: string; badge?: number };
+export type NavItem = { href: string; label: string; icon: string; badge?: number; group?: string };
 
 export function Sidebar({ items, staff, logout }: { items: NavItem[]; staff: { name: string; role: string }; logout: () => void }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const nav = (
     <nav aria-label="Admin" className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-3">
-      {items.map(i => {
+      {items.map((i, n) => {
         const active = i.href === '/admin' ? path === '/admin' : path.startsWith(i.href);
+        const heading = i.group && i.group !== items[n - 1]?.group;
         return (
-          <Link key={i.href} href={i.href} onClick={() => setOpen(false)} aria-current={active ? 'page' : undefined}
-            className={`flex items-center gap-3 rounded-xl px-3 py-2 font-sans text-[14px] ${active ? 'bg-white/12 font-semibold text-white' : 'text-white/70 hover:bg-white/6 hover:text-white'}`}>
-            <Icon name={i.icon} className="size-[18px]" /><span className="flex-1">{i.label}</span>
-            {!!i.badge && <span className="rounded-full bg-flash px-1.5 text-[11px] font-bold leading-5 text-white">{i.badge}</span>}
-          </Link>
+          <Fragment key={i.href}>
+            {heading && <p className="px-3 pt-4 pb-1 font-sans text-[10.5px] font-semibold tracking-[0.16em] text-white/40 uppercase">{i.group}</p>}
+            <Link href={i.href} onClick={() => setOpen(false)} aria-current={active ? 'page' : undefined}
+              className={`flex items-center gap-3 rounded-xl px-3 py-2 font-sans text-[14px] ${active ? 'bg-white/12 font-semibold text-white' : 'text-white/70 hover:bg-white/6 hover:text-white'}`}>
+              <Icon name={i.icon} className="size-[18px]" /><span className="flex-1">{i.label}</span>
+              {!!i.badge && <span className="rounded-full bg-flash px-1.5 text-[11px] font-bold leading-5 text-white">{i.badge}</span>}
+            </Link>
+          </Fragment>
         );
       })}
     </nav>

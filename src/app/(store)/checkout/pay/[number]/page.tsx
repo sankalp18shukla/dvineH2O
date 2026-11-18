@@ -10,13 +10,14 @@ import { CheckoutSteps } from '@/components/store/CheckoutSteps';
 import { db } from '@/lib/db';
 import { orders } from '@/lib/db/schema';
 import { activeGateway, testPaymentsAllowed } from '@/lib/payments-mode';
+import { safeEqual } from '@/lib/security';
 
 export const metadata: Metadata = { title: 'Payment', robots: { index: false } };
 
 export default async function PayPage({ params, searchParams }: { params: Promise<{ number: string }>; searchParams: Promise<{ t?: string }> }) {
   const { number } = await params; const { t } = await searchParams;
   const o = await db.query.orders.findFirst({ where: eq(orders.number, number), with: { items: true } });
-  if (!o || o.accessToken !== t) notFound();
+  if (!o || !safeEqual(t, o.accessToken)) notFound();
   if (o.paymentStatus === 'paid') redirect(`/order/${o.number}?t=${o.accessToken}`);
   const expired = o.status === 'cancelled';
   const mins = o.reservationExpiresAt ? Math.max(0, Math.round((o.reservationExpiresAt.getTime() - Date.now()) / 60000)) : null;

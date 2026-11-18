@@ -3,19 +3,21 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { orders, waterTests } from '@/lib/db/schema';
 import { startPayment, confirmRazorpayPayment, applyPaymentFailure } from '@/lib/orders';
+import { limitRequest, safeEqual, TOO_MANY } from '@/lib/security';
 
 async function authorised(kind: 'order' | 'water_test', ref: string, token: string) {
   if (kind === 'order') {
     const o = await db.query.orders.findFirst({ where: eq(orders.number, ref) });
-    if (!o || o.accessToken !== token) throw new Error('Not found');
+    if (!o || !safeEqual(token, o.accessToken)) throw new Error('Not found');
     return { purpose: 'order' as const, order: o };
   }
   const t = await db.query.waterTests.findFirst({ where: eq(waterTests.ref, ref) });
-  if (!t || t.accessToken !== token) throw new Error('Not found');
+  if (!t || !safeEqual(token, t.accessToken)) throw new Error('Not found');
   return { purpose: 'water_test' as const, test: t };
 }
 
 export async function beginPayment(kind: 'order' | 'water_test', ref: string, token: string) {
+  if (!(await limitRequest('payment', ref))) return { error: TOO_MANY };
   const target = await authorised(kind, ref, token);
   if (target.purpose === 'order') {
     if (target.order.paymentStatus === 'paid') return { already: true as const };

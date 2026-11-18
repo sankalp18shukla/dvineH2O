@@ -1,0 +1,363 @@
+{
+  "ribbon": {
+    "enabled": true,
+    "items": [
+      {
+        "id": "lg8napo0",
+        "text": "Festive offers on Crystal and Hyper"
+      },
+      {
+        "id": "gaa76cce",
+        "text": "Gift Hyper this Diwali"
+      },
+      {
+        "id": "d3s89pop",
+        "text": "Free installation on Crystal this season"
+      },
+      {
+        "id": "qdhpdvs1",
+        "text": "Book a free home demo"
+      }
+    ],
+    "theme": "volt",
+    "speed": 36,
+    "separator": "drop",
+    "href": "",
+    "scope": "home",
+    "schedule": {
+      "from": "",
+      "to": ""
+    }
+  },
+  "slides": [
+    {
+      "id": "tpl-ng5fzhlh",
+      "enabled": true,
+      "position": "first",
+      "theme": "volt",
+      "tag": "This Diwali Festive Offers",
+      "title": "Light up\nevery sip.",
+      "body": "Festive pricing on Crystal and Hyper for a limited period. Gift better water to the people you celebrate with.",
+      "primary": {
+        "label": "Shop the Offers",
+        "href": "/home-water-systems"
+      },
+      "secondary": {
+        "label": "",
+        "href": ""
+      },
+      "media": null,
+      "fit": "lineup",
+      "shade": 45,
+      "duration": 8,
+      "decor": [
+        {
+          "id": "4rqqyyrb",
+          "src": "/decor/diwali/toran.png",
+          "x": 76,
+          "y": 7,
+          "w": 54,
+          "rotate": 0,
+          "opacity": 1,
+          "layer": "front",
+          "motion": "none",
+          "mobile": false
+        },
+        {
+          "id": "82yhjrsp",
+          "src": "/decor/diwali/lantern.png",
+          "x": 55,
+          "y": 19,
+          "w": 4.4,
+          "rotate": 0,
+          "opacity": 1,
+          "layer": "front",
+          "motion": "sway",
+          "mobile": false
+        },
+        {
+          "id": "v9zgpfd3",
+          "src": "/decor/diwali/lantern.png",
+          "x": 96.5,
+          "y": 23,
+          "w": 3.6,
+          "rotate": 0,
+          "opacity": 1,
+          "layer": "front",
+          "motion": "sway",
+          "mobile": false
+        },
+        {
+          "id": "514yte3o",
+          "src": "/decor/diwali/rangoli-floor.png",
+          "x": 76,
+          "y": 97,
+          "w": 30,
+          "rotate": 0,
+          "opacity": 1,
+          "layer": "front",
+          "motion": "none",
+          "mobile": false
+        },
+        {
+          "id": "brom6wxg",
+          "src": "/decor/diwali/diya.png",
+          "x": 76,
+          "y": 94,
+          "w": 6,
+          "rotate": 0,
+          "opacity": 1,
+          "layer": "front",
+          "motion": "none",
+          "mobile": false
+        },
+        {
+          "id": "gn9pawd2",
+          "src": "/decor/diwali/diya.png",
+          "x": 58,
+          "y": 92,
+          "w": 7,
+          "rotate": 0,
+          "opacity": 1,
+          "layer": "front",
+          "motion": "none",
+          "mobile": true
+        },
+        {
+          "id": "x9eozffz",
+          "src": "/decor/diwali/diya.png",
+          "x": 92,
+          "y": 92,
+          "w": 6.4,
+          "rotate": 0,
+          "opacity": 1,
+          "layer": "front",
+          "motion": "none",
+          "mobile": false
+        },
+        {
+          "id": "r0xirmwy",
+          "src": "/decor/diwali/sparkles.png",
+          "x": 66,
+          "y": 32,
+          "w": 6,
+          "rotate": 0,
+          "opacity": 1,
+          "layer": "front",
+          "motion": "none",
+          "mobile": false
+        }
+      ],
+      "schedule": {
+        "from": "",
+        "to": ""
+      }
+    }
+  ],
+  "promo": {
+    "enabled": true,
+    "title": "",
+    "body": "",
+    "cards": [
+      {
+        "id": "tpl-n055ivf5",
+        "enabled": true,
+        "theme": "volt",
+        "tag": "Diwali gifting",
+        "title": "Gift Hyper this Diwali",
+        "body": "A hydrogen water bottle for everyone on your list. Bulk and corporate gifting available.",
+        "cta": {
+          "label": "Explore gifting",
+          "href": "/for-business#bulk"
+        },
+        "media": {
+          "type": "image",
+          "src": "/images/brand-hand-bottle.webp",
+          "poster": "",
+          "alt": ""
+        },
+        "decor": [
+          {
+            "id": "lfeafcx4",
+            "src": "/decor/diwali/lights.png",
+            "x": 50,
+            "y": 7,
+            "w": 80,
+            "rotate": 0,
+            "opacity": 1,
+            "layer": "front",
+            "motion": "none",
+            "mobile": true
+          },
+          {
+            "id": "z4pjbwvr",
+            "src": "/decor/diwali/diya.png",
+            "x": 36,
+            "y": 90,
+            "w": 9,
+            "rotate": 0,
+            "opacity": 1,
+            "layer": "front",
+            "motion": "float",
+            "mobile": true
+          },
+          {
+            "id": "54cdbcln",
+            "src": "/decor/diwali/sparkles.png",
+            "x": 6,
+            "y": 24,
+            "w": 6,
+            "rotate": 0,
+            "opacity": 1,
+            "layer": "front",
+            "motion": "twinkle",
+            "mobile": true
+          }
+        ],
+        "schedule": {
+          "from": "",
+          "to": ""
+        }
+      }
+    ]
+  },
+  "water": {
+    "title": "*What do you know* about your water?",
+    "body": "Start with a closer look at the water you use every day. See which tests are available in your area, what they include and how to book. Already have a report? Share it with our team.",
+    "pics": [
+      {
+        "id": "p0",
+        "after": "look",
+        "src": "/images/1_2ndsec.png",
+        "alt": "Cupped hands catching clear running water"
+      },
+      {
+        "id": "p1",
+        "after": "available",
+        "src": "/images/2_2ndsec.png",
+        "alt": "A scientist holding up a sample vial in a lab"
+      },
+      {
+        "id": "p2",
+        "after": "area,",
+        "src": "/images/3_2ndsec.png",
+        "alt": "A street map of the local area"
+      },
+      {
+        "id": "p3",
+        "after": "team.",
+        "src": "/images/4_2ndsec.png",
+        "alt": "A drop of water falling into still water"
+      }
+    ],
+    "primary": {
+      "label": "Book a Water Test",
+      "href": "/water-testing#book"
+    },
+    "secondary": {
+      "label": "Upload My Report",
+      "href": "/water-testing#upload"
+    }
+  },
+  "partner": {
+    "title": "*Grow with* DVINE.",
+    "body": "We work with distributors, dealers, retailers and institutional partners who want to bring functional hydration to their city. Tell us about your business and the territory you cover, and our partnerships team will get in touch.",
+    "media": {
+      "type": "image",
+      "src": "/images/collection.webp",
+      "poster": "",
+      "alt": "Crystal, Titan and Hyper together"
+    },
+    "benefitsTitle": "*Why partner* with us.",
+    "benefits": [
+      {
+        "id": "b1",
+        "title": "A complete range",
+        "body": "Crystal for homes, Hyper for the day and Titan 111 for shared spaces: one partner, three ways to sell."
+      },
+      {
+        "id": "b2",
+        "title": "Training and demos",
+        "body": "Product training for your team, demo units and help running in-store and at-home demonstrations."
+      },
+      {
+        "id": "b3",
+        "title": "Installation and service",
+        "body": "Installation, warranty and service arrangements, so your customers are looked after after the sale."
+      },
+      {
+        "id": "b4",
+        "title": "Marketing support",
+        "body": "Brand assets, launch material and promotions for festive seasons and local events."
+      }
+    ],
+    "stepsTitle": "*How it* works.",
+    "steps": [
+      {
+        "id": "s1",
+        "title": "Send your details",
+        "body": "Tell us about your business, your territory and the products you are interested in."
+      },
+      {
+        "id": "s2",
+        "title": "Meet our team",
+        "body": "Our partnerships team calls you to understand your market and answer your questions."
+      },
+      {
+        "id": "s3",
+        "title": "Agree the terms",
+        "body": "We share the partnership terms, pricing and support for your region."
+      },
+      {
+        "id": "s4",
+        "title": "Launch together",
+        "body": "Training, demo units and launch support to get you started."
+      }
+    ],
+    "partnerTypes": [
+      {
+        "id": "t0",
+        "text": "Distributor"
+      },
+      {
+        "id": "t1",
+        "text": "Dealer"
+      },
+      {
+        "id": "t2",
+        "text": "Retail store"
+      },
+      {
+        "id": "t3",
+        "text": "Corporate or institutional"
+      },
+      {
+        "id": "t4",
+        "text": "Interior designer or architect"
+      },
+      {
+        "id": "t5",
+        "text": "Other"
+      }
+    ],
+    "formTitle": "*Tell us* about your business.",
+    "formBody": "Share a few details and our partnerships team will get back to you within two working days.",
+    "faqs": [
+      {
+        "id": "q1",
+        "q": "Who can become a DVINE partner?",
+        "a": "Distributors, dealers, retail stores, and corporate or institutional buyers. If your business serves homes, workplaces or hospitality, we would like to hear from you."
+      },
+      {
+        "id": "q2",
+        "q": "Is there a minimum order?",
+        "a": "Terms depend on the partnership type and region. Our team will share the details after the first call."
+      },
+      {
+        "id": "q3",
+        "q": "Do you provide training?",
+        "a": "Yes. We train your team on the products, demonstrations, installation requirements and after-sales service."
+      }
+    ]
+  }
+}

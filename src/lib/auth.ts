@@ -1,50 +1,100 @@
 import 'server-only';
-import { cookies } from 'next/headers';
+import { cache } from 'react';
 import { redirect } from 'next/navigation';
-import bcrypt from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 import { db } from './db';
 import { customers, staff } from './db/schema';
-import { CUSTOMER_COOKIE, STAFF_COOKIE, readSession, signSession, can, type Permission, type StaffRole } from './session';
+import { supabaseServer } from './supabase/server';
+import { supabaseConfigured } from './supabase/config';
+import { can, type Permission } from './session';
 
-export const hashPassword = (p: string) => bcrypt.hash(p, 11);
-export const verifyPassword = (p: string, h: string) => bcrypt.compare(p, h);
+/**
+ * Identity comes from Supabase Auth; what someone may do comes from our own tables.
+ *  · Customer: a verified Supabase session (JWT signature checked) linked to a dvine.customers row.
+ *  · Staff:    a session re-validated with the Auth server on every request, an active dvine.staff row,
+ *              a second factor (TOTP, session at aal2) and a session no older than STAFF_SESSION_HOURS.
+ */
 
-const cookieOpts = (days: number) => ({
-  httpOnly: true, sameSite: 'lax' as const, secure: process.env.NODE_ENV === 'production', path: '/', maxAge: days * 86400,
+/** Verified JWT claims of the current session (signature checked against the project's keys), or null. */
+export const getClaims = cache(async () => {
+  if (!supabaseConfigured()) return null;
+  try {
+    const sb = await supabaseServer();
+    const { data, error } = await sb.auth.getClaims();
+    return error || !data?.claims?.sub ? null : data.claims;
+  } catch { return null; }
 });
 
-export async function startCustomerSession(c: { id: number; name: string }) {
-  (await cookies()).set(CUSTOMER_COOKIE, await signSession({ kind: 'customer', sub: c.id, name: c.name }, 30), cookieOpts(30));
-}
-export async function startStaffSession(s: { id: number; name: string; role: StaffRole }) {
-  (await cookies()).set(STAFF_COOKIE, await signSession({ kind: 'staff', sub: s.id, name: s.name, role: s.role }, 1), cookieOpts(1));
-}
-export async function endSession(kind: 'customer' | 'staff') {
-  (await cookies()).delete(kind === 'customer' ? CUSTOMER_COOKIE : STAFF_COOKIE);
-}
+/** The signed-in user, confirmed with the Auth server (catches revoked / signed-out sessions). */
+export const getAuthUser = cache(async () => {
+  if (!supabaseConfigured()) return null;
+  try {
+    const sb = await supabaseServer();
+    const { data, error } = await sb.auth.getUser();
+    return error ? null : data.user;
+  } catch { return null; }
+});
 
-export async function getCustomer() {
-  const s = await readSession((await cookies()).get(CUSTOMER_COOKIE)?.value);
-  if (!s || s.kind !== 'customer') return null;
-  return (await db.query.customers.findFirst({ where: eq(customers.id, s.sub) })) ?? null;
-}
+/* ───────────── Customers ───────────── */
+export const getCustomer = cache(async () => {
+  const claims = await getClaims();
+  if (!claims) return null;
+  try {
+    return (await db.query.customers.findFirst({ where: eq(customers.authUserId, claims.sub) })) ?? null;
+  } catch { return null; }
+});
+
 export async function requireCustomer(next = '/account') {
   const c = await getCustomer();
   if (!c) redirect(`/account/login?next=${encodeURIComponent(next)}`);
   return c;
 }
 
-export async function getStaff() {
-  const s = await readSession((await cookies()).get(STAFF_COOKIE)?.value);
-  if (!s || s.kind !== 'staff') return null;
-  const row = await db.query.staff.findFirst({ where: eq(staff.id, s.sub) });
-  return row && row.active ? row : null;
-}
-/** Use in admin pages and actions. Redirects to login, or to the overview if the role lacks permission. */
+/* ───────────── Staff ───────────── */
+const SESSION_HOURS = () => Math.min(24, Math.max(1, Number(process.env.STAFF_SESSION_HOURS) || 12));
+/** MFA is mandatory in production. Outside production it can be switched off for local work and tests. */
+export const staffMfaRequired = () => process.env.NODE_ENV === 'production' || process.env.STAFF_MFA_REQUIRED !== 'false';
+
+type AmrEntry = { method: string; timestamp: number };
+
+export type StaffSession = typeof staff.$inferSelect & {
+  aal: 'aal1' | 'aal2'; mfaEnrolled: boolean; sessionStartedAt: Date | null; sessionExpired: boolean;
+};
+
+/** The staff member behind this session, whatever its assurance level. Null for customers / visitors / inactive staff. */
+export const getStaffSession = cache(async (): Promise<StaffSession | null> => {
+  const user = await getAuthUser();
+  if (!user) return null;
+  let row: typeof staff.$inferSelect | undefined;
+  try { row = await db.query.staff.findFirst({ where: eq(staff.authUserId, user.id) }); } catch { return null; }
+  if (!row || !row.active) return null;
+  const sb = await supabaseServer();
+  const [{ data: aal }, claims] = await Promise.all([sb.auth.mfa.getAuthenticatorAssuranceLevel(), getClaims()]);
+  const amr = ((claims as { amr?: AmrEntry[] } | null)?.amr ?? []).filter(a => typeof a?.timestamp === 'number');
+  const started = amr.length ? new Date(Math.min(...amr.map(a => a.timestamp)) * 1000) : null;
+  return {
+    ...row,
+    aal: aal?.currentLevel === 'aal2' ? 'aal2' : 'aal1',
+    mfaEnrolled: aal?.nextLevel === 'aal2',
+    sessionStartedAt: started,
+    sessionExpired: !!started && Date.now() - started.getTime() > SESSION_HOURS() * 3_600_000,
+  };
+});
+
+/** Fully signed-in staff (second factor done, session fresh), or null. */
+export const getStaff = cache(async () => {
+  const s = await getStaffSession();
+  if (!s || s.sessionExpired) return null;
+  if (staffMfaRequired() && s.aal !== 'aal2') return null;
+  return s;
+});
+
+/** Use in every admin page and action. Sends people to sign in, to the second step, or back to the overview. */
 export async function requireStaff(p: Permission = 'overview') {
-  const s = await getStaff();
+  const s = await getStaffSession();
   if (!s) redirect('/admin/login');
+  if (s.sessionExpired) redirect('/auth/signout?next=/admin/login%3Fexpired%3D1');
+  if (staffMfaRequired() && s.aal !== 'aal2') redirect('/admin/login/mfa');
   if (!can(s.role, p)) redirect('/admin?denied=1');
   return s;
 }

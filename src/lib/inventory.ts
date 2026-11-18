@@ -11,7 +11,7 @@ export class StockError extends Error {}
 /** Hold stock for an unpaid order. Fails if not enough is available (unless build-to-order). */
 export async function reserve(tx: Tx, productId: number, qty: number, reference: string) {
   const rows = await tx.update(products).set({ reserved: sql`${products.reserved} + ${qty}` })
-    .where(and(eq(products.id, productId), sql`(${products.onHand} - ${products.reserved} >= ${qty} OR ${products.buildToOrder} = 1)`))
+    .where(and(eq(products.id, productId), sql`(${products.onHand} - ${products.reserved} >= ${qty} OR ${products.buildToOrder})`))
     .returning({ onHand: products.onHand, reserved: products.reserved, name: products.shortName });
   if (!rows.length) {
     const p = await tx.query.products.findFirst({ where: eq(products.id, productId) });
@@ -21,21 +21,21 @@ export async function reserve(tx: Tx, productId: number, qty: number, reference:
 }
 
 export async function release(tx: Tx, productId: number, qty: number, reference: string, note = 'Reservation released') {
-  const [r] = await tx.update(products).set({ reserved: sql`max(0, ${products.reserved} - ${qty})` }).where(eq(products.id, productId))
+  const [r] = await tx.update(products).set({ reserved: sql`greatest(0, ${products.reserved} - ${qty})` }).where(eq(products.id, productId))
     .returning({ onHand: products.onHand, reserved: products.reserved });
   await tx.insert(stockMovements).values({ productId, type: 'release', qty: 0, onHandAfter: r.onHand, reservedAfter: r.reserved, reference, note: `${note} (${qty})` });
 }
 
 /** Payment confirmed: reserved units leave on-hand stock. */
 export async function commitSale(tx: Tx, productId: number, qty: number, reference: string) {
-  const [r] = await tx.update(products).set({ onHand: sql`${products.onHand} - ${qty}`, reserved: sql`max(0, ${products.reserved} - ${qty})` })
+  const [r] = await tx.update(products).set({ onHand: sql`${products.onHand} - ${qty}`, reserved: sql`greatest(0, ${products.reserved} - ${qty})` })
     .where(eq(products.id, productId)).returning({ onHand: products.onHand, reserved: products.reserved });
   await tx.insert(stockMovements).values({ productId, type: 'sale', qty: -qty, onHandAfter: r.onHand, reservedAfter: r.reserved, reference });
 }
 
 /** Inward / return / adjustment / damage (qty is the signed change to on-hand). */
 export async function moveStock(tx: Tx, productId: number, type: 'inward' | 'return' | 'adjustment' | 'damage', qty: number, opts: { reference?: string; note?: string; staffId?: number } = {}) {
-  const [r] = await tx.update(products).set({ onHand: sql`max(0, ${products.onHand} + ${qty})` }).where(eq(products.id, productId))
+  const [r] = await tx.update(products).set({ onHand: sql`greatest(0, ${products.onHand} + ${qty})` }).where(eq(products.id, productId))
     .returning({ onHand: products.onHand, reserved: products.reserved });
   await tx.insert(stockMovements).values({ productId, type, qty, onHandAfter: r.onHand, reservedAfter: r.reserved, reference: opts.reference, note: opts.note, staffId: opts.staffId });
 }

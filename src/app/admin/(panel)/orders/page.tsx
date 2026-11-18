@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { and, desc, eq, like, or, inArray, exists, sql } from 'drizzle-orm';
+import { and, desc, eq, ilike, or, inArray, exists, sql } from 'drizzle-orm';
+import { likeTerm } from '@/lib/validators';
 import { db } from '@/lib/db';
 import { orders, returns, orderExceptions, ORDER_STATUSES, PAYMENT_STATUSES } from '@/lib/db/schema';
 import { requireStaff } from '@/lib/auth';
@@ -18,7 +19,7 @@ export default async function Orders({ searchParams }: { searchParams: Promise<{
   const conds = [
     sp.status && (ORDER_STATUSES as readonly string[]).includes(sp.status) ? eq(orders.status, sp.status as typeof ORDER_STATUSES[number]) : undefined,
     sp.payment && (PAYMENT_STATUSES as readonly string[]).includes(sp.payment) ? eq(orders.paymentStatus, sp.payment as typeof PAYMENT_STATUSES[number]) : undefined,
-    sp.q ? or(like(orders.number, `%${sp.q.toUpperCase()}%`), like(orders.contactName, `%${sp.q}%`), like(orders.contactEmail, `%${sp.q.toLowerCase()}%`), like(orders.contactPhone, `%${sp.q}%`)) : undefined,
+    sp.q ? or(ilike(orders.number, likeTerm(sp.q)), ilike(orders.contactName, likeTerm(sp.q)), ilike(orders.contactEmail, likeTerm(sp.q)), ilike(orders.contactPhone, likeTerm(sp.q))) : undefined,
     sp.returns ? exists(db.select({ x: sql`1` }).from(returns).where(and(eq(returns.orderId, orders.id), inArray(returns.status, ['requested', 'approved', 'received'])))) : undefined,
     sp.exceptions ? exists(db.select({ x: sql`1` }).from(orderExceptions).where(and(eq(orderExceptions.orderId, orders.id), eq(orderExceptions.status, 'open')))) : undefined,
   ].filter(Boolean);

@@ -7,6 +7,9 @@ export const email = z.string().trim().toLowerCase().email('Enter a valid email 
 export const pincode = z.string().trim().regex(/^[1-9]\d{5}$/, 'Enter a valid 6-digit pincode');
 export const name = z.string().trim().min(2, 'Enter your name').max(80);
 export const optional = (s: z.ZodTypeAny) => z.union([z.literal('').transform(() => undefined), s]).optional();
+/** Passwords: 10–72 characters (bcrypt's limit), not all one kind of character. Supabase enforces its own policy too. */
+export const password = z.string().min(10, 'Use at least 10 characters').max(72, 'Use at most 72 characters')
+  .refine(p => /[a-zA-Z]/.test(p) && /[^a-zA-Z]/.test(p), 'Mix letters with numbers or symbols');
 export const gstin = z.string().trim().toUpperCase().regex(/^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/, 'Enter a valid GSTIN');
 
 export const address = z.object({
@@ -36,3 +39,6 @@ export function zodErrors(e: z.ZodError) {
   for (const i of e.issues) { const k = i.path.join('.'); if (!out[k]) out[k] = i.message; }
   return out;
 }
+
+/** A user's search text as a literal ILIKE pattern (their % and _ match themselves). */
+export const likeTerm = (q: string) => `%${q.trim().slice(0, 80).replace(/[\\%_]/g, m => `\\${m}`)}%`;

@@ -7,6 +7,7 @@ import { OrderDetail } from '@/components/store/OrderDetail';
 import { Icon } from '@/components/ui/Icon';
 import { loadOrder } from '@/lib/order-view';
 import { getCustomer } from '@/lib/auth';
+import { safeEqual } from '@/lib/security';
 
 export const metadata: Metadata = { title: 'Your order', robots: { index: false } };
 export const dynamic = 'force-dynamic';
@@ -15,7 +16,7 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
   const { number } = await params; const { t, paid } = await searchParams;
   const o = await loadOrder(number);
   const c = await getCustomer();
-  if (!o || (o.accessToken !== t && o.customerId !== c?.id)) notFound();
+  if (!o || (!safeEqual(t, o.accessToken) && o.customerId !== c?.id)) notFound();
   const justPaid = paid && o.paymentStatus === 'paid';
   return (
     <>

@@ -1,0 +1,34 @@
+.topics { display: flex; flex-wrap: wrap; gap: 8px; }
+.topics :global(.pill) { min-height: 40px; padding-inline: 16px; font-size: 14px; transition: border-color .25s, background-color .25s, color .25s; }
+.on:global(.pill) { background: var(--color-ink); border-color: var(--color-ink); color: #fff; }
+@media (hover: hover) { .topics :global(.pill):hover { border-color: var(--color-deep-current); } }
+/* phones: one swipeable line of topics instead of a wrapped block */
+@media (max-width: 640px) {
+  .topics { flex-wrap: nowrap; overflow-x: auto; margin-inline: -16px; padding-inline: 16px; scrollbar-width: none; }
+  .topics::-webkit-scrollbar { display: none; }
+  .topics :global(.pill) { flex: none; }
+}
+
+.card { border-top: 2px solid var(--color-ink); padding-top: 14px; height: 100%; }
+.kind { position: absolute; left: 12px; bottom: 12px; font-size: 16px; }
+.kind::before, .kind::after { content: none; }
+
+.go { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--color-ink); color: #fff; transition: background-color .3s, color .3s, transform .3s var(--ease-out-soft); }
+@media (hover: hover) {
+  :global(.group):hover .go { background: var(--color-glacier); color: var(--color-ink); transform: translateX(3px); }
+}
+:global(.group):active .go { background: var(--color-glacier); color: var(--color-ink); }
+
+.row { display: grid; grid-template-columns: 1fr auto; gap: 6px 20px; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--color-line); }
+.row > :first-child { grid-column: 1 / -1; }
+@media (min-width: 900px) {
+  .row { grid-template-columns: 190px 1fr auto; gap: 32px; padding: 24px 0; }
+  .row > :first-child { grid-column: auto; }
+}
+
+/* article page */
+.back { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; font-family: var(--font-sans); font-size: 14px; font-weight: 600; color: var(--color-muted); }
+.back:hover { color: var(--color-ink); }
+.title { font-family: var(--font-sans); font-weight: 800; letter-spacing: -0.04em; line-height: .98; font-size: clamp(34px, 5.4vw, 68px); text-wrap: balance; }
+.note { border-left: 3px solid var(--color-line); padding-left: 16px; font-family: var(--font-sans); font-size: 13.5px; line-height: 1.5; color: var(--color-muted); }
+.next { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--color-line); }

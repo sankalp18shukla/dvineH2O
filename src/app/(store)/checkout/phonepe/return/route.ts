@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { orders, payments, waterTests } from '@/lib/db/schema';
 import { syncPhonePePayment } from '@/lib/orders';
+import { safeEqual } from '@/lib/security';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,11 +22,11 @@ export async function GET(req: Request) {
   let ok: string, retry: string;
   if (p.purpose === 'order' && p.orderId) {
     const o = await db.query.orders.findFirst({ where: eq(orders.id, p.orderId) });
-    if (!o || o.accessToken !== t) return go('/');
+    if (!o || !safeEqual(t, o.accessToken)) return go('/');
     ok = `/order/${o.number}?t=${o.accessToken}&paid=1`; retry = `/checkout/pay/${o.number}?t=${o.accessToken}`;
   } else if (p.waterTestId) {
     const w = await db.query.waterTests.findFirst({ where: eq(waterTests.id, p.waterTestId) });
-    if (!w || w.accessToken !== t) return go('/');
+    if (!w || !safeEqual(t, w.accessToken)) return go('/');
     ok = `/water-testing/booking/${w.ref}?t=${w.accessToken}`; retry = ok;
   } else return go('/');
 

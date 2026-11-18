@@ -39,11 +39,21 @@ export const templates = {
     template: 'payment_link', subject: `Your DVINE H2O quote is ready to pay (${o.number})`,
     text: `Hi ${o.name},\n\nAs agreed, here is the secure payment link for ${o.what} (${o.total}, GST included).\n\nPay here: ${o.link}\n\nThe link is valid until ${o.until}. Your GST invoice is issued as soon as the payment is confirmed.\n\nDVINE H2O`,
   }),
+  /** to the team inbox (TEAM_ALERT_EMAIL): a customer has raised a service request */
+  ticketForTeam: (t: { number: string; name: string; contact: string; issue: string; link: string }): Msg => ({
+    template: 'ticket_team_alert', subject: `New service request ${t.number} from ${t.name}`,
+    text: `A new service request has come in.\n\n${t.number}\nFrom: ${t.name} (${t.contact})\n\n${t.issue}\n\nOpen it: ${t.link}`,
+  }),
   ticketOpened: (t: { number: string; name: string }): Msg => ({
     template: 'ticket_opened', subject: `Service request ${t.number}`,
     text: `Hi ${t.name},\n\nWe've logged your service request ${t.number}. A DVINE engineer will be in touch.\n\nDVINE H2O`,
   }),
 };
+
+/** Alerts the team inbox, when one is set (TEAM_ALERT_EMAIL, comma-separated for several people). */
+export async function notifyTeam(msg: Msg) {
+  for (const to of (process.env.TEAM_ALERT_EMAIL ?? '').split(',').map(x => x.trim()).filter(x => /^\S+@\S+\.\S+$/.test(x))) await sendEmail(to, msg).catch(() => {});
+}
 
 export async function notify(to: { email?: string | null; phone?: string | null }, msg: Msg) {
   if (to.email) await sendEmail(to.email, msg).catch(() => {});

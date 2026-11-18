@@ -3,7 +3,7 @@ import { db } from './db';
 import { enquiries, waterTests, serviceTickets, testOptions, ENQUIRY_TYPES, INTERESTS } from './db/schema';
 import { enquiryRef, waterTestRef, ticketNumber, randomToken } from './numbering';
 import { findOrCreateCustomer } from './customers';
-import { notify, templates, links } from './notify';
+import { notify, notifyTeam, templates, links } from './notify';
 
 export type EnquiryType = typeof ENQUIRY_TYPES[number];
 export type Interest = typeof INTERESTS[number];
@@ -61,5 +61,6 @@ export async function createTicket(input: TicketInput) {
     name: input.name, phone: input.phone ?? null, email: input.email ?? null, issue: input.issue, priority: input.priority ?? 'normal',
   }).returning();
   await notify({ email: input.email, phone: input.phone }, templates.ticketOpened({ number, name: input.name.split(' ')[0] }));
+  await notifyTeam(templates.ticketForTeam({ number, name: input.name, contact: [input.phone, input.email].filter(Boolean).join(', ') || 'no contact given', issue: input.issue.slice(0, 600), link: `${(process.env.NEXT_PUBLIC_SITE_URL ?? '').replace(/\/$/, '')}/admin/service?ticket=${t.id}` }));
   return t;
 }

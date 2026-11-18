@@ -29,7 +29,7 @@ export default async function Customer({ params }: { params: Promise<{ id: strin
   const paid = os.filter(o => ['paid', 'partially_refunded'].includes(o.paymentStatus));
   return (
     <>
-      <PageHead back={{ href: '/admin/customers', label: 'Customers' }} title={c.name} sub={<>{c.email} · {c.phone} · {c.passwordHash ? 'Registered account' : 'Guest'} · since {day(c.createdAt)}</>} />
+      <PageHead back={{ href: '/admin/customers', label: 'Customers' }} title={c.name} sub={<>{c.email} · {c.phone} · {c.authUserId ? 'Registered account' : 'Guest'} · since {day(c.createdAt)}</>} />
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-5">
         <Kpi label="Orders" value={paid.length} /><Kpi label="Total spend" value={formatINR(paid.reduce((t, o) => t + o.total, 0))} /><Kpi label="Latest order" value={paid[0] ? day(paid[0].placedAt) : '—'} /><Kpi label="Enquiries" value={es.length} /><Kpi label="Referrals" value={refs.length} sub={c.referralCode ?? ''} />
       </div>

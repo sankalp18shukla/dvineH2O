@@ -10,13 +10,14 @@ import { db } from '@/lib/db';
 import { waterTests } from '@/lib/db/schema';
 import { formatINR } from '@/lib/money';
 import { activeGateway, testPaymentsAllowed } from '@/lib/payments-mode';
+import { safeEqual } from '@/lib/security';
 
 export const metadata: Metadata = { title: 'Your water test', robots: { index: false } };
 
 export default async function BookingPage({ params, searchParams }: { params: Promise<{ ref: string }>; searchParams: Promise<{ t?: string }> }) {
   const { ref } = await params; const { t } = await searchParams;
   const w = await db.query.waterTests.findFirst({ where: eq(waterTests.ref, ref), with: { option: true } });
-  if (!w || w.accessToken !== t) notFound();
+  if (!w || !safeEqual(t, w.accessToken)) notFound();
   const needsPay = w.paymentStatus === 'pending' && w.price > 0 && w.status !== 'cancelled';
   return (
     <>

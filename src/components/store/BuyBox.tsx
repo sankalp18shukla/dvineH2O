@@ -7,13 +7,15 @@ import { Icon } from '../ui/Icon';
 import { Cta, type CtaTone } from '../ui/Cta';
 import { OfferTicket } from './OfferTicket';
 import type { Offer } from '@/lib/site-content';
+import { PriceStory } from './WorthReading';
 
 /**
  * Purchase panel, in the content document's order: price, tax note, stock, postcode check, quantity, then the
  * buttons (the home page's accent pill with the arrow chip, and the frosted pill). Rises in with the page (data-rise).
  * A running offer (Admin › Homepage & promotions › Product pages) shows as a ticket straight under the price.
+ * `why` is the blog post that explains the price (Admin › Blog: category "Price and value" for this product).
  */
-export function BuyBox({ p, tone = 'glacier', secondary, offer }: { p: Product; tone?: CtaTone; secondary?: { href: string; label: string }; offer?: Offer | null }) {
+export function BuyBox({ p, tone = 'glacier', secondary, offer, why }: { p: Product; tone?: CtaTone; secondary?: { href: string; label: string }; offer?: Offer | null; why?: { slug: string } | null }) {
   const off = p.mrp > p.price ? Math.round(((p.mrp - p.price) / p.mrp) * 100) : 0;
   return (
     <div id="buy" className="flex scroll-mt-32 flex-col gap-6" data-rise>
@@ -31,6 +33,7 @@ export function BuyBox({ p, tone = 'glacier', secondary, offer }: { p: Product; 
           </span>
           <span>{p.requiresInstallation ? 'Installation by a DVINE-trained technician' : 'Free delivery'}</span>
         </p>
+        {why && <PriceStory slug={why.slug} className="mt-4" />}
       </div>
       {offer && <OfferTicket offer={offer} />}
       <div className="border-t border-line pt-5">

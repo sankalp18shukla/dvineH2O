@@ -11,20 +11,32 @@ const TOAST = 'dvine-admin-toast';
 const toast = (ok: boolean, message: string) => window.dispatchEvent(new CustomEvent(TOAST, { detail: { ok, message } }));
 const isVideo = (src: string) => /\.(mp4|webm|mov)(\?|$)/i.test(src);
 
-/** Uploads one file to the media library with progress. Resolves to the stored file. */
-export function uploadMedia(file: File, onProgress: (p: number) => void): Promise<LibFile> {
-  return new Promise((resolve, reject) => {
+const media = async <T,>(body: object): Promise<T> => {
+  const r = await fetch('/api/admin/media', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const j = await r.json().catch(() => ({ error: 'The upload failed.' }));
+  if (!r.ok || j.error) throw new Error(j.error ?? 'The upload failed.');
+  return j as T;
+};
+
+/**
+ * Uploads one file to the media library with progress. The server issues a one-time signed URL, the file goes
+ * straight to Supabase Storage, then the server checks its bytes before it is accepted. Resolves to the stored file.
+ */
+export async function uploadMedia(file: File, onProgress: (p: number) => void): Promise<LibFile> {
+  const type = file.type || (/\.mov$/i.test(file.name) ? 'video/quicktime' : '');
+  const { name, uploadUrl, contentType } = await media<{ name: string; uploadUrl: string; contentType: string }>({ action: 'sign', name: file.name, size: file.size, type });
+  await new Promise<void>((resolve, reject) => {
     const x = new XMLHttpRequest();
-    x.open('POST', '/api/admin/media');
+    x.open('PUT', uploadUrl);
+    x.setRequestHeader('Content-Type', contentType);
+    x.setRequestHeader('x-upsert', 'false');
+    x.setRequestHeader('cache-control', 'max-age=31536000');
     x.upload.onprogress = e => e.lengthComputable && onProgress(e.loaded / e.total);
-    x.onload = () => {
-      let r: { error?: string } & LibFile;
-      try { r = JSON.parse(x.responseText); } catch { return reject(new Error('The upload failed.')); }
-      if (x.status >= 400 || r.error) reject(new Error(r.error ?? 'The upload failed.')); else resolve(r);
-    };
+    x.onload = () => (x.status < 300 ? resolve() : reject(new Error(x.status === 413 ? 'This file is too large.' : 'The upload failed.')));
     x.onerror = () => reject(new Error('The upload failed. Check your connection.'));
-    const fd = new FormData(); fd.append('file', file); x.send(fd);
+    x.send(file);
   });
+  return media<LibFile>({ action: 'finalize', name });
 }
 
 /**

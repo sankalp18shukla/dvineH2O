@@ -1,12 +1,12 @@
 import { and, eq, sql } from 'drizzle-orm';
-import { db, type Tx } from './db';
+import { db, type DB, type Tx } from './db';
 import { coupons, customers, referrals, orders } from './db/schema';
 import { getSetting } from './settings';
 import { randomToken } from './numbering';
 
 export type ReferralSettings = { enabled: boolean; friendPercent: number; friendMax: number; rewardFlat: number; rewardMinOrder: number; rewardValidDays: number };
 export const DEFAULT_REFERRAL: ReferralSettings = { enabled: true, friendPercent: 5, friendMax: 300000, rewardFlat: 100000, rewardMinOrder: 0, rewardValidDays: 180 };
-export const getReferralSettings = () => getSetting<ReferralSettings>('referral', DEFAULT_REFERRAL);
+export const getReferralSettings = (q?: DB | Tx) => getSetting<ReferralSettings>('referral', DEFAULT_REFERRAL, q);
 
 /** Each registered customer gets one code, e.g. ANITA-7K2Q. */
 export async function ensureReferralCode(customerId: number) {
@@ -21,8 +21,8 @@ export async function ensureReferralCode(customerId: number) {
   return null;
 }
 
-export async function findReferrer(code: string) {
-  return db.query.customers.findFirst({ where: eq(sql`upper(${customers.referralCode})`, code.trim().toUpperCase()) });
+export async function findReferrer(code: string, q: DB | Tx = db) {
+  return q.query.customers.findFirst({ where: eq(sql`upper(${customers.referralCode})`, code.trim().toUpperCase()) });
 }
 
 /** Friend discount for a referral code (percent of subtotal, capped). */
@@ -37,7 +37,7 @@ export async function qualifyReferral(tx: Tx, orderId: number) {
   if (!order?.referralCode) return;
   const referrer = await tx.query.customers.findFirst({ where: eq(sql`upper(${customers.referralCode})`, order.referralCode.toUpperCase()) });
   if (!referrer || referrer.id === order.customerId) return;
-  const s = await getReferralSettings();
+  const s = await getReferralSettings(tx);
   const code = `THANKS-${randomToken(5).toUpperCase().replace(/[^A-Z0-9]/g, 'X').slice(0, 6)}`;
   const ends = new Date(Date.now() + s.rewardValidDays * 86400_000);
   await tx.insert(coupons).values({ code, type: 'flat', value: s.rewardFlat, minOrder: s.rewardMinOrder, usageLimit: 1, endsAt: ends, ownerCustomerId: referrer.id, note: `Referral reward for ${order.number}` });

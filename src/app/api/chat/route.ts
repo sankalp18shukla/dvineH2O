@@ -7,6 +7,7 @@ import { botReply, type ChatMsg } from '@/lib/chatbot';
 import { createEnquiry } from '@/lib/enquiries';
 import { randomToken } from '@/lib/numbering';
 import { phone as phoneSchema } from '@/lib/validators';
+import { limitRequest, safeEqual } from '@/lib/security';
 
 type ChatData = { chatToken: string; transcript: ChatMsg[]; live: boolean; lastSeenAgent?: number };
 const now = () => new Date().toISOString();
@@ -20,7 +21,7 @@ const body = z.discriminatedUnion('action', [
 async function load(ref: string, token: string) {
   const e = await db.query.enquiries.findFirst({ where: eq(enquiries.ref, ref) });
   const d = e?.data as ChatData | undefined;
-  if (!e || e.type !== 'chat' || !d || d.chatToken !== token) return null;
+  if (!e || e.type !== 'chat' || !d || !safeEqual(token, d.chatToken)) return null;
   return { e, d };
 }
 
@@ -28,6 +29,7 @@ export async function POST(req: Request) {
   const p = body.safeParse(await req.json().catch(() => null));
   if (!p.success) return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   const b = p.data;
+  if (!(await limitRequest('chat'))) return NextResponse.json({ error: 'You’re sending messages too quickly. Please wait a moment.' }, { status: 429 });
   if (b.action === 'ask') return NextResponse.json({ reply: { ...botReply(b.text), at: now() } });
 
   if (b.action === 'handover') {
