@@ -1,17 +1,13 @@
 import Link from 'next/link';
-import { asc, desc, eq, inArray } from 'drizzle-orm';
+import { asc, desc, inArray } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { orders, products, serviceTickets } from '@/lib/db/schema';
+import { orders, serviceTickets } from '@/lib/db/schema';
 import { requireStaff } from '@/lib/auth';
 import { overview, parseRange } from '@/lib/metrics';
-import { getCompany } from '@/lib/settings';
-import { activeGateway } from '@/lib/payments-mode';
-import { phonepeEnabled, phonepeMode } from '@/lib/phonepe';
-import { shiprocketEnabled } from '@/lib/shiprocket';
 import { formatINR } from '@/lib/money';
 import { Kpi, PageHead, Panel, TableWrap, pct, dt } from '@/components/admin/ui';
 import { Status, humanize } from '@/components/ui/Status';
-import { Icon } from '@/components/ui/Icon';
+import { Icon } from '@/components/admin/AdminIcon';
 import { AutoRefresh } from '@/components/admin/AutoRefresh';
 import { can } from '@/lib/session';
 import { STATUS_LABEL } from '@/lib/orders';
@@ -23,21 +19,13 @@ export default async function Overview({ searchParams }: { searchParams: Promise
   const me = await requireStaff('overview');
   const sp = await searchParams;
   const r = parseRange(sp.range, sp.from, sp.to);
-  const [m, company, unconfirmed, recent, tickets] = await Promise.all([
-    overview(r), getCompany(),
-    db.query.products.findMany({ where: eq(products.priceConfirmed, false) }),
+  const [m, recent, tickets] = await Promise.all([
+    overview(r),
     db.query.orders.findMany({ orderBy: desc(orders.createdAt), limit: 6 }),
     // service requests nobody has finished yet: unassigned ones first, then the oldest
     can(me.role, 'service') ? db.query.serviceTickets.findMany({ where: inArray(serviceTickets.status, ['open', 'assigned', 'in_progress']), orderBy: [asc(serviceTickets.status), asc(serviceTickets.createdAt)], limit: 6, with: { product: true } }) : [],
   ]);
   const waiting = tickets.filter(t => t.status === 'open').length;
-  const warnings = [
-    activeGateway() === 'test' && 'Payments are in TEST MODE. Add PhonePe (or Razorpay) keys to take real payments.',
-    activeGateway() === 'phonepe' && phonepeEnabled() && phonepeMode() !== 'production' && 'PhonePe is in SANDBOX mode. Set PHONEPE_ENV=production with live keys to take real payments.',
-    !shiprocketEnabled() && 'Shiprocket is not connected. Shipments are recorded manually.',
-    !company.confirmed && 'Company legal name, address and GSTIN are not confirmed. Invoices show placeholders.',
-    unconfirmed.filter(p => p.saleMode === 'cart').length > 0 && `Prices for ${unconfirmed.filter(p => p.saleMode === 'cart').map(p => p.shortName).join(', ')} are placeholders. Confirm them in Products.`,
-  ].filter(Boolean) as string[];
   const maxDay = Math.max(1, ...m.daily.map(d => d.total));
 
   return (
@@ -53,13 +41,12 @@ export default async function Overview({ searchParams }: { searchParams: Promise
       } />
       {sp.denied && <p className="mb-4 rounded-xl bg-[#FFE3E3] px-4 py-3 font-sans text-sm text-[#8A0E18]">Your role doesn’t have access to that page.</p>}
       {waiting > 0 && (
-        <Link href="/admin/service" className="mb-4 flex items-center gap-3 rounded-xl bg-flash px-4 py-3 font-sans text-sm font-semibold text-white hover:opacity-95">
-          <Icon name="bell" className="size-5 shrink-0" />
+        <Link href="/admin/service" className="mb-5 flex items-center gap-3 rounded-xl border border-line bg-white px-4 py-3 font-sans text-sm font-medium text-ink hover:border-[#B8C4D9]">
+          <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#FDECF5] text-[#B0005F]"><Icon name="wrench" className="size-4" /></span>
           <span className="flex-1">{waiting === 1 ? '1 new service request is' : `${waiting}${tickets.length === 6 && waiting === 6 ? '+' : ''} new service requests are`} waiting to be picked up.</span>
-          <span className="flex items-center gap-1">Open <Icon name="chevron" className="size-4" /></span>
+          <span className="flex items-center gap-1 text-deep-current">Open <Icon name="chevron" className="size-4" /></span>
         </Link>
       )}
-      {warnings.length > 0 && <ul className="mb-6 grid gap-2">{warnings.map(w => <li key={w} className="flex items-start gap-2 rounded-xl bg-[#FFF4D6] px-4 py-2.5 font-sans text-sm text-[#7A4B00]"><Icon name="alert" className="mt-0.5 size-4 shrink-0" />{w}</li>)}</ul>}
 
       {/* Sales snapshot */}
       <h2 className="mb-3 font-sans text-sm font-semibold uppercase tracking-wider text-muted">Sales</h2>
@@ -120,7 +107,7 @@ export default async function Overview({ searchParams }: { searchParams: Promise
             {[['New', m.customers.new], ['Repeat', m.customers.repeat], ['Total', m.customers.total], ['Total spend', formatINR(m.customers.spend)]].map(([k, v]) => <div key={k as string}><dt className="text-muted">{k}</dt><dd className="text-xl font-bold">{v}</dd></div>)}
           </dl>
         </Panel>
-        <Panel title="Water testing and enquiries" actions={<Link href="/admin/enquiries" className="link text-sm">CRM</Link>}>
+        <Panel title="Water testing and form responses" actions={<Link href="/admin/enquiries" className="link text-sm">Form responses</Link>}>
           <dl className="grid grid-cols-2 gap-4 font-sans text-sm sm:grid-cols-4">
             {[['Tests booked', m.enquiries.tests.booked], ['Tests completed', m.enquiries.tests.completed], ['Tests → orders', m.enquiries.tests.converted], ['Open enquiries', m.enquiries.open]].map(([k, v]) => <div key={k as string}><dt className="text-muted">{k}</dt><dd className="text-xl font-bold">{v}</dd></div>)}
           </dl>
@@ -173,7 +160,6 @@ export default async function Overview({ searchParams }: { searchParams: Promise
           <tbody>{recent.map(o => <tr key={o.id}><td><Link href={`/admin/orders/${o.id}`} className="link">{o.number}</Link></td><td>{o.contactName}</td><td>{dt(o.createdAt)}</td><td><Status value={o.status} /></td><td><Status value={o.paymentStatus} /></td><td className="text-right font-semibold">{formatINR(o.total)}</td></tr>)}</tbody>
         </TableWrap>
       </Panel>
-      <p className="mt-4 font-sans text-[12px] text-muted">Definitions follow the DVINE requirements: orders = confirmed (paid) orders placed in the period; net sales = order totals minus refunds; abandonment uses the inactivity window in Settings. {humanize('in_stock')} thresholds come from each product’s reorder level.</p>
     </>
   );
 }

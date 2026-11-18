@@ -5,15 +5,13 @@ import { orders, warranties, serviceTickets } from '@/lib/db/schema';
 import { requireCustomer } from '@/lib/auth';
 import { formatINR } from '@/lib/money';
 import { Status } from '@/components/ui/Status';
-import { ensureReferralCode } from '@/lib/referrals';
 
 export default async function AccountHome() {
   const c = await requireCustomer();
-  const [recent, w, open, code] = await Promise.all([
+  const [recent, w, open] = await Promise.all([
     db.query.orders.findMany({ where: eq(orders.customerId, c.id), orderBy: desc(orders.createdAt), limit: 3, with: { items: true } }),
     db.$count(warranties, and(eq(warranties.customerId, c.id), eq(warranties.status, 'active'))),
     db.$count(serviceTickets, and(eq(serviceTickets.customerId, c.id), inArray(serviceTickets.status, ['open', 'assigned', 'in_progress']))),
-    ensureReferralCode(c.id),
   ]);
   return (
     <div className="grid gap-6">
@@ -35,7 +33,6 @@ export default async function AccountHome() {
           </ul>
         )}
       </section>
-      {code && <section className="stage on-dark rounded-[var(--radius-card)] p-6"><p className="font-sans text-sm text-white/70">Your referral code</p><p className="mt-1 font-sans text-3xl font-bold tracking-wide">{code}</p><Link href="/account/referrals" className="btn btn-volt btn-sm mt-4">Share and earn</Link></section>}
     </div>
   );
 }

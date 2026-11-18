@@ -12,7 +12,7 @@ export default async function Notifications() {
   const list = await db.query.notifications.findMany({ orderBy: desc(notifications.createdAt), limit: 150 });
   return (
     <>
-      <PageHead title="Notifications" sub={`Every email and WhatsApp message the system sends. ${process.env.SMTP_HOST ? 'Email: SMTP connected.' : 'Email: not connected (messages are logged here).'} ${process.env.WHATSAPP_TOKEN ? 'WhatsApp: connected.' : 'WhatsApp: not connected.'}`} />
+      <PageHead title="Notifications" sub="Every email and WhatsApp message the site sends to customers." />
       <Panel>
         {list.length === 0 ? <Empty>No messages yet.</Empty> : (
           <TableWrap>

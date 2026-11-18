@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { seo } from '@/lib/seo-keywords';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Header } from '@/components/store/Header';
@@ -34,7 +35,7 @@ import css from './crystal.module.css';
 /** Rendered per request: reads the catalog, which needs a live database, and the dated promotions (?preview=1 shows staff the draft). */
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = { title: 'Crystal home water system', description: CRYSTAL.hero.body, alternates: { canonical: '/home-water-systems' } };
+export const metadata: Metadata = seo('/home-water-systems', { title: 'Crystal home water system', description: CRYSTAL.hero.body });
 
 /** Labelled path through Crystal, drawn under the demo film (section 04, "labelled filtration and plate illustration"). */
 const FLOW = [
@@ -64,7 +65,7 @@ export default async function CrystalPage({ searchParams }: { searchParams: Prom
   const f = CRYSTAL.features.cards;
   return (
     <>
-      <Header framed shop ribbon={promo.ribbon} />
+      <Header framed shop page="crystal" ribbon={promo.ribbon} />
       <SmoothScroll />
       <main id="main">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(productJsonLd(p, '/home-water-systems')) }} />

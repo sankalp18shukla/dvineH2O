@@ -232,29 +232,11 @@ For the full breakdown of the machine itself, read [what you are paying for when
   },
 ];
 
-/** Articles by the DVINE H2O editorial team published on other sites. The cards link out. */
-const ELSEWHERE: [slug: string, title: string, source: string, url: string, published: string, excerpt: string][] = [
-  ['role-of-hydration-in-healthy-ageing', 'The role of hydration in healthy ageing and vitality', 'Plus100Years', 'https://www.plus100years.com/role-of-hydration-in-healthy-ageing-and-vitality/', '2026-08-04', 'Why older adults drink less than they need, the small signs to watch for, and the simple habits one family uses to help.'],
-  ['does-hydration-play-a-role-in-how-fast-we-age', 'Does hydration play a role in how fast we age?', 'Plus100Years', 'https://www.plus100years.com/does-hydration-play-a-role-in-how-fast-we-age/', '2026-08-06', 'Water keeps skin looking fresh and the body working well. It does not stop the clock. What hydration can and cannot do.'],
-  ['why-older-adults-need-to-be-careful-about-hydration', 'Why do older adults need to be more careful about hydration?', 'Plus100Years', 'https://www.plus100years.com/hydration-for-older-adults/', '2026-08-09', 'Thirst weakens with age, so "I am not thirsty" does not always mean "I have had enough". Gentle ways to help.'],
-  ['hydration-and-holistic-wellbeing', 'Hydration and holistic wellbeing: a simple path to a healthier lifestyle', 'TreatWiser', 'https://www.treatwiser.com/wellness/hydration/hydration-and-holistic-wellbeing-a-simple-path-to-a-healthier-lifestyle/', '2026-08-12', 'How steady, everyday drinking habits support the rest of a healthy routine.'],
-  ['early-research-on-hydrogen-water-and-cellular-recovery', 'What does early research say about hydrogen water and cellular recovery?', 'TreatWiser', 'https://www.treatwiser.com/wellness/what-does-early-research-say-about-hydrogen-water-and-cellular-recovery/', '2026-08-14', 'A look at the first studies on hydrogen water and recovery, and how much weight they can bear.'],
-  ['hydration-tips-for-busy-professionals', 'Hydration tips for busy professionals', 'Talented Ladies Club', 'https://www.talentedladiesclub.com/articles/hydration-tips-for-busy-professionals/', '2026-08-18', 'Practical ways to keep drinking through a full working day.'],
-  ['drinking-water-quality-and-health', 'Drinking water quality and health', 'DocIndia', 'https://www.docindia.org/healthblog/articles/drinking-water-quality-and-health', '2026-08-20', 'What is in drinking water, why it matters, and how to find out about your own supply.'],
-  ['natural-hydration-wellness-vitality', 'Natural hydration for wellness and vitality', 'Homeopathy360', 'https://www.homeopathy360.com/natural-hydration-wellness-vitality/', '2026-08-22', 'Water, food and daily rhythm: getting enough fluid without overthinking it.'],
-  ['natural-vs-machine-ionised-alkaline-water', 'Natural versus machine-ionised alkaline water', 'Homeopathy360', 'https://www.homeopathy360.com/natural-vs-machine-ionized-alkaline-water/', '2026-08-25', 'Spring water and ionised water can both be alkaline, for different reasons. How they compare.'],
-  ['alkaline-water-and-acid-reflux', 'Alkaline water and acid reflux', 'Homeopathy360', 'https://www.homeopathy360.com/alkaline-water-and-acid-reflux/', '2026-08-27', 'What is known, and not yet known, about alkaline water and reflux.'],
-];
-
 const at = (d: string) => new Date(`${d}T04:30:00.000Z`); // 10:00 in India
 export const SEED_POSTS: Post[] = [
   ...OURS.map((p, i): Post => ({
     id: i + 1, slug: p.slug, title: p.title, excerpt: p.excerpt, category: p.category, product: p.product ?? null,
     coverImage: p.coverImage ?? null, coverAlt: p.coverAlt ?? null, body: p.body ?? '', externalUrl: null, source: null,
     author: 'DVINE H2O editorial team', seoDescription: null, featured: !!p.featured, status: 'published', publishedAt: at(p.published), updatedAt: at(p.published),
-  })),
-  ...ELSEWHERE.map(([slug, title, source, externalUrl, published, excerpt], i): Post => ({
-    id: OURS.length + i + 1, slug, title, excerpt, category: 'hydration', product: null, coverImage: null, coverAlt: null, body: '',
-    externalUrl, source, author: 'DVINE H2O editorial team', seoDescription: null, featured: false, status: 'published', publishedAt: at(published), updatedAt: at(published),
   })),
 ];

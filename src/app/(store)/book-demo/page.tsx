@@ -1,17 +1,18 @@
 import type { Metadata } from 'next';
+import { seo } from '@/lib/seo-keywords';
 import Image from 'next/image';
 import { Header } from '@/components/store/Header';
 import { EnquiryForm } from '@/components/forms/EnquiryForm';
 import { Icon } from '@/components/ui/Icon';
 import { Lockup, Squiggle } from '@/components/ui/Brand';
 
-export const metadata: Metadata = { title: 'Book a demo', description: 'See Crystal or Titan working at your home or on a video call.' };
+export const metadata: Metadata = seo('/book-demo', { title: 'Book a demo', description: 'See Crystal or Titan working at your home or on a video call.' });
 
 export default async function BookDemo({ searchParams }: { searchParams: Promise<{ product?: string }> }) {
   const { product } = await searchParams;
   return (
     <>
-      <Header framed />
+      <Header framed page="book-demo" />
       <main id="main" className="section">
         <div className="container-x grid gap-12 lg:grid-cols-[1fr_1.3fr]">
           <div>

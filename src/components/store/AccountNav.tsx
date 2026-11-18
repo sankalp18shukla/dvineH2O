@@ -9,7 +9,6 @@ const ITEMS = [
   { href: '/account/warranties', label: 'Warranties', icon: 'shield' },
   { href: '/account/service', label: 'Service requests', icon: 'wrench' },
   { href: '/account/bookings', label: 'Tests and enquiries', icon: 'drop' },
-  { href: '/account/referrals', label: 'Refer a friend', icon: 'gift' },
   { href: '/account/profile', label: 'Profile and addresses', icon: 'user' },
 ];
 

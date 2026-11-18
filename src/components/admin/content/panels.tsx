@@ -1,12 +1,12 @@
 'use client';
 /* eslint-disable @next/next/no-img-element -- previews of uploaded and hosted media */
 import { useState, type ReactNode } from 'react';
-import { Icon } from '@/components/ui/Icon';
+import { Icon } from '@/components/admin/AdminIcon';
 import { Ribbon } from '@/components/store/Ribbon';
 import { PromoCards } from '@/components/store/PromoCards';
 import { HERO_SLIDES } from '@/lib/content';
 import {
-  DEFAULT_CONTENT, THEMES, isLive, newId, todayIST, CardSchema, SlideSchema,
+  DEFAULT_CONTENT, RIBBON_PAGES, THEMES, isLive, newId, ribbonPages, todayIST, CardSchema, SlideSchema,
   type PromoCard, type PromoSlide, type SiteContent, type ThemeKey,
 } from '@/lib/site-content';
 import { MediaField, uploadMedia } from './MediaField';
@@ -76,12 +76,37 @@ export function RibbonPanel({ doc, set }: PanelProps) {
           <Segmented label="Between messages" value={r.separator} onChange={v => set(d => { d.ribbon.separator = v; })}
             options={[{ value: 'drop', label: 'Drop' }, { value: 'star', label: 'Spark' }, { value: 'dot', label: 'Dot' }, { value: 'spark', label: 'Burst' }]} />
           <Range label="Speed" value={130 - r.speed} min={10} max={122} onChange={v => set(d => { d.ribbon.speed = 130 - v; })} left="Slow" right="Fast" format={() => (r.speed > 50 ? 'Slow' : r.speed > 26 ? 'Medium' : 'Fast')} />
-          <Segmented label="Show on" value={r.scope} onChange={v => set(d => { d.ribbon.scope = v; })} options={[{ value: 'home', label: 'Homepage only' }, { value: 'shop', label: 'Homepage and product pages' }, { value: 'all', label: 'Every page' }]} />
           <LinkField label="Clicking the ribbon opens (optional)" value={{ label: 'Ribbon', href: r.href }} onChange={v => set(d => { d.ribbon.href = v.href; })} />
           <div className="self-end"><Schedule value={r.schedule} onChange={v => set(d => { d.ribbon.schedule = v; })} /></div>
         </div>
+
+        <RibbonPagesField value={ribbonPages(r)} onChange={v => set(d => { d.ribbon.pages = v; })} />
       </Section>
     </div>
+  );
+}
+
+function RibbonPagesField({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+  const all = RIBBON_PAGES.map(p => p.key as string);
+  const toggle = (k: string) => onChange(value.includes(k) ? value.filter(x => x !== k) : all.filter(x => x === k || value.includes(x)));
+  return (
+    <fieldset>
+      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+        <legend className="font-sans text-[13px] font-semibold">Show on these pages</legend>
+        <span className="flex gap-3 font-sans text-[12.5px]">
+          <button type="button" className="link" onClick={() => onChange(all)}>Select all</button>
+          <button type="button" className="link" onClick={() => onChange([])}>Clear</button>
+        </span>
+      </div>
+      <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
+        {RIBBON_PAGES.map(p => (
+          <label key={p.key} className={`flex cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 font-sans text-[13.5px] ${value.includes(p.key) ? 'border-deep-current bg-[#EEF5FF]' : 'border-line bg-white hover:border-[#B8C4D9]'}`}>
+            <input type="checkbox" className="check mt-0" checked={value.includes(p.key)} onChange={() => toggle(p.key)} />{p.label}
+          </label>
+        ))}
+      </div>
+      <p className="mt-2 font-sans text-[12px] text-muted">The ribbon never shows during checkout.</p>
+    </fieldset>
   );
 }
 

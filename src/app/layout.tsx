@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import { SITE } from '@/lib/content';
+import { SITE_DESCRIPTION, SITE_KEYWORDS, PAGE_KEYWORDS } from '@/lib/seo-keywords';
 import { ButtonRoll } from '@/components/ui/ButtonRoll';
 import './globals.css';
 
@@ -20,7 +21,10 @@ const garamond = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
   title: { default: `${SITE.name} — ${SITE.tagline}`, template: `%s · ${SITE.name}` },
-  description: SITE.description,
+  // site-wide search terms and description live in src/lib/seo-keywords.ts; every page inherits them
+  description: SITE_DESCRIPTION,
+  keywords: [...new Set([...PAGE_KEYWORDS['/'], ...SITE_KEYWORDS])],
+  applicationName: SITE.name,
   openGraph: { type: 'website', siteName: SITE.name, locale: 'en_IN', images: ['/images/collection.webp'] },
   icons: { icon: '/icon.svg' },
 };

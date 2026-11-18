@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Icon } from '@/components/ui/Icon';
+import { Icon } from '@/components/admin/AdminIcon';
 import { Markdown } from '@/components/ui/Markdown';
 import { CATEGORIES, POST_PRODUCTS, readMinutes, slugify, type Category, type PostProduct } from '@/lib/blog';
 import { deletePost, savePost } from '@/app/actions/blog';
@@ -112,7 +112,7 @@ export function PostEditor({ initial, siteImages }: { initial: PostDraft; siteIm
 
   return (
     <>
-      <div className="sticky top-0 z-20 -mx-4 mb-6 border-b border-line bg-[#F3F5FA]/90 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:-mx-8 lg:-mt-8 lg:px-8 lg:pt-6">
+      <div className="sticky top-14 z-20 -mx-4 -mt-4 mb-6 border-b border-line bg-[#F6F8FC] px-4 py-3 sm:-mx-6 sm:-mt-6 sm:px-6 lg:-mx-8 lg:-mt-8 lg:px-8 lg:pt-5">
         <div className="flex flex-wrap items-center gap-3">
           <div className="mr-auto min-w-0">
             <Link href="/admin/blog" className="mb-1 inline-flex items-center gap-1.5 font-sans text-sm text-muted hover:text-ink"><Icon name="arrowLeft" className="size-4" />Blog</Link>

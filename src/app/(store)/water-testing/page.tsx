@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element -- the hero photos are plain prints in FanHero */
 import type { Metadata } from 'next';
+import { seo } from '@/lib/seo-keywords';
 import { Header } from '@/components/store/Header';
 import { SmoothScroll } from '@/components/store/SmoothScroll';
 import { ActionBar } from '@/components/store/ActionBar';
@@ -22,7 +23,7 @@ import css from '@/components/store/Bands.module.css';
 /** Rendered per request: reads the catalog, which needs a live database. */
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = { title: 'Water testing', description: WATER_TESTING.hero.body, alternates: { canonical: '/water-testing' } };
+export const metadata: Metadata = seo('/water-testing', { title: 'Water testing', description: WATER_TESTING.hero.body });
 
 export default async function WaterTestingPage({ searchParams }: { searchParams: Promise<{ pin?: string }> }) {
   const { pin = '' } = await searchParams;
@@ -30,7 +31,7 @@ export default async function WaterTestingPage({ searchParams }: { searchParams:
   const from = options.length ? Math.min(...options.map(o => o.price ?? 0)) : 0;
   return (
     <>
-      <Header framed />
+      <Header framed page="water-testing" />
       <SmoothScroll />
       <main id="main">
         {/* 01 · Hero: copy and the postcode check left, a hand of three photos right (FanHero) */}

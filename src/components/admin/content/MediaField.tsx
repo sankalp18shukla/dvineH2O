@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable @next/next/no-img-element -- previews of uploaded and hosted media */
 import { useEffect, useRef, useState } from 'react';
-import { Icon } from '@/components/ui/Icon';
+import { Icon } from '@/components/admin/AdminIcon';
 import type { MediaItem } from '@/lib/site-content';
 import { Label } from './fields';
 

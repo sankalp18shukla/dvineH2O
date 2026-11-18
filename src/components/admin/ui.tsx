@@ -1,13 +1,13 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { Icon } from '../ui/Icon';
+import { Icon } from '@/components/admin/AdminIcon';
 
 export function PageHead({ title, sub, actions, back }: { title: ReactNode; sub?: ReactNode; actions?: ReactNode; back?: { href: string; label: string } }) {
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
         {back && <Link href={back.href} className="mb-2 inline-flex items-center gap-1.5 font-sans text-sm text-muted hover:text-ink"><Icon name="arrowLeft" className="size-4" />{back.label}</Link>}
-        <h1 className="font-sans text-2xl font-bold tracking-tight sm:text-[28px]">{title}</h1>
+        <h1 className="font-sans text-[22px] font-bold tracking-tight text-ink sm:text-[26px]">{title}</h1>
         {sub && <p className="mt-1 font-sans text-sm text-muted">{sub}</p>}
       </div>
       {actions && <div className="flex max-w-full flex-wrap gap-2">{actions}</div>}
@@ -16,20 +16,20 @@ export function PageHead({ title, sub, actions, back }: { title: ReactNode; sub?
 }
 
 export function Kpi({ label, value, sub, href, tone }: { label: string; value: ReactNode; sub?: ReactNode; href?: string; tone?: 'warn' | 'bad' | 'good' }) {
-  const t = tone === 'bad' ? 'border-l-[#C2001B]' : tone === 'warn' ? 'border-l-[#E8A600]' : tone === 'good' ? 'border-l-[#1B6B2C]' : 'border-l-transparent';
+  const dot = tone === 'bad' ? 'bg-[#D92D20]' : tone === 'warn' ? 'bg-[#E8A600]' : tone === 'good' ? 'bg-[#12B76A]' : '';
   const body = (
-    <div className={`h-full rounded-2xl border border-line border-l-4 ${t} bg-white p-4 font-sans`}>
-      <p className="text-[12.5px] font-medium text-muted">{label}</p>
-      <p className="mt-1 text-2xl font-bold tracking-tight">{value}</p>
+    <div className={`h-full rounded-xl border border-line bg-white px-4 py-3.5 font-sans ${href ? 'transition-colors group-hover:border-[#B8C4D9]' : ''}`}>
+      <p className="flex items-center gap-1.5 text-[12.5px] font-medium text-muted">{dot && <span className={`size-1.5 rounded-full ${dot}`} aria-hidden="true" />}{label}</p>
+      <p className="mt-1 text-[22px] font-semibold tracking-tight text-ink tabular-nums">{value}</p>
       {sub && <p className="mt-0.5 text-[12px] text-muted">{sub}</p>}
     </div>
   );
-  return href ? <Link href={href} className="block hover:opacity-90">{body}</Link> : body;
+  return href ? <Link href={href} className="group block">{body}</Link> : body;
 }
 
 export function Panel({ title, children, actions, className = '' }: { title?: ReactNode; children: ReactNode; actions?: ReactNode; className?: string }) {
   return (
-    <section className={`min-w-0 rounded-2xl border border-line bg-white ${className}`}>
+    <section className={`min-w-0 rounded-xl border border-line bg-white ${className}`}>
       {(title || actions) && <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-3.5"><h2 className="font-sans text-[15px] font-semibold">{title}</h2>{actions}</div>}
       <div className="p-5">{children}</div>
     </section>

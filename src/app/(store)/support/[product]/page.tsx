@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { PAGE_KEYWORDS, seo } from '@/lib/seo-keywords';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -25,7 +26,7 @@ const TONE = { crystal: 'glacier', hyper: 'flash', titan: 'volt' } as const;
 const PIN = { crystal: 'var(--color-glacier)', hyper: 'var(--color-flash)', titan: 'var(--color-voltage)' } as const;
 
 export async function generateMetadata({ params }: { params: Promise<{ product: string }> }): Promise<Metadata> {
-  const g = GUIDES[(await params).product as keyof typeof GUIDES]; return { title: g ? `${g.title} guides and care` : 'Support' };
+  const g = GUIDES[(await params).product as keyof typeof GUIDES]; return g ? seo(`/support/${(await params).product}`, { title: `${g.title} guides and care` }, PAGE_KEYWORDS['/support']) : { title: 'Support' };
 }
 
 export default async function ProductSupport({ params }: { params: Promise<{ product: string }> }) {
@@ -34,7 +35,7 @@ export default async function ProductSupport({ params }: { params: Promise<{ pro
   const p = await getProduct(slug);
   return (
     <>
-      <Header framed />
+      <Header framed page="support" />
       <main id="main">
         <section className="section pb-10">
           <div className="container-x grid items-center gap-14 lg:grid-cols-2 lg:gap-20">

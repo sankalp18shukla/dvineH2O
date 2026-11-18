@@ -19,7 +19,7 @@ export default async function Products() {
           <thead><tr><th>Product</th><th>SKU</th><th>Sale mode</th><th className="text-right">MRP</th><th className="text-right">Price</th><th>GST</th><th className="text-right">Available</th><th>Status</th></tr></thead>
           <tbody>{list.map(p => (
             <tr key={p.id}>
-              <td><Link href={`/admin/products/${p.id}`} className="link">{p.name}</Link>{!p.priceConfirmed && p.saleMode === 'cart' && <span className="ml-2 badge bg-[#FFF4D6] text-[#7A4B00]">Price unconfirmed</span>}</td>
+              <td><Link href={`/admin/products/${p.id}`} className="link">{p.name}</Link></td>
               <td>{p.sku}</td><td>{p.saleMode === 'cart' ? 'Cart → checkout' : 'Enquiry / quote'}</td>
               <td className="text-right">{p.mrp ? formatINR(p.mrp) : '—'}</td><td className="text-right font-semibold">{p.price ? formatINR(p.price) : p.quoteNote ? 'On quote' : '—'}</td><td>{p.gstRate / 100}%</td>
               <td className="text-right">{p.buildToOrder ? 'Build to order' : available(p)}</td>

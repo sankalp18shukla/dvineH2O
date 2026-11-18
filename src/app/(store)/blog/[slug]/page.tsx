@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { PAGE_KEYWORDS, seo } from '@/lib/seo-keywords';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -20,6 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!p) return { title: 'Blog' };
   const description = p.seoDescription || p.excerpt;
   return {
+    ...seo(`/blog/${p.slug}`, {}, [...(PAGE_KEYWORDS['/blog'] ?? []), p.title]),
     title: p.title, description, alternates: { canonical: `/blog/${p.slug}` },
     openGraph: { type: 'article', title: p.title, description, publishedTime: p.publishedAt?.toISOString(), images: p.coverImage ? [p.coverImage] : undefined },
   };
@@ -39,7 +41,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   };
   return (
     <>
-      <Header framed />
+      <Header framed page="blog" />
       <main id="main">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(ld) }} />
         <article className="container-x pt-10 pb-16 sm:pt-14 sm:pb-24">

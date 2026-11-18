@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Icon } from '@/components/ui/Icon';
+import { Icon } from '@/components/admin/AdminIcon';
 import { OfferTicket } from '@/components/store/OfferTicket';
 import { PromoCards } from '@/components/store/PromoCards';
 import { CardSchema, PRODUCT_PAGES, THEMES, isLive, newId, type ProductKey, type ThemeKey } from '@/lib/site-content';

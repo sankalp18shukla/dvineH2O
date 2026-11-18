@@ -4,7 +4,7 @@ import { requireStaff } from '@/lib/auth';
 import { adminListPosts } from '@/lib/blog.server';
 import { CATEGORIES, POST_PRODUCTS, categoryLabel, type Post } from '@/lib/blog';
 import { PageHead, Panel, Empty, day } from '@/components/admin/ui';
-import { Icon } from '@/components/ui/Icon';
+import { Icon } from '@/components/admin/AdminIcon';
 
 export const metadata = { title: 'Blog' };
 

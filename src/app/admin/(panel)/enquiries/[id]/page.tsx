@@ -4,7 +4,8 @@ import { asc, eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { enquiries, enquiryNotes, reportUploads, staff, orders, products, ENQUIRY_STATUSES, INTERESTS } from '@/lib/db/schema';
 import { requireStaff } from '@/lib/auth';
-import { ENQUIRY_LABEL, INTEREST_LABEL } from '@/lib/enquiries';
+import { INTEREST_LABEL } from '@/lib/enquiries';
+import { formOf } from '@/lib/form-responses';
 import type { ChatMsg } from '@/lib/chatbot';
 import { PageHead, Panel, dt } from '@/components/admin/ui';
 import { AdminForm, AdminError } from '@/components/admin/AdminForm';
@@ -39,7 +40,7 @@ export default async function Enquiry({ params }: { params: Promise<{ id: string
   const wa = e.phone ? `https://wa.me/91${e.phone}?text=${encodeURIComponent(`Hi ${e.name.split(' ')[0]}, this is DVINE H2O about your enquiry ${e.ref}.`)}` : null;
   return (
     <>
-      <PageHead back={{ href: '/admin/enquiries', label: 'Enquiries' }} title={`${e.ref} · ${ENQUIRY_LABEL[e.type]}`} sub={`Received ${dt(e.createdAt)} from ${e.source ?? 'website'}`}
+      <PageHead back={{ href: `/admin/enquiries?type=${e.type}`, label: formOf(e.type).tab }} title={`${formOf(e.type).one} · ${e.ref}`} sub={`Received ${dt(e.createdAt)} from ${e.source ?? 'website'}`}
         actions={<>{e.phone && <a href={`tel:${e.phone}`} className="btn btn-outline btn-sm">Call</a>}{wa && <a href={wa} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">WhatsApp</a>}{e.email && <a href={`mailto:${e.email}?subject=${encodeURIComponent(`Your DVINE H2O enquiry ${e.ref}`)}`} className="btn btn-outline btn-sm">Email</a>}</>} />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         <div className="grid content-start gap-6">

@@ -1,6 +1,6 @@
 'use client';
 import { useId, useState, type ReactNode } from 'react';
-import { Icon } from '@/components/ui/Icon';
+import { Icon } from '@/components/admin/AdminIcon';
 import { THEMES, THEME_KEYS, type ThemeKey } from '@/lib/site-content';
 
 /* Small, consistent controls for the content editor. All are controlled: value + onChange. */

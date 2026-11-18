@@ -17,7 +17,7 @@ export default async function CartPage() {
   const { items, totals } = await loadCart();
   return (
     <>
-      <Header framed />
+      <Header framed page="cart" />
       <main id="main" className="container-x min-h-[60vh] py-12">
         <Lockup as="h1" title="*Your* cart." tone="glacier" size="sm" />
         {items.length === 0 ? (

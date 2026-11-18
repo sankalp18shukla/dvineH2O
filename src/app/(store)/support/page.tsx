@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { seo } from '@/lib/seo-keywords';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Header } from '@/components/store/Header';
@@ -10,12 +11,12 @@ import { Icon } from '@/components/ui/Icon';
 import { SITE, SUPPORT } from '@/lib/content';
 import { Lockup, Squiggle } from '@/components/ui/Brand';
 
-export const metadata: Metadata = { title: 'Support', description: SUPPORT.hero.body, alternates: { canonical: '/support' } };
+export const metadata: Metadata = seo('/support', { title: 'Support', description: SUPPORT.hero.body });
 
 export default function SupportPage() {
   return (
     <>
-      <Header framed />
+      <Header framed page="support" />
       <main id="main">
         <section className="section pb-12" aria-labelledby="s-title">
           <div className="container-x">

@@ -1,12 +1,20 @@
 'use client';
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
-import { Icon } from '@/components/ui/Icon';
+import { Icon } from '@/components/admin/AdminIcon';
 import { saveSiteContent, discardSiteDraft } from '@/app/actions/content';
 import { HERO_SLIDES } from '@/lib/content';
-import { SlideSchema, CardSchema, PRODUCT_PAGES, TEMPLATES, THEMES, isLive, newId, type ProductKey, type SiteContent, type Template } from '@/lib/site-content';
+import { SlideSchema, CardSchema, PRODUCT_PAGES, RIBBON_PAGES, TEMPLATES, THEMES, isLive, newId, ribbonPages, type ProductKey, type SiteContent, type Template } from '@/lib/site-content';
 import { CardsPanel, PartnerPanel, RibbonPanel, Section, SlidesPanel, WaterPanel, type Set } from './panels';
 import { Pill } from './fields';
 import { ProductsPanel } from './ProductsPanel';
+
+/** Short summary of where the ribbon shows, e.g. "homepage", "3 pages", "every page". */
+const ribbonWhere = (r: Parameters<typeof ribbonPages>[0]) => {
+  const ps = ribbonPages(r);
+  if (ps.length === 0) return 'no pages';
+  if (ps.length === RIBBON_PAGES.length) return 'every page';
+  return ps.length === 1 ? (RIBBON_PAGES.find(p => p.key === ps[0])?.label ?? ps[0]).toLowerCase() : `${ps.length} pages`;
+};
 
 type Tab = 'overview' | 'ribbon' | 'slides' | 'cards' | 'products' | 'water' | 'partner';
 const TABS: { key: Tab; label: string; icon: string; sub: string }[] = [
@@ -71,7 +79,7 @@ export function ContentEditor({ live, draft, hasDraft: initialHasDraft, siteImag
     <div className={`grid gap-6 ${preview ? 'xl:grid-cols-[minmax(0,1fr)_minmax(420px,44%)]' : ''}`}>
       <div className="min-w-0">
         {/* toolbar */}
-        <div className="sticky top-0 z-20 -mx-4 mb-6 border-b border-line bg-[#F3F5FA]/90 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:-mx-8 lg:-mt-8 lg:px-8 lg:pt-6">
+        <div className="sticky top-14 z-20 -mx-4 -mt-4 mb-6 border-b border-line bg-[#F6F8FC] px-4 py-3 sm:-mx-6 sm:-mt-6 sm:px-6 lg:-mx-8 lg:-mt-8 lg:px-8 lg:pt-5">
           <div className="flex flex-wrap items-center gap-3">
             <div className="mr-auto min-w-0">
               <h1 className="font-sans text-2xl font-bold tracking-tight">Homepage & promotions</h1>
@@ -115,7 +123,7 @@ function Preview({ path, reloadKey, dirty, onRefresh }: { path: string; reloadKe
   const vw = device === 'desktop' ? 1440 : 390, vh = device === 'desktop' ? 900 : 844;
   const scale = Math.min(1, w / vw);
   return (
-    <aside className="xl:sticky xl:top-4 xl:self-start">
+    <aside className="xl:sticky xl:top-[72px] xl:self-start">
       <div className="overflow-hidden rounded-3xl border border-line bg-white">
         <div className="flex items-center gap-2 border-b border-line px-4 py-2.5">
           <span className="font-sans text-[13px] font-semibold">Preview</span>
@@ -168,7 +176,7 @@ function Overview({ doc, set, go, pick }: { doc: SiteContent; set: Set; go: (t: 
   const promoLast = doc.slides.filter(s => s.position !== 'first' && isLive(s)).length;
   const cards = doc.promo.enabled ? doc.promo.cards.filter(c => isLive(c)).length : 0;
   const blocks: { tab?: Tab; title: string; sub: string; on: boolean; fixed?: boolean }[] = [
-    { tab: 'ribbon', title: 'Announcement ribbon', sub: doc.ribbon.enabled ? `${doc.ribbon.items.length} message${doc.ribbon.items.length === 1 ? '' : 's'} · ${doc.ribbon.scope === 'all' ? 'every page' : doc.ribbon.scope === 'shop' ? 'homepage and product pages' : 'homepage'}` : 'Off', on: doc.ribbon.enabled && isLive(doc.ribbon) },
+    { tab: 'ribbon', title: 'Announcement ribbon', sub: doc.ribbon.enabled ? `${doc.ribbon.items.length} message${doc.ribbon.items.length === 1 ? '' : 's'} · ${ribbonWhere(doc.ribbon)}` : 'Off', on: doc.ribbon.enabled && isLive(doc.ribbon) },
     { tab: 'slides', title: 'Hero slideshow', sub: `${promoFirst ? `${promoFirst} promotion slide${promoFirst > 1 ? 's' : ''}, then ` : ''}${HERO_SLIDES.map(h => h.name).join(', ')}${promoLast ? `, then ${promoLast} more` : ''}`, on: true },
     { tab: 'cards', title: 'Promotion cards', sub: cards ? `${cards} card${cards > 1 ? 's' : ''}${cards === 1 ? ' · wide banner' : ''}` : 'Off', on: cards > 0 },
     { tab: 'water', title: 'Water testing', sub: `${doc.water.pics.length} photo${doc.water.pics.length === 1 ? '' : 's'} in the text`, on: true },

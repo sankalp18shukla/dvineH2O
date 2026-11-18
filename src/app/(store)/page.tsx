@@ -1,3 +1,5 @@
+import type { Metadata } from 'next';
+import { seo } from '@/lib/seo-keywords';
 import { Header } from '@/components/store/Header';
 import { HeroShowcase } from '@/components/store/hero/HeroShowcase';
 import { HOME, HERO_SLIDES } from '@/lib/content';
@@ -15,6 +17,9 @@ import { getContent } from '@/lib/site-content.server';
 import { DEFAULT_CONTENT, isLive, todayIST } from '@/lib/site-content';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+
+/** Home keeps the site title; this adds its search terms and canonical URL (src/lib/seo-keywords.ts). */
+export const metadata: Metadata = seo('/');
 
 /** Collection rows: each card's own copy and facts, and the transparent cutout once it is in public/. */
 const fitItems = (): FitItem[] => HOME.collection.cards.map(c => {

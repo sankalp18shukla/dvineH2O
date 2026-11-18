@@ -19,13 +19,6 @@
 }
 :global(.group):active .go { background: var(--color-glacier); color: var(--color-ink); }
 
-.row { display: grid; grid-template-columns: 1fr auto; gap: 6px 20px; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--color-line); }
-.row > :first-child { grid-column: 1 / -1; }
-@media (min-width: 900px) {
-  .row { grid-template-columns: 190px 1fr auto; gap: 32px; padding: 24px 0; }
-  .row > :first-child { grid-column: auto; }
-}
-
 /* article page */
 .back { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; font-family: var(--font-sans); font-size: 14px; font-weight: 600; color: var(--color-muted); }
 .back:hover { color: var(--color-ink); }

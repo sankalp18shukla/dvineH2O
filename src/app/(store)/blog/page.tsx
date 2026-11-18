@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
+import { seo } from '@/lib/seo-keywords';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Header } from '@/components/store/Header';
 import { Lockup } from '@/components/ui/Brand';
-import { SectionHead } from '@/components/ui/Section';
 import { Icon } from '@/components/ui/Icon';
 import { CATEGORIES, categoryLabel, postDate, readMinutes, type Post } from '@/lib/blog';
 import { getPublishedPosts } from '@/lib/blog.server';
@@ -13,7 +13,7 @@ import css from './blog.module.css';
 export const dynamic = 'force-dynamic';
 
 const LEDE = 'What our products do to water, what the research says, what a price covers and how to drink well every day. Written plainly, with the limits left in.';
-export const metadata: Metadata = { title: 'Blog', description: LEDE, alternates: { canonical: '/blog' } };
+export const metadata: Metadata = seo('/blog', { title: 'Blog', description: LEDE });
 
 function Meta({ p }: { p: Post }) {
   return <p className="font-sans text-[13px] text-muted">{postDate(p.publishedAt)} · {readMinutes(p.body)} min read</p>;
@@ -35,7 +35,8 @@ function Card({ p, i }: { p: Post; i: number }) {
 
 export default async function BlogPage({ searchParams }: { searchParams: Promise<{ topic?: string }> }) {
   const [all, sp] = await Promise.all([getPublishedPosts(), searchParams]);
-  const ours = all.filter(p => !p.externalUrl), elsewhere = all.filter(p => p.externalUrl);
+  // posts that link out to other sites are no longer shown anywhere
+  const ours = all.filter(p => !p.externalUrl);
   const used = CATEGORIES.filter(c => ours.some(p => p.category === c.key));
   const topic = used.find(c => c.key === sp.topic);
   const list = topic ? ours.filter(p => p.category === topic.key) : ours;
@@ -44,7 +45,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
 
   return (
     <>
-      <Header framed />
+      <Header framed page="blog" />
       <main id="main">
         <section className="section pb-10 sm:pb-14" aria-labelledby="blog-title">
           <div className="container-x">
@@ -86,25 +87,6 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
           </div>
         </section>
 
-        {!topic && elsewhere.length > 0 && (
-          <section className="section border-t border-line" aria-labelledby="else-title">
-            <div className="container-x">
-              <SectionHead id="else-title" tone="flash" size="md" title="*Our writing* elsewhere." body="Articles by the DVINE H2O editorial team on other health and wellbeing sites. Each opens on the site that published it." />
-              <ul className="border-t-2 border-ink" data-reveal>
-                {elsewhere.map(p => (
-                  <li key={p.id}>
-                    <a href={p.externalUrl!} target="_blank" rel="noopener noreferrer" className={`${css.row} group`}>
-                      <span className="font-sans text-[12px] font-semibold tracking-[0.14em] text-muted uppercase">{p.source}</span>
-                      <span><span className="block font-sans text-[19px] leading-snug font-bold tracking-[-0.02em] sm:text-[21px]">{p.title}</span>{p.excerpt && <span className="mt-1 block text-[16.5px] leading-snug text-muted">{p.excerpt}</span>}</span>
-                      <span className={css.go} aria-hidden="true"><Icon name="external" className="size-4" /></span>
-                      <span className="sr-only">(opens {p.source} in a new tab)</span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-        )}
       </main>
     </>
   );

@@ -25,7 +25,7 @@ export default async function CheckoutPage() {
   const prefill = { name: addr?.name ?? c?.name ?? '', email: c?.email ?? '', phone: addr?.phone ?? c?.phone ?? '', line1: addr?.line1 ?? '', line2: addr?.line2 ?? '', city: addr?.city ?? c?.city ?? '', state: addr?.state ?? c?.state ?? '', pincode: addr?.pincode ?? c?.pincode ?? '' };
   return (
     <>
-      <Header framed />
+      <Header framed page="checkout" />
       <main id="main" className="container-x py-12 pb-28 lg:pb-12">
         <CheckoutSteps current={1} />
         <div className="flex flex-wrap items-end justify-between gap-4">

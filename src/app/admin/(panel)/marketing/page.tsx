@@ -1,25 +1,19 @@
 import { desc, isNull } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { coupons, referrals } from '@/lib/db/schema';
+import { coupons } from '@/lib/db/schema';
 import { requireStaff } from '@/lib/auth';
-import { getReferralSettings } from '@/lib/referrals';
-import { formatINR } from '@/lib/money';
-import { PageHead, Panel, TableWrap, Kpi, Empty, day } from '@/components/admin/ui';
+import { PageHead, Panel, Empty } from '@/components/admin/ui';
 import { AdminForm, AdminError } from '@/components/admin/AdminForm';
 import { SubmitButton } from '@/components/forms/SubmitButton';
 import { Status } from '@/components/ui/Status';
-import { saveCoupon, saveReferralSettings } from '@/app/actions/admin';
+import { saveCoupon } from '@/app/actions/admin';
 
-export const metadata = { title: 'Coupons & referrals' };
+export const metadata = { title: 'Coupons' };
 const rup = (p: number | null) => (p == null ? '' : (p / 100).toFixed(0));
 
 export default async function Marketing() {
   await requireStaff('marketing');
-  const [list, refs, s] = await Promise.all([
-    db.query.coupons.findMany({ where: isNull(coupons.ownerCustomerId), orderBy: desc(coupons.createdAt) }),
-    db.query.referrals.findMany({ orderBy: desc(referrals.createdAt), limit: 100, with: { referrer: true, order: true } }),
-    getReferralSettings(),
-  ]);
+  const list = await db.query.coupons.findMany({ where: isNull(coupons.ownerCustomerId), orderBy: desc(coupons.createdAt) });
   const sel = 'input min-h-9 text-[13px]';
   const prods = [['hyper', 'Hyper'], ['crystal', 'Crystal']];
   const CouponForm = ({ c }: { c?: typeof list[number] }) => (
@@ -40,21 +34,12 @@ export default async function Marketing() {
   );
   return (
     <>
-      <PageHead title="Coupons & referrals" />
+      <PageHead title="Coupons" sub="Discount codes customers can enter in the cart." />
       <div className="grid gap-6">
         <Panel title="Coupons">
           {list.length === 0 && <Empty>No coupons yet.</Empty>}
           <ul className="grid gap-4">{list.map(c => <li key={c.id} className="rounded-xl border border-line p-3"><p className="mb-2 flex items-center gap-2 font-sans text-sm"><b>{c.code}</b> · used {c.usedCount}{c.usageLimit ? ` / ${c.usageLimit}` : ''} <Status value={c.active ? 'active' : 'void'} label={c.active ? 'Active' : 'Inactive'} /></p><CouponForm c={c} /></li>)}</ul>
           <div className="mt-5 border-t border-line pt-4"><p className="mb-2 font-sans text-sm font-semibold">New coupon</p><CouponForm /></div>
-        </Panel>
-        <Panel title="Referral programme">
-          <AdminForm action={saveReferralSettings} className="grid gap-3 sm:grid-cols-3">
-            <label className="flex items-center gap-2 font-sans text-sm sm:col-span-3"><input type="checkbox" name="enabled" defaultChecked={s.enabled} className="check mt-0" />Referral programme is on</label>
-            {[['friendPercent', 'Friend gets (% off)', s.friendPercent], ['friendMax', 'Friend max discount (₹)', rup(s.friendMax)], ['rewardFlat', 'Referrer reward (₹ coupon)', rup(s.rewardFlat)], ['rewardMinOrder', 'Reward min order (₹)', rup(s.rewardMinOrder)], ['rewardValidDays', 'Reward valid for (days)', s.rewardValidDays]].map(([n, l, v]) => <div key={n as string} className="field"><label className="label text-[12px]" htmlFor={`r-${n}`}>{l}</label><input id={`r-${n}`} name={n as string} defaultValue={v as string} className={sel} inputMode="decimal" /></div>)}
-            <SubmitButton className="btn btn-primary btn-sm self-end justify-self-start">Save settings</SubmitButton>
-          </AdminForm>
-          <div className="mt-6 grid grid-cols-3 gap-3"><Kpi label="Referred orders" value={refs.filter(r => r.status !== 'void').length} /><Kpi label="Friend discounts given" value={formatINR(refs.filter(r => r.status !== 'void').reduce((t, r) => t + r.discount, 0))} /><Kpi label="Rewards issued" value={refs.filter(r => r.rewardCouponCode && r.status !== 'void').length} /></div>
-          {refs.length > 0 && <div className="mt-5"><TableWrap><thead><tr><th>Date</th><th>Referrer</th><th>Code</th><th>Order</th><th className="text-right">Friend saved</th><th>Reward</th><th>Status</th></tr></thead><tbody>{refs.map(r => <tr key={r.id}><td>{day(r.createdAt)}</td><td>{r.referrer.name}</td><td>{r.code}</td><td>{r.order?.number}</td><td className="text-right">{formatINR(r.discount)}</td><td>{r.rewardCouponCode}</td><td><Status value={r.status} /></td></tr>)}</tbody></TableWrap></div>}
         </Panel>
       </div>
     </>

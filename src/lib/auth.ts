@@ -58,43 +58,58 @@ export const staffMfaRequired = () => process.env.NODE_ENV === 'production' || p
 type AmrEntry = { method: string; timestamp: number };
 
 export type StaffSession = typeof staff.$inferSelect & {
-  aal: 'aal1' | 'aal2'; mfaEnrolled: boolean; sessionStartedAt: Date | null; sessionExpired: boolean;
+  aal: 'aal1' | 'aal2'; mfaEnrolled: boolean; sessionStartedAt: Date | null;
+  /** Only without two-step sign-in (local dev): the password sign-in is older than STAFF_SESSION_HOURS. */
+  sessionExpired: boolean;
+  /** Two-step sign-in is required and the last authenticator code is missing or older than STAFF_SESSION_HOURS. */
+  needsCode: boolean;
 };
 
-/** The staff member behind this session, whatever its assurance level. Null for customers / visitors / inactive staff. */
+/**
+ * The staff member behind this session, whatever its assurance level. Null for customers / visitors / inactive staff.
+ * The Auth server check, the staff lookup and the assurance level run side by side (one round trip, not three).
+ */
 export const getStaffSession = cache(async (): Promise<StaffSession | null> => {
-  const user = await getAuthUser();
-  if (!user) return null;
-  let row: typeof staff.$inferSelect | undefined;
-  try { row = await db.query.staff.findFirst({ where: eq(staff.authUserId, user.id) }); } catch { return null; }
-  if (!row || !row.active) return null;
+  const claims = await getClaims();
+  if (!claims) return null;
   const sb = await supabaseServer();
-  const [{ data: aal }, claims] = await Promise.all([sb.auth.mfa.getAuthenticatorAssuranceLevel(), getClaims()]);
-  const amr = ((claims as { amr?: AmrEntry[] } | null)?.amr ?? []).filter(a => typeof a?.timestamp === 'number');
+  const [user, row, aalRes] = await Promise.all([
+    getAuthUser(),
+    db.query.staff.findFirst({ where: eq(staff.authUserId, claims.sub) }).catch(() => undefined),
+    sb.auth.mfa.getAuthenticatorAssuranceLevel(),
+  ]);
+  if (!user || user.id !== claims.sub || !row || !row.active) return null;
+  const aal = aalRes.data;
+  const amr = ((claims as { amr?: AmrEntry[] }).amr ?? []).filter(a => typeof a?.timestamp === 'number');
   const started = amr.length ? new Date(Math.min(...amr.map(a => a.timestamp)) * 1000) : null;
+  const codeAt = Math.max(0, ...amr.filter(a => a.method === 'totp').map(a => a.timestamp)) * 1000;
+  const limit = SESSION_HOURS() * 3_600_000;
+  const level = aal?.currentLevel === 'aal2' ? 'aal2' : 'aal1';
+  const mfa = staffMfaRequired();
   return {
     ...row,
-    aal: aal?.currentLevel === 'aal2' ? 'aal2' : 'aal1',
+    aal: level,
     mfaEnrolled: aal?.nextLevel === 'aal2',
     sessionStartedAt: started,
-    sessionExpired: !!started && Date.now() - started.getTime() > SESSION_HOURS() * 3_600_000,
+    // With two-step sign-in, a long session only asks for a fresh code; the password is needed again only after signing out.
+    sessionExpired: !mfa && !!started && Date.now() - started.getTime() > limit,
+    needsCode: mfa && (level !== 'aal2' || !codeAt || Date.now() - codeAt > limit),
   };
 });
 
-/** Fully signed-in staff (second factor done, session fresh), or null. */
+/** Fully signed-in staff (second factor done and recent), or null. */
 export const getStaff = cache(async () => {
   const s = await getStaffSession();
-  if (!s || s.sessionExpired) return null;
-  if (staffMfaRequired() && s.aal !== 'aal2') return null;
+  if (!s || s.sessionExpired || s.needsCode) return null;
   return s;
 });
 
-/** Use in every admin page and action. Sends people to sign in, to the second step, or back to the overview. */
+/** Use in every admin page and action. Sends people to sign in, to the code step, or back to the overview. */
 export async function requireStaff(p: Permission = 'overview') {
   const s = await getStaffSession();
   if (!s) redirect('/admin/login');
   if (s.sessionExpired) redirect('/auth/signout?next=/admin/login%3Fexpired%3D1');
-  if (staffMfaRequired() && s.aal !== 'aal2') redirect('/admin/login/mfa');
+  if (s.needsCode) redirect('/admin/login/mfa');
   if (!can(s.role, p)) redirect('/admin?denied=1');
   return s;
 }

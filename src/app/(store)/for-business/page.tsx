@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { seo } from '@/lib/seo-keywords';
 import Image from 'next/image';
 import { Header } from '@/components/store/Header';
 import { SmoothScroll } from '@/components/store/SmoothScroll';
@@ -27,7 +28,7 @@ import css from '@/components/store/Bands.module.css';
 /** Rendered per request: reads the catalog, which needs a live database. */
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = { title: 'Titan 111 for business', description: BUSINESS.hero.body, alternates: { canonical: '/for-business' } };
+export const metadata: Metadata = seo('/for-business', { title: 'Titan 111 for business', description: BUSINESS.hero.body });
 
 /** One detail on the Titan diagram, as Crystal's key features: an animated icon chip, title and line. `n` is its turn to light up. */
 function Callout({ c, n, side }: { c: (typeof BUSINESS.titan.features)[number]; n: number; side: 'l' | 'r' }) {
@@ -49,7 +50,7 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
   const years = titan && titan.warrantyMonths >= 12 ? `${titan.warrantyMonths / 12}-year` : '5-year';
   return (
     <>
-      <Header framed shop ribbon={promo.ribbon} />
+      <Header framed shop page="business" ribbon={promo.ribbon} />
       <SmoothScroll />
       <main id="main">
         {titan && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(productJsonLd(titan, '/for-business')) }} />}

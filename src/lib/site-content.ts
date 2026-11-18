@@ -52,10 +52,35 @@ export const RibbonSchema = z.object({
   speed: z.number().min(8).max(120).catch(36).default(36),
   separator: z.enum(['drop', 'star', 'dot', 'spark']).catch('drop').default('drop'),
   href: s(300),
-  /** home: the homepage; shop: the homepage and the product pages; all: every page */
+  /** Older setting, used only while `pages` is unset. home: the homepage; shop: + product pages; all: every page */
   scope: z.enum(['home', 'shop', 'all']).catch('home').default('home'),
+  /** The pages the ribbon shows on (keys of RIBBON_PAGES). Unset = follow `scope`. */
+  pages: z.array(z.string().max(40)).max(30).optional().catch(undefined),
   schedule: Schedule,
 });
+
+/** Pages the announcement ribbon can be switched on for, one tick-box each in Admin › Homepage & promotions. */
+export const RIBBON_PAGES = [
+  { key: 'home', label: 'Homepage' },
+  { key: 'hyper', label: 'Hyper (hydrogen bottles)' },
+  { key: 'crystal', label: 'Crystal (home water systems)' },
+  { key: 'business', label: 'Titan / For business' },
+  { key: 'water-testing', label: 'Water testing' },
+  { key: 'book-demo', label: 'Book a demo' },
+  { key: 'partner', label: 'Become a partner' },
+  { key: 'support', label: 'Support' },
+  { key: 'blog', label: 'Blog' },
+  { key: 'cart', label: 'Cart' },
+  { key: 'other', label: 'Other pages (search, policies, account, tracking)' },
+] as const;
+export type RibbonPage = typeof RIBBON_PAGES[number]['key'] | 'checkout';
+
+/** The pages a ribbon shows on. Checkout never shows one, so nothing distracts from paying. */
+export function ribbonPages(r: { pages?: string[]; scope: 'home' | 'shop' | 'all' }): string[] {
+  if (r.pages) return r.pages;
+  if (r.scope === 'all') return RIBBON_PAGES.map(p => p.key);
+  return r.scope === 'shop' ? ['home', 'hyper', 'crystal', 'business'] : ['home'];
+}
 
 const n = (min: number, max: number, d: number) => z.number().min(min).max(max).catch(d).default(d);
 /**

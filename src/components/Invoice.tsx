@@ -30,7 +30,6 @@ export function InvoiceDoc({ o, company, kind = 'invoice', creditNumber }: { o: 
           {ref && <p><span className="text-muted">Against invoice</span> {ref.number}</p>}
         </div>
       </header>
-      {!company.confirmed && <p className="mt-4 rounded bg-[#FFF4D6] px-3 py-2 text-[#7A4B00] print:hidden">Seller details are placeholders. Set the legal name, address and GSTIN in Admin › Settings before issuing real invoices.</p>}
       <section className="mt-6 grid gap-6 sm:grid-cols-3">
         <div><p className="text-[11px] font-semibold uppercase tracking-wider text-muted">Bill to</p><p className="mt-1 font-semibold">{b.name}</p><p>{b.line1}{b.line2 ? `, ${b.line2}` : ''}<br />{b.city}, {b.state} {b.pincode}</p>{inv.buyerGstin && <p>GSTIN {inv.buyerGstin}</p>}</div>
         <div><p className="text-[11px] font-semibold uppercase tracking-wider text-muted">Ship to</p><p className="mt-1 font-semibold">{s.name}</p><p>{s.line1}{s.line2 ? `, ${s.line2}` : ''}<br />{s.city}, {s.state} {s.pincode}</p></div>

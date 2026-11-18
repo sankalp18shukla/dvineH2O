@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { DecorVisual } from '@/components/store/DecorArt';
-import { Icon } from '@/components/ui/Icon';
+import { Icon } from '@/components/admin/AdminIcon';
 import { DECOR_PACKS, DecorSchema, newId, type DecorItem } from '@/lib/site-content';
 import { uploadMedia } from './MediaField';
 import { IconBtn, Range, Segmented, Toggle } from './fields';

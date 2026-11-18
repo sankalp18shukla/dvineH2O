@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { seo } from '@/lib/seo-keywords';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Header } from '@/components/store/Header';
@@ -32,7 +33,7 @@ import css from './hyper.module.css';
 /** Rendered per request: reads the catalog, which needs a live database, and the dated promotions (?preview=1 shows staff the draft). */
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = { title: 'Hyper hydrogen water bottle', description: HYPER.hero.body, alternates: { canonical: '/hydrogen-bottles' } };
+export const metadata: Metadata = seo('/hydrogen-bottles', { title: 'Hyper hydrogen water bottle', description: HYPER.hero.body });
 
 export default async function HyperPage({ searchParams }: { searchParams: Promise<{ preview?: string }> }) {
   const [p, promo, blog] = await Promise.all([getProduct('hyper'), searchParams.then(q => getProductPromos('hyper', q.preview)), getProductReads('hyper')]);
@@ -42,7 +43,7 @@ export default async function HyperPage({ searchParams }: { searchParams: Promis
   const guide = p.manualUrl ?? '/support/hyper';
   return (
     <>
-      <Header framed shop ribbon={promo.ribbon} />
+      <Header framed shop page="hyper" ribbon={promo.ribbon} />
       <SmoothScroll />
       <main id="main">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(productJsonLd(p, '/hydrogen-bottles')) }} />

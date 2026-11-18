@@ -5,7 +5,7 @@ import { getSetting } from './settings';
 import { randomToken } from './numbering';
 
 export type ReferralSettings = { enabled: boolean; friendPercent: number; friendMax: number; rewardFlat: number; rewardMinOrder: number; rewardValidDays: number };
-export const DEFAULT_REFERRAL: ReferralSettings = { enabled: true, friendPercent: 5, friendMax: 300000, rewardFlat: 100000, rewardMinOrder: 0, rewardValidDays: 180 };
+export const DEFAULT_REFERRAL: ReferralSettings = { enabled: false, friendPercent: 5, friendMax: 300000, rewardFlat: 100000, rewardMinOrder: 0, rewardValidDays: 180 };
 export const getReferralSettings = (q?: DB | Tx) => getSetting<ReferralSettings>('referral', DEFAULT_REFERRAL, q);
 
 /** Each registered customer gets one code, e.g. ANITA-7K2Q. */

@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element -- the hero photo may be any hosted URL set in the admin */
 import type { Metadata } from 'next';
+import { seo } from '@/lib/seo-keywords';
 import { Header } from '@/components/store/Header';
 import { SmoothScroll } from '@/components/store/SmoothScroll';
 import { ActionBar } from '@/components/store/ActionBar';
@@ -20,7 +21,7 @@ import { DEFAULT_PARTNER } from '@/lib/site-content';
 import { SITE } from '@/lib/content';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'Become a partner', description: plain(DEFAULT_PARTNER.body), alternates: { canonical: '/become-a-partner' } };
+export const metadata: Metadata = seo('/become-a-partner', { title: 'Become a partner', description: plain(DEFAULT_PARTNER.body) });
 
 const ICONS = ['box', 'users', 'wrench', 'gift', 'star', 'chat', 'building', 'drop'];
 
@@ -32,7 +33,7 @@ export default async function PartnerPage({ searchParams }: { searchParams: Prom
   const types = p.partnerTypes.map(t => t.text).filter(Boolean);
   return (
     <>
-      <Header framed />
+      <Header framed page="partner" />
       <SmoothScroll />
       <main id="main">
         {/* 01 · Hero: copy and actions left, a hand of three photos right (FanHero); the front one is the admin's photo or film */}

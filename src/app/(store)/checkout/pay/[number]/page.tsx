@@ -23,7 +23,7 @@ export default async function PayPage({ params, searchParams }: { params: Promis
   const mins = o.reservationExpiresAt ? Math.max(0, Math.round((o.reservationExpiresAt.getTime() - Date.now()) / 60000)) : null;
   return (
     <>
-      <Header framed />
+      <Header framed page="checkout" />
       <main id="main" className="container-x py-12">
         <CheckoutSteps current={3} />
         <Lockup as="h1" title="*Complete* your payment." tone="glacier" size="sm" />

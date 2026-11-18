@@ -35,7 +35,6 @@ export default async function EditProduct({ params }: { params: Promise<{ id: st
               <F name="price" label="Selling price (₹, incl. GST)" def={rup(p.price)} />
               <F name="hsn" label="HSN code" def={p.hsn} />
               <F name="quoteNote" label="Quote note (enquiry products)" def={p.quoteNote} />
-              <div className="sm:col-span-2"><C name="priceConfirmed" label="Price confirmed by DVINE (removes the warning)" def={p.priceConfirmed} /></div>
             </div>
           </Panel>
           <Panel title="Operations">
