@@ -57,6 +57,8 @@ const nextConfig: NextConfig = {
         ],
       },
       { source: '/api/:path*', headers: [{ key: 'Cache-Control', value: 'no-store' }] },
+      // cached for a year without revalidating: a changed model MUST get a new file name (name.<hash>.glb),
+      // or browsers keep showing the old one
       { source: '/models/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }] },
     ];
   },

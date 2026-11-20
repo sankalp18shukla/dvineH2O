@@ -57,7 +57,7 @@ export const POLICY_LINKS = [
 /* ───────────────────────── Hero slides (home) ───────────────────────── */
 export const HERO_SLIDES = [
   {
-    key: 'hyper', model: '/models/hyper-bottle.glb', accent: '#FF2E9C',
+    key: 'hyper', model: '/models/hyper.210b86fc.glb', accent: '#FF2E9C',
     name: 'Hyper', desc: ['Hydrogen', 'Water', 'Bottle'],
     lede: 'Hyper uses PEM electrolysis to generate dissolved molecular hydrogen in suitable drinking water. See the bottle, explore the controls and find out how to use it.',
     ctas: [{ href: '/hydrogen-bottles', label: 'Shop Hyper', primary: true }, { href: '/hydrogen-bottles#how-it-works', label: 'See how it works' }],
@@ -68,7 +68,7 @@ export const HERO_SLIDES = [
     ],
   },
   {
-    key: 'crystal', model: '/models/crystal-countertop.glb', accent: '#25FFE8',
+    key: 'crystal', model: '/models/crystal-countertop.04c94c60.glb', accent: '#25FFE8',
     name: 'Crystal', desc: ['Home', 'Water', 'System'],
     lede: 'A home water system with five platinum-coated titanium plates, PureCore multi-stage filtration and four water modes.',
     ctas: [{ href: '/home-water-systems', label: 'Shop Crystal', primary: true }, { href: '/book-demo?product=crystal', label: 'Book a Demo' }],
@@ -79,7 +79,7 @@ export const HERO_SLIDES = [
     ],
   },
   {
-    key: 'titan', model: '/models/titan-floor.glb', accent: '#F0FF00',
+    key: 'titan', model: '/models/titan.f0268d31.glb', accent: '#F0FF00',
     name: 'Titan', desc: ['Semi-commercial', 'Water', 'System'],
     lede: 'TitanForce 111 is a floor-standing system with a SmartFlow multi-mode display, designed for semi-commercial applications with greater water demand.',
     ctas: [{ href: '/for-business#enquiry', label: 'Request a Quote', primary: true }, { href: '/for-business', label: 'Explore Titan' }],

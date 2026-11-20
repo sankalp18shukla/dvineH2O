@@ -69,9 +69,9 @@ export default function SupportPage() {
               <Lockup id="m-title" title={SUPPORT.manuals.title} tone="blue" size="md" /><p className="lede mt-9">{SUPPORT.manuals.body}</p>
               <div className="mt-9 flex flex-wrap gap-3"><a href={DOCS.crystalManual.href} target="_blank" rel="noopener" className="btn btn-primary"><Icon name="doc" className="size-4" /> Crystal Manual</a><a href={DOCS.hyperManual.href} target="_blank" rel="noopener" className="btn btn-primary"><Icon name="doc" className="size-4" /> Hyper Guide</a><Link href="/policies/warranty" className="btn btn-outline">Read Warranty</Link><a href="#contact" className="btn btn-outline">Request Service</a></div>
             </div>
-            <div className="relative" data-reveal>
+            <div className="relative mx-auto w-full max-w-[420px]" data-reveal>
               <Squiggle className="pointer-events-none absolute -top-16 -left-14 z-[3] hidden w-52 text-voltage lg:block" />
-              <div className="pin-frame relative aspect-[4/3]" style={{ ['--pin' as string]: 'var(--color-deep-current)' }}><div className="absolute inset-0 overflow-hidden"><Image src="/images/crystal-inside.webp" alt="Inside a DVINE system: filter cartridges and ionisation chamber" fill sizes="(min-width:1024px) 50vw, 100vw" className="object-cover" /></div></div>
+              <div className="pin-frame relative aspect-[2/3]" style={{ ['--pin' as string]: 'var(--color-deep-current)' }}><div className="absolute inset-0 overflow-hidden"><Image src="/images/crystal/inside-open.webp" alt="Crystal with its front panel open: post carbon, nano and sediment filter cartridges" fill sizes="(min-width:1024px) 420px, 100vw" className="object-cover" /></div></div>
             </div>
           </div>
         </section>
