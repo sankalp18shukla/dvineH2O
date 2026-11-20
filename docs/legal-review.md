@@ -15,8 +15,8 @@ The text lives in `POLICIES` in `src/lib/content.ts`. Each page is served at `/p
 | Privacy policy | `/policies/privacy` | What is collected, payment data handling, sharing with delivery/payment/communication partners, contact for data requests (`care@dvineh2o.com`), compliance with India's DPDP Act |
 | Terms of use and sale | `/policies/terms` | When an order is confirmed, GST wording, Titan sold on quotation, product-use and liability wording |
 | Shipping and installation | `/policies/shipping-and-installation` | Delivery promise and timelines, installation scheduling, what the customer must have ready |
-| Returns and cancellations | `/policies/returns` | Cancellation window (until packed), return window, refund method and the 5–7 working day timeline |
-| Warranty | `/policies/warranty` | Five-year DVINE Assured Care for Crystal/Titan, Hyper's warranty term (seeded as 12 months, not yet confirmed), what is not covered |
+| Returns, refunds and replacement | `/policies/returns` | **Now DVINE's own text** (public/docs/policies/*.pdf, per product). Confirm: Crystal cancel-before-dispatch and Hyper 24-hour cancel vs. the account's "cancel until packed" button; Crystal's 48-hour return window vs. the store-wide 7-day setting |
+| Warranty | `/policies/warranty` | **Now DVINE's own text** for Crystal (1 year comprehensive; chamber 4 years or 1,000 litres; service across Odisha). Still to confirm: Hyper's warranty term (seeded 12 months), Titan's terms, and whether "1,000 litres" is intended |
 
 ## Also check with them
 

@@ -69,7 +69,7 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
               <Cta href="#enquiry" tone="volt">Request a Quote</Cta>
               <Cta href="/book-demo?product=titan" kind="glass">Book a Demo</Cta>
             </div>
-            <ul className="grid gap-2 border-t border-line pt-5 font-sans text-[14px] text-muted sm:grid-cols-3 sm:gap-4">
+            <ul className="grid grid-cols-1 gap-2 border-t border-line pt-5 font-sans text-[14px] text-muted sm:grid-cols-3 sm:gap-4">
               <li className="flex items-center gap-2"><Icon name="shield" className="size-4 shrink-0 text-deep-current" /> {years} warranty</li>
               <li className="flex items-center gap-2"><Icon name="wrench" className="size-4 shrink-0 text-deep-current" /> Installed by DVINE</li>
               <li className="flex items-center gap-2"><Icon name="doc" className="size-4 shrink-0 text-deep-current" /> GST invoice</li>
@@ -85,15 +85,15 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
           <WaveBand tone="glacier" interactive />
           <div className="container-x relative">
             <SectionHead id="t-title" tone="blue" title="*Meet the eleven-plate* TitanForce 111." align="center" body={<span className="text-ink/75">{BUSINESS.titan.body}</span>} />
-            <LightUp armClass={css.armed} litClass={css.lit} className="grid items-center gap-12 lg:grid-cols-[1fr_minmax(260px,400px)_1fr] lg:gap-[clamp(64px,7vw,128px)]">
-              <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[0]} n={0} side="l" /><Callout c={f[2]} n={2} side="l" /></div>
+            <LightUp armClass={css.armed} litClass={css.lit} className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1fr_minmax(260px,400px)_1fr] lg:gap-[clamp(64px,7vw,128px)]">
+              <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[0]} n={0} side="l" /><Callout c={f[2]} n={2} side="l" /></div>
               <div className="relative order-first mx-auto aspect-[3/5] w-full max-w-[360px] lg:order-none" data-speed="-.4">
                 <span className={`${css.ring} absolute inset-x-[2%] top-[22%] aspect-square rounded-full`} aria-hidden="true" />
                 <span className={`${css.disc} absolute z-[1] inset-x-[2%] top-[22%] aspect-square rounded-full shadow-[inset_0_-30px_60px_-30px_rgb(4_22_74/.18)]`} aria-hidden="true" data-tuck-disc />
                 <TuckedSquiggle className="top-[20%] -right-12 w-36 text-deep-current" />
                 <Image src="/images/titan_product.png" alt="TitanForce 111, front view" fill sizes="360px" data-tuck-product className="z-[3] object-contain object-bottom drop-shadow-[0_30px_30px_rgb(4_22_74/.3)]" />
               </div>
-              <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[1]} n={1} side="r" /><Callout c={f[3]} n={3} side="r" /></div>
+              <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[1]} n={1} side="r" /><Callout c={f[3]} n={3} side="r" /></div>
             </LightUp>
             <div className="mt-16 flex flex-wrap justify-center gap-3" data-rise>
               <Cta href="#specifications" kind="ink">See Specifications</Cta>
@@ -106,12 +106,12 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
         <section className="section overflow-hidden" aria-labelledby="s-title">
           <div className="container-x">
             <SectionHead id="s-title" tone="volt" title={BUSINESS.settings.title} />
-            <div className="grid gap-6 md:grid-cols-3 lg:gap-8">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8">
               {BUSINESS.settings.items.map((c, i) => (
                 <figure key={c.title} className={`${css.card} relative ${i === 1 ? 'md:mt-24' : i === 2 ? 'md:mt-10' : ''}`} data-speed={['.25', '-.2', '.1'][i]}>
                   <div className="pin-frame relative aspect-[3/4]" style={{ ['--pin' as string]: 'var(--color-voltage)' }}>
                     <div className="group absolute inset-0 overflow-hidden">
-                      <Image src={c.image} alt={c.alt} fill sizes="(min-width:768px) 33vw, 100vw" className="object-cover transition duration-[1.2s] ease-out group-hover:scale-105" style={"pos" in c ? { objectPosition: c.pos } : undefined} />
+                      <Image src={c.image} alt={c.alt} fill sizes="(min-width:768px) 33vw, 100vw" className="object-cover transition duration-[1.2s] ease-out group-hover:scale-105" />
                     </div>
                   </div>
                   <figcaption className="relative z-[3] -mt-7 ml-5">
@@ -125,15 +125,15 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
           </div>
         </section>
 
-        {/* 04 · Installation, on the Glacier wave band: the controls photo stays beside four steps that draw down
+        {/* 04 · Installation, on the Glacier wave band: a photo of Titan in use stays beside four steps that draw down
             with the scroll, as Hyper's how it works */}
         <section id="setup" className={`on-glacier relative overflow-clip text-ink ${css.bandTop} ${css.glacierCopy}`} aria-labelledby="setup-title">
           <WaveBand tone="glacier" interactive knot />
-          <div className="container-x relative grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-20">
+          <div className="container-x relative grid grid-cols-1 gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-20">
             <div className="relative lg:sticky lg:top-32 lg:self-start">
               <FrameTuckSquiggle className="-top-14 -right-10 z-[3] hidden w-44 text-deep-current lg:block" />
               <div className="pin-frame relative aspect-[4/5]" style={{ ['--pin' as string]: 'var(--color-flash)' }}>
-                <div className="absolute inset-0 overflow-hidden"><Image src="/images/titan-display.webp" alt="The SmartFlow multi-mode display on TitanForce 111" fill sizes="(min-width:1024px) 45vw, 100vw" className="scale-[1.14] object-cover" data-speed=".3" /></div>
+                <div className="absolute inset-0 overflow-hidden"><Image src="/images/titan/setup.webp" alt="Choosing a water mode on the TitanForce 111 display" fill sizes="(min-width:1024px) 45vw, 100vw" className="scale-[1.14] object-cover" data-speed=".3" /></div>
               </div>
             </div>
             <div>
@@ -160,7 +160,7 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
         <section id="enquiry" className={`on-dark relative overflow-clip text-white ${css.overlap} ${css.bandUnder}`} aria-labelledby="enq-title">
           <WaveBand interactive knot />
           <span className={css.scrim} aria-hidden="true" />
-          <div className="container-x relative grid gap-14 lg:grid-cols-[1fr_1.4fr] lg:gap-20">
+          <div className="container-x relative grid grid-cols-1 gap-14 lg:grid-cols-[1fr_1.4fr] lg:gap-20">
             <div className="lg:sticky lg:top-32 lg:self-start">
               <Lockup id="enq-title" title={BUSINESS.enquiry.title} tone="volt" size="md" />
               <p className="lede mt-9" data-words><Words text={BUSINESS.enquiry.body} /></p>
@@ -194,14 +194,14 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
         {/* 07 · Bulk and gifting, on a Glacier wave band with its own knot: the copy and photo left, the form right */}
         <section id="bulk" className={`on-glacier relative overflow-clip text-ink ${css.bandPad} ${css.glacierCopy}`} aria-labelledby="bulk-title">
           <WaveBand tone="glacier" interactive knot />
-          <div className="container-x relative grid items-start gap-14 lg:grid-cols-[1fr_1.3fr] lg:gap-16">
+          <div className="container-x relative grid grid-cols-1 items-start gap-14 lg:grid-cols-[1fr_1.3fr] lg:gap-16">
             <div>
               <Lockup id="bulk-title" title={BUSINESS.bulk.title} tone="flash" size="md" />
               <p className="lede mt-9" data-words><Words text={BUSINESS.bulk.body} /></p>
               <div className="relative mt-12">
                 <FrameTuckSquiggle className="-top-14 -right-9 z-[3] hidden w-40 text-deep-current lg:block" />
                 <div className="pin-frame relative aspect-[16/11]" style={{ ['--pin' as string]: 'var(--color-flash)' }}>
-                  <div className="absolute inset-0 overflow-hidden"><Image src="/images/collection.webp" alt="Crystal, Titan and Hyper together" fill sizes="(min-width:1024px) 40vw, 100vw" className="scale-[1.14] object-cover" data-speed=".3" /></div>
+                  <div className="absolute inset-0 overflow-hidden"><Image src="/images/titan/pour.webp" alt="TitanForce 111 filling a glass" fill sizes="(min-width:1024px) 40vw, 100vw" className="scale-[1.14] object-cover" data-speed=".3" /></div>
                 </div>
               </div>
             </div>
@@ -218,7 +218,7 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
 
         {/* 08 · Dealers and distributors: pointed to the partner page, which takes the enquiry */}
         <section id="distributors" className="section" aria-labelledby="dist-title">
-          <div className="container-x grid items-end gap-10 lg:grid-cols-[1fr_auto]">
+          <div className="container-x grid grid-cols-1 items-end gap-10 lg:grid-cols-[1fr_auto]">
             <div>
               <Lockup id="dist-title" title="*Represent us in* your city." tone="glacier" size="md" />
               <p className="lede mt-9 max-w-2xl" data-words><Words text="Interested in representing DVINE H2O in your city or region? Tell us about your business and territory on the partner page." /></p>

@@ -27,22 +27,18 @@
 .swatch:focus-visible { outline: 2px solid var(--color-deep-current); outline-offset: 4px; border-radius: 50%; }
 @keyframes ring { 0% { opacity: .8; scale: 1; } 100% { opacity: 0; scale: 1.55; } }
 
-/* ── paint ── */
-/* every layer shares the metal map as its mask, sized and placed as the cutout's object-fit: contain */
-.paint { position: absolute; inset: 0; pointer-events: none; isolation: isolate; opacity: 1; transition: opacity .5s ease;
-  -webkit-mask: var(--shell) var(--pos) / contain no-repeat; mask: var(--shell) var(--pos) / contain no-repeat; }
-.paint[data-on="0"] { opacity: 0; }
-.coat, .shade, .gloss, .sheen { position: absolute; inset: 0; }
-.coat { background: var(--from); }
-.next { background: var(--to); }
-/* coat × the photo's own shading: grain, drops and curvature come through in the new colour */
-.shade { background: var(--shell) var(--pos) / contain no-repeat; mix-blend-mode: multiply; }
-/* the brightest of the shading screened back on, so dark finishes keep their shine */
-.gloss { background: var(--shell) var(--pos) / contain no-repeat; mix-blend-mode: screen; filter: contrast(2.6) brightness(.6); opacity: var(--gloss, 0); }
-/* a soft band of light riding the wave front */
-.sheen { background: linear-gradient(90deg, rgb(255 255 255 / .1), rgb(255 255 255 / .7), rgb(255 255 255 / .1)); mix-blend-mode: soft-light; }
+/* ── layers ── */
+/* one real photo per finish in the same box: the shown one at the bottom, the incoming one over it, clipped by the
+   wave front (BottleFinish.tsx); the rest wait hidden but loaded, so a pick never flashes */
+.layers { position: absolute; inset: 0; display: block; isolation: isolate; }
+.layer { position: absolute; inset: 0; display: block; }
+.layer[data-state="off"] { visibility: hidden; }
+.layer[data-state="next"] { z-index: 1; }
+/* a soft band of light riding the wave front, masked to the new finish's silhouette */
+.sheen { position: absolute; inset: 0; z-index: 2; pointer-events: none; mix-blend-mode: soft-light;
+  background: linear-gradient(90deg, rgb(255 255 255 / .15), rgb(255 255 255 / .85), rgb(255 255 255 / .15));
+  -webkit-mask: var(--mask) var(--pos) / contain no-repeat; mask: var(--mask) var(--pos) / contain no-repeat; }
 
 @media (prefers-reduced-motion: reduce) {
   .name, .swatch:hover::after { animation: none; }
-  .paint { transition: none; }
 }

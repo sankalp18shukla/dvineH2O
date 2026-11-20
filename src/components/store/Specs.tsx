@@ -16,7 +16,7 @@ export function Specs({ p, initial, box = true }: { p: Product; initial?: number
   const head = initial ? all.slice(0, initial) : all;
   const rest = initial ? all.slice(initial) : [];
   return (
-    <div className={`grid gap-10 ${box && p.boxContents?.length ? 'lg:grid-cols-[1.4fr_1fr]' : ''}`}>
+    <div className={`grid grid-cols-1 gap-10 ${box && p.boxContents?.length ? 'lg:grid-cols-[1.4fr_1fr]' : ''}`}>
       <div>
         <dl className="divide-y divide-line border-t-2 border-ink"><Rows specs={head} /></dl>
         {rest.length > 0 && (

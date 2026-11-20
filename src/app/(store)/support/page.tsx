@@ -8,7 +8,7 @@ import { ActionBar } from '@/components/store/ActionBar';
 import { SectionHead } from '@/components/ui/Section';
 import { Faq } from '@/components/ui/Faq';
 import { Icon } from '@/components/ui/Icon';
-import { SITE, SUPPORT } from '@/lib/content';
+import { DOCS, SITE, SUPPORT } from '@/lib/content';
 import { Lockup, Squiggle } from '@/components/ui/Brand';
 
 export const metadata: Metadata = seo('/support', { title: 'Support', description: SUPPORT.hero.body });
@@ -35,7 +35,7 @@ export default function SupportPage() {
         <section id="products" className="section" aria-labelledby="p-title">
           <div className="container-x">
             <SectionHead id="p-title" tone="flash" title={SUPPORT.products.title} body={SUPPORT.products.body} />
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               {SUPPORT.products.items.map((p, i) => (
                 <Link key={p.slug} href={`/support/${p.slug}`} className="group relative flex aspect-[4/5] flex-col items-start justify-end overflow-hidden bg-stage p-6 text-white sm:aspect-[3/4]" data-reveal style={{ transitionDelay: `${i * 90}ms` }}>
                   <Image src={p.image} alt="" fill sizes="(min-width:768px) 33vw, 100vw" className="object-cover transition duration-700 group-hover:scale-105" />
@@ -54,7 +54,7 @@ export default function SupportPage() {
             <div className="pin-frame relative" style={{ ['--pin' as string]: 'var(--color-glacier)' }} data-reveal>
               <div className="surface-blue relative overflow-hidden px-6 py-14 sm:px-14 sm:py-16">
                 <Squiggle className="pointer-events-none absolute -right-16 -bottom-24 hidden w-64 text-voltage opacity-90 md:block" />
-                <div className="relative grid items-center gap-10 lg:grid-cols-[1fr_auto]">
+                <div className="relative grid grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_auto]">
                   <div className="max-w-2xl"><Lockup id="o-title" title={SUPPORT.order.title} tone="glacier" size="md" /><p className="mt-9 text-[19px] leading-relaxed text-white/85 sm:text-xl">{SUPPORT.order.body}</p></div>
                   <div className="flex flex-wrap gap-3 lg:flex-col lg:items-stretch"><Link href="/track" className="btn btn-red">Track My Order</Link><a href="#contact" className="btn border border-white/40 text-white hover:bg-white hover:text-deep-current">Ask About Delivery</a></div>
                 </div>
@@ -64,10 +64,10 @@ export default function SupportPage() {
         </section>
 
         <section id="manuals" className="surface-glacier section" aria-labelledby="m-title">
-          <div className="container-x grid items-center gap-14 lg:grid-cols-2 lg:gap-20">
+          <div className="container-x grid grid-cols-1 items-center gap-14 lg:grid-cols-2 lg:gap-20">
             <div data-reveal>
               <Lockup id="m-title" title={SUPPORT.manuals.title} tone="blue" size="md" /><p className="lede mt-9">{SUPPORT.manuals.body}</p>
-              <div className="mt-9 flex flex-wrap gap-3"><Link href="/support/crystal" className="btn btn-primary">Download Manual</Link><Link href="/policies/warranty" className="btn btn-outline">Read Warranty</Link><a href="#contact" className="btn btn-outline">Request Service</a></div>
+              <div className="mt-9 flex flex-wrap gap-3"><a href={DOCS.crystalManual.href} target="_blank" rel="noopener" className="btn btn-primary"><Icon name="doc" className="size-4" /> Crystal Manual</a><a href={DOCS.hyperManual.href} target="_blank" rel="noopener" className="btn btn-primary"><Icon name="doc" className="size-4" /> Hyper Guide</a><Link href="/policies/warranty" className="btn btn-outline">Read Warranty</Link><a href="#contact" className="btn btn-outline">Request Service</a></div>
             </div>
             <div className="relative" data-reveal>
               <Squiggle className="pointer-events-none absolute -top-16 -left-14 z-[3] hidden w-52 text-voltage lg:block" />
@@ -77,7 +77,7 @@ export default function SupportPage() {
         </section>
 
         <section id="contact" className="section" aria-labelledby="c-title">
-          <div className="container-x grid gap-14 lg:grid-cols-[1fr_1.4fr]">
+          <div className="container-x grid grid-cols-1 gap-14 lg:grid-cols-[1fr_1.4fr]">
             <div>
               <Lockup id="c-title" title={SUPPORT.contact.title} tone="volt" size="md" /><p className="lede mt-9">{SUPPORT.contact.body}</p>
               <ul className="mt-8 space-y-3 font-sans">

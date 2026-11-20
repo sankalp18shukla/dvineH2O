@@ -24,8 +24,10 @@ const withStock = (p: Row, n: number, avg: number) =>
 
 export const getProduct = cache(async (slug: string) => {
   try {
-    const p = await db.query.products.findFirst({ where: eq(products.slug, slug) });
-    if (!p) return null;
+    const row = await db.query.products.findFirst({ where: eq(products.slug, slug) });
+    if (!row) return null;
+    // DVINE's manual PDF (public/docs/manuals) until one is set in Admin › Products
+    const p = { ...row, manualUrl: row.manualUrl ?? SEED_PRODUCTS.find(x => x.slug === slug)?.manualUrl ?? null };
     const [stats] = await db.select({ n: sql<number>`count(*)`, avg: sql<number>`coalesce(avg(${reviews.rating}),0)` }).from(reviews).where(and(eq(reviews.productId, p.id), eq(reviews.status, 'approved')));
     return withStock(p, Number(stats.n), Number(stats.avg));
   } catch (e) {

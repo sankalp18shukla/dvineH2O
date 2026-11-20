@@ -328,7 +328,7 @@ export const TEMPLATES: Template[] = [
     ribbon: ['Festive offers on Crystal and Hyper', 'Gift Hyper this Diwali', 'Free installation on Crystal this season', 'Book a free home demo'],
     slide: { tag: 'This Diwali Festive Offers', title: 'Light up\nevery sip.', body: 'Festive pricing on Crystal and Hyper for a limited period. Gift better water to the people you celebrate with.', primary: { label: 'Shop the Offers', href: '/home-water-systems' }, media: '', fit: 'lineup',
       decor: DIWALI_SLIDE_DECOR },
-    card: { tag: 'Diwali gifting', title: 'Gift Hyper this Diwali', body: 'A hydrogen water bottle for everyone on your list. Bulk and corporate gifting available.', cta: { label: 'Explore gifting', href: '/for-business#bulk' }, media: '/images/brand-hand-bottle.webp',
+    card: { tag: 'Diwali gifting', title: 'Gift Hyper this Diwali', body: 'A hydrogen water bottle for everyone on your list. Bulk and corporate gifting available.', cta: { label: 'Explore gifting', href: '/for-business#bulk' }, media: '/images/brand-handover.webp',
       decor: decor([
         { src: '/decor/diwali/lights.png', x: 50, y: 7, w: 80, layer: 'front', motion: 'none' },
         { src: '/decor/diwali/diya.png', x: 36, y: 90, w: 9, layer: 'front', motion: 'float' },
@@ -339,15 +339,15 @@ export const TEMPLATES: Template[] = [
   {
     key: 'holi', label: 'Holi', theme: 'flash', emoji: '🎨',
     ribbon: ['Holi offers on Hyper', 'A splash of colour, a bottle of Hyper', 'Limited-period festive pricing'],
-    slide: { tag: 'Holi Colour Edition', title: 'Splash into\nHoli.', body: 'Take Hyper along for the celebrations. Festive pricing for a limited period.', primary: { label: 'Shop Hyper', href: '/hydrogen-bottles' }, media: '/images/hyper_product.png', fit: 'side' },
+    slide: { tag: 'Holi Colour Edition', title: 'Splash into\nHoli.', body: 'Take Hyper along for the celebrations. Festive pricing for a limited period.', primary: { label: 'Shop Hyper', href: '/hydrogen-bottles' }, media: '/images/hyper/rose.webp', fit: 'side' },
     card: { tag: 'Holi special', title: 'Hyper for the celebrations', body: 'Rechargeable, portable and ready to go wherever the colours take you.', cta: { label: 'Shop Hyper', href: '/hydrogen-bottles' }, media: '/images/lifestyle-move.webp' },
     offer: { tag: 'Holi offer', title: 'Holi pricing on {name}', body: 'A splash of savings for the celebrations, for a limited period.' },
   },
   {
     key: 'independence', label: 'Independence Day', theme: 'current', emoji: '🇮🇳',
     ribbon: ['Independence Day offers', 'Made for Indian water conditions', 'Book a free water test'],
-    slide: { tag: 'Independence Day Special', title: 'Freedom\nto choose.', body: 'Independence Day pricing on Crystal. Start with a water test and choose the setup that suits your home.', primary: { label: 'Shop Crystal', href: '/home-water-systems' }, media: '/images/crystal_product.png', fit: 'side' },
-    card: { tag: '15 August', title: 'Independence Day pricing', body: 'Limited-period offers on our home water systems, with installation included.', cta: { label: 'See the offer', href: '/home-water-systems' }, media: '/images/crystal.webp' },
+    slide: { tag: 'Independence Day Special', title: 'Freedom\nto choose.', body: 'Independence Day pricing on Crystal. Start with a water test and choose the setup that suits your home.', primary: { label: 'Shop Crystal', href: '/home-water-systems' }, media: '/images/crystal/ivory.webp', fit: 'side' },
+    card: { tag: '15 August', title: 'Independence Day pricing', body: 'Limited-period offers on our home water systems, with installation included.', cta: { label: 'See the offer', href: '/home-water-systems' }, media: '/images/crystal/duo.webp' },
     offer: { tag: 'Independence Day', title: 'Independence Day pricing on {name}', body: 'Limited-period pricing for 15 August.' },
   },
   {
@@ -368,7 +368,7 @@ export const TEMPLATES: Template[] = [
   {
     key: 'launch', label: 'New launch', theme: 'volt', emoji: '🚀',
     ribbon: ['Just launched', 'Be among the first to own it', 'Book a demo today'],
-    slide: { tag: 'Introducing Something New', title: 'Just\nlaunched.', body: 'Meet the newest member of the DVINE family. Book a demo to see it for yourself.', primary: { label: 'Book a Demo', href: '/book-demo' }, media: '/images/crystal_product.png', fit: 'side' },
+    slide: { tag: 'Introducing Something New', title: 'Just\nlaunched.', body: 'Meet the newest member of the DVINE family. Book a demo to see it for yourself.', primary: { label: 'Book a Demo', href: '/book-demo' }, media: '/images/crystal/ivory.webp', fit: 'side' },
     card: { tag: 'New', title: 'Just launched', body: 'See what is new from DVINE H2O.', cta: { label: 'Find out more', href: '/book-demo' }, media: '/images/crystal-inside.webp' },
     offer: { tag: 'Launch offer', title: 'Launch pricing on {name}', body: 'Introductory pricing for the first customers.' },
   },

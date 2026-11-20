@@ -10,11 +10,12 @@ import { Logo } from '../ui/Logo';
 import { CtaChip, ctaClass, ctaStyle } from '../ui/Cta';
 import s from './MobileMenu.module.css';
 
-/** The range, each on its product colour from the home collection (Crystal glacier, Hyper flash, Titan volt). */
+/** The range, each on its product colour from the home collection (Crystal glacier, Hyper flash, Titan volt).
+ *  `h` is the product's height in its tile, in the range's real order: Titan tallest, Crystal, then Hyper. */
 const PRODUCTS = [
-  { href: '/home-water-systems', name: 'Crystal', sub: 'For the home', img: '/images/crystal_product.png', tone: 'var(--color-glacier)' },
-  { href: '/hydrogen-bottles', name: 'Hyper', sub: 'On the go', img: '/images/hyper_product.png', tone: 'var(--color-flash)' },
-  { href: '/for-business', name: 'Titan 111', sub: 'For offices', img: '/images/titan_product.png', tone: 'var(--color-voltage)' },
+  { href: '/home-water-systems', name: 'Crystal', sub: 'For the home', img: '/images/crystal/ivory.webp', tone: 'var(--color-glacier)', h: '74%' },
+  { href: '/hydrogen-bottles', name: 'Hyper', sub: 'On the go', img: '/images/hyper/rose.webp', tone: 'var(--color-flash)', h: '62%' },
+  { href: '/for-business', name: 'Titan 111', sub: 'For offices', img: '/images/titan_product.png', tone: 'var(--color-voltage)', h: '98%' },
 ];
 const LINKS = [
   { href: '/water-testing', label: 'Water Testing' },
@@ -68,7 +69,7 @@ export function MobileMenu({ signedIn }: { signedIn: boolean }) {
   const st = () => ({ ['--i' as string]: i++ });
 
   const menu = armed && createPortal(
-    <div className={`${s.root} on-dark lg:hidden`} data-open={open} role="dialog" aria-modal="true" aria-label="Menu" inert={!open}>
+    <div className={`${s.root} on-dark xl:hidden`} data-open={open} role="dialog" aria-modal="true" aria-label="Menu" inert={!open}>
       <div className={s.sheet}>
         <span className={`wave-lines ${s.pattern}`} aria-hidden="true" />
         <div className={`${s.bar} frame-x`}>
@@ -81,7 +82,7 @@ export function MobileMenu({ signedIn }: { signedIn: boolean }) {
           <ul className={s.range}>
             {PRODUCTS.map(p => (
               <li key={p.href} className={s.item} style={st()}>
-                <Link href={p.href} onClick={shut} className={s.tile} aria-current={here(p.href) ? 'page' : undefined} style={{ ['--tone' as string]: p.tone }}>
+                <Link href={p.href} onClick={shut} className={s.tile} aria-current={here(p.href) ? 'page' : undefined} style={{ ['--tone' as string]: p.tone, ['--h' as string]: p.h }}>
                   <span className={s.stage} aria-hidden="true">
                     <span className={s.disc} />
                     <Image src={p.img} alt="" width={160} height={200} sizes="120px" className={s.product} />
@@ -122,7 +123,7 @@ export function MobileMenu({ signedIn }: { signedIn: boolean }) {
 
   return (
     <>
-      <button ref={burger} type="button" className="grid size-11 place-items-center rounded-full hover:bg-current/10 lg:hidden" aria-label="Open menu" aria-expanded={open} onClick={show}
+      <button ref={burger} type="button" className="grid size-11 place-items-center rounded-full hover:bg-current/10 xl:hidden" aria-label="Open menu" aria-expanded={open} onClick={show}
         // mount the menu as soon as a finger lands, so the curtain is ready by the time the tap completes
         onPointerDown={() => setArmed(true)}>
         <Icon name="menu" />

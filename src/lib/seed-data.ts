@@ -30,12 +30,13 @@ export const SEED_PRODUCTS: (typeof schema.products.$inferInsert)[] = [
       { label: 'Battery', value: '2000 mAh (3.7 V / 7.4 Wh), USB-C rechargeable' },
     ],
     boxContents: ['Hyper bottle', 'USB-C charging cable', 'User guide'],
-    images: ['/images/hyper.webp', '/images/hyper-water.webp', '/images/hyper-exploded.webp', '/images/bubbles.webp'],
+    manualUrl: '/docs/manuals/hyper-hydrogen-bottle-manual.pdf',
+    images: ['/images/hyper/rose-front.webp', '/images/hyper/rose-angle.webp', '/images/hyper/rose-open.webp', '/images/hyper/inside.webp'],
   },
   {
     sku: 'DVH-CRY-01', slug: 'crystal', name: 'Crystal Home Water System', shortName: 'Crystal', saleMode: 'cart',
     mrp: P(169000), price: P(149000), priceConfirmed: false, gstRate: 1800, hsn: '84212190',
-    onHand: 12, reorderLevel: 3, trackSerials: true, requiresInstallation: true, warrantyMonths: 60, maxPerOrder: 3,
+    onHand: 12, reorderLevel: 3, trackSerials: true, requiresInstallation: true, warrantyMonths: 12, maxPerOrder: 3,
     tagline: 'Quiet intelligence for the modern kitchen.',
     description: 'A home water system with five platinum-coated titanium plates, PureCore multi-stage filtration and four water modes.',
     specs: [
@@ -44,11 +45,13 @@ export const SEED_PRODUCTS: (typeof schema.products.$inferInsert)[] = [
       { label: 'Filtration', value: 'PureCore Multi-Stage Filtration™ (sediment, nano, post carbon)' },
       { label: 'Interface', value: 'SmartFlow Touchscreen Display™ — pH, ORP and filter status' },
       { label: 'Installation', value: 'By DVINE-trained technician' },
-      { label: 'Warranty', value: '5 years, DVINE Assured Care' },
-      { label: 'Service', value: 'PAN India certified network' },
+      // DVINE warranty policy (public/docs/policies/crystal-warranty-policy.pdf)
+      { label: 'Warranty', value: '1 year comprehensive; electrolysis chamber 4 years or 1,000 litres' },
+      { label: 'Service', value: 'Within 48 hours of a complaint, across Odisha' },
     ],
     boxContents: ['Crystal unit', 'Filter cartridges (fitted)', 'Installation kit', 'User manual and warranty card'],
-    images: ['/images/crystal.webp', '/images/crystal-inside.webp', '/images/collection.webp'],
+    manualUrl: '/docs/manuals/crystal-5114-user-manual.pdf',
+    images: ['/images/crystal/ivory-front.webp', '/images/crystal/ivory-angle.webp', '/images/crystal/ivory-side.webp', '/images/crystal/ivory-profile.webp'],
   },
   {
     sku: 'DVH-TTN-111', slug: 'titan', name: 'TitanForce 111', shortName: 'Titan', saleMode: 'enquiry',
@@ -65,7 +68,7 @@ export const SEED_PRODUCTS: (typeof schema.products.$inferInsert)[] = [
       { label: 'Warranty', value: '5 years, DVINE Assured Care' },
       { label: 'Best for', value: 'Offices, large residences, hospitality' },
     ],
-    images: ['/images/titan.webp', '/images/titan-display.webp'],
+    images: ['/images/titan/front.webp', '/images/titan/display.webp'],
   },
 ];
 

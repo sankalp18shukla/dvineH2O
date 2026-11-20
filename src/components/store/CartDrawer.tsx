@@ -61,7 +61,7 @@ export function CartDrawer() {
             {cart.discount > 0 && <p className="flex justify-between text-sm text-muted"><span>Discount</span><span>−{formatINR(cart.discount)}</span></p>}
             <p className="flex justify-between text-lg font-semibold"><span>Subtotal ({cart.count} item{cart.count === 1 ? '' : 's'})</span><span>{formatINR(cart.subtotal - cart.discount)}</span></p>
             <p className="mt-1 text-[13px] text-muted">Inclusive of GST. Delivery and installation confirmed at checkout.</p>
-            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
               <Link href="/cart" className="btn btn-primary">View Cart</Link>
               <button onClick={() => setOpen(false)} className="btn btn-outline">Continue Shopping</button>
             </div>

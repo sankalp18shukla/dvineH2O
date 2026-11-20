@@ -9,8 +9,10 @@ export const metadata = { title: 'Homepage & promotions' };
 /** The site's own photos, offered in the media library next to the uploads. */
 async function siteImages() {
   const dir = path.join(process.cwd(), 'public', 'images');
-  const names = await fs.readdir(dir).catch(() => [] as string[]);
-  return names.filter(n => /\.(png|jpe?g|webp|avif)$/i.test(n)).map(n => `/images/${n}`);
+  // product photos live in folders (images/hyper, images/crystal); the bottle's assembly parts are not photos
+  const names = await fs.readdir(dir, { recursive: true }).catch(() => [] as string[]);
+  return names.map(n => n.split(path.sep).join('/')).filter(n => /\.(png|jpe?g|webp|avif)$/i.test(n) && !n.includes('/parts/'))
+    .map(n => `/images/${n}`);
 }
 
 export default async function ContentPage() {

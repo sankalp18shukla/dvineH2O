@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { DieCut, Squiggle } from '@/components/ui/Brand';
-import { FinishPaint, useFinish } from './BottleFinish';
+import { FinishLayers, useFinish } from './BottleFinish';
 import { tuck } from './squiggleTuck';
 import s from './ProductStage.module.css';
 
@@ -18,18 +18,24 @@ type Tone = 'glacier' | 'flash' | 'volt';
  * (PinFrames), the disc opens from its centre, the squiggle draws itself, the product rises onto the disc and
  * the sticker slaps on. Then, as the page scrolls, the faded name behind it slides sideways along its line,
  * scrubbed with the scroll. Reduced motion shows it all at rest.
- * `shell` (with a FinishProvider above): the cutout's metal map, so the chosen finish repaints the bottle in place
- * (BottleFinish.tsx); `axis` is the bottle's direction in the cutout image, base to cap, for the wipe.
+ * With a FinishProvider above, the product stands in the chosen finish: each finish's own cut-out, wiped in over
+ * the last on a new pick (BottleFinish.tsx), and the thumbnails show that finish's photos. `axis` is the product's
+ * direction in the cut-out, base to top, for the wipe.
  */
-export function ProductStage({ name, tone, cutout, images, alt, sticker, stickerTone, shell, axis }: {
-  name: string; tone: Tone; cutout: string; images: string[]; alt: string; sticker: string; stickerTone: 'blue' | 'red' | 'orange'; shell?: string; axis?: number;
+export function ProductStage({ name, tone, cutout, images, alt, sticker, stickerTone, axis }: {
+  name: string; tone: Tone; cutout: string; images: string[]; alt: string; sticker: string; stickerTone: 'blue' | 'red' | 'orange'; axis?: number;
 }) {
   const root = useRef<HTMLDivElement>(null);
   const [i, setI] = useState(-1); // -1: the cutout on the disc
-  const finish = useFinish()?.i;
+  // the photo being left: it stays fully shown under the incoming one until that has faded in, so moving from photo
+  // to photo never lets the cutout and its disc show through the crossfade. Back to the cutout, it fades out as usual.
+  const [prev, setPrev] = useState(-1);
+  const show = (n: number) => { setPrev(n >= 0 && i >= 0 ? i : -1); setI(n); };
+  const fin = useFinish();
   const pos = tone === 'flash' ? '50% 50%' : '50% 100%';
+  const photos = (fin && fin.finishes[fin.i].photos) || images;
   // a new finish brings the cutout back to the front, so the change is seen
-  useEffect(() => { if (shell && finish !== undefined) setI(-1); }, [shell, finish]);
+  useEffect(() => { if (fin) { setPrev(-1); setI(-1); } }, [fin?.i]); // eslint-disable-line react-hooks/exhaustive-deps
   const pin = { glacier: 'var(--color-glacier)', flash: 'var(--color-flash)', volt: 'var(--color-voltage)' }[tone];
 
   useEffect(() => {
@@ -63,24 +69,25 @@ export function ProductStage({ name, tone, cutout, images, alt, sticker, sticker
         <span className={s.product} data-finish-tilt>
           <span className={s.shadow} />
           <span className={s.body}>
-            <Image src={cutout} alt={i < 0 ? alt : ''} fill priority sizes="(min-width:1024px) 40vw, 80vw" className={s.cutout} />
-            {shell && <FinishPaint shell={shell} axis={axis} position={pos} tilt />}
+            {fin
+              ? <FinishLayers axis={axis} position={pos} imgClass={s.cutout} sizes="(min-width:1024px) 40vw, 80vw" alt={i < 0 ? alt : ''} priority tilt />
+              : <Image src={cutout} alt={i < 0 ? alt : ''} fill priority sizes="(min-width:1024px) 40vw, 80vw" className={s.cutout} />}
           </span>
         </span>
-        {images.map((src, k) => (
-          <span key={src} className={`${s.photo} ${k === i ? s.on : ''}`} aria-hidden={k !== i}>
-            <Image src={src} alt={`${alt}, photo ${k + 1} of ${images.length}`} fill sizes="(min-width:1024px) 50vw, 100vw" />
+        {photos.map((src, k) => (
+          <span key={src} className={`${s.photo} ${k === i ? s.on : k === prev ? s.held : ''}`} aria-hidden={k !== i}>
+            <Image src={src} alt={`${alt}, photo ${k + 1} of ${photos.length}`} fill sizes="(min-width:1024px) 50vw, 100vw" />
           </span>
         ))}
         <DieCut text={sticker} tone={stickerTone} className={s.sticker} />
       </div>
       <div className={s.thumbs} role="group" aria-label={`${name} images`}>
-        <button type="button" className={s.thumb} aria-pressed={i < 0} aria-label={`Show ${name}`} onClick={() => setI(-1)}>
+        <button type="button" className={s.thumb} aria-pressed={i < 0} aria-label={`Show ${name}`} onClick={() => show(-1)}>
           <span className={s.thumbDisc} />
-          <span className={s.thumbBody}><Image src={cutout} alt="" fill sizes="76px" className={s.cutout} />{shell && <FinishPaint shell={shell} axis={axis} position={pos} />}</span>
+          <span className={s.thumbBody}>{fin ? <FinishLayers axis={axis} position="50% 50%" imgClass={s.cutout} sizes="76px" /> : <Image src={cutout} alt="" fill sizes="76px" className={s.cutout} />}</span>
         </button>
-        {images.map((src, k) => (
-          <button key={src} type="button" className={s.thumb} aria-pressed={k === i} aria-label={`Show photo ${k + 1}`} onClick={() => setI(k)}>
+        {photos.map((src, k) => (
+          <button key={src} type="button" className={s.thumb} aria-pressed={k === i} aria-label={`Show photo ${k + 1}`} onClick={() => show(k)}>
             <Image src={src} alt="" fill sizes="76px" />
           </button>
         ))}

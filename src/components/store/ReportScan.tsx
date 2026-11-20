@@ -82,7 +82,7 @@ export function ReportScan({ sample, children }: { sample: Sample; children: Rea
             {sample.meta.map(([a, b]) => <div key={a}><dt className="text-muted">{a}</dt><dd className="mt-0.5 font-medium">{b}</dd></div>)}
           </dl>
           <div className="relative overflow-x-auto">
-            <table className="table text-[13px]">
+            <table className="table text-[13px] max-sm:text-[12.5px] max-sm:[&_th]:whitespace-normal max-sm:[&_th]:px-2 max-sm:[&_th]:tracking-normal max-sm:[&_td]:px-2">
               <thead><tr>{sample.cols.map(c => <th key={c} scope="col">{c}</th>)}</tr></thead>
               <tbody>{sample.rows.map(r => <tr key={r[0]} className="hover:[&>td]:bg-transparent">{r.map((c, i) => <td key={i} className={i === 2 ? 'font-semibold tracking-widest text-muted' : i === 3 ? 'text-muted' : ''}>{c}</td>)}</tr>)}</tbody>
             </table>

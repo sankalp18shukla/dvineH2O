@@ -17,13 +17,13 @@ export function CheckoutForm({ prefill, total }: { prefill: Prefill; total: stri
   const v = (k: string, d = '') => (state?.data?.[k] as string) ?? (prefill as Record<string, string>)[k] ?? d;
   return (
     <form id="checkout-form" action={action} className="grid gap-6" noValidate>
-      <fieldset className="card grid gap-4 p-5 sm:grid-cols-2 sm:p-6">
+      <fieldset className="card grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 sm:p-6">
         <legend className="px-1 font-sans text-lg font-semibold">Where should we send your order updates?</legend>
         <Field name="email" label="Email" type="email" autoComplete="email" required defaultValue={v('email')} error={e.email} hint="For your order confirmation and invoice." />
         <Field name="phone" label="Mobile number" type="tel" autoComplete="tel" required defaultValue={v('phone')} error={e.phone} hint="For delivery updates." />
       </fieldset>
 
-      <fieldset className="card grid gap-4 p-5 sm:grid-cols-2 sm:p-6">
+      <fieldset className="card grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 sm:p-6">
         <legend className="px-1 font-sans text-lg font-semibold">Where would you like your order delivered?</legend>
         <Field name="name" label="Full name" autoComplete="name" required defaultValue={v('name')} error={e.name} className="sm:col-span-2" />
         <Field name="line1" label="Address" autoComplete="address-line1" required defaultValue={v('line1')} error={e['ship.line1']} className="sm:col-span-2" placeholder="House / flat, building, street" />
@@ -39,7 +39,7 @@ export function CheckoutForm({ prefill, total }: { prefill: Prefill; total: stri
       </fieldset>
 
       {!same && (
-        <fieldset className="card grid gap-4 p-5 sm:grid-cols-2 sm:p-6">
+        <fieldset className="card grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 sm:p-6">
           <legend className="px-1 font-sans text-lg font-semibold">Billing address</legend>
           <Field name="billName" label="Name / business name" required defaultValue={v('billName')} error={e['bill.name']} className="sm:col-span-2" />
           <Field name="billLine1" label="Address" required defaultValue={v('billLine1')} error={e['bill.line1']} className="sm:col-span-2" />

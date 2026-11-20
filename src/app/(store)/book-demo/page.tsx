@@ -14,7 +14,7 @@ export default async function BookDemo({ searchParams }: { searchParams: Promise
     <>
       <Header framed page="book-demo" />
       <main id="main" className="section">
-        <div className="container-x grid gap-12 lg:grid-cols-[1fr_1.3fr]">
+        <div className="container-x grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1.3fr]">
           <div>
             <Lockup as="h1" title="*See it working* before you choose." tone="glacier" size="md" />
             <p className="mt-9 font-serif text-[21px] leading-snug text-ink italic sm:text-[23px]">A DVINE specialist shows you how to select a mode, read the display and use the controls, and answers questions about your water and installation.</p>

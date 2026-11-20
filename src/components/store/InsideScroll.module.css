@@ -7,8 +7,7 @@
 
 /* the clip fills the stage; the action is framed in its middle third, so a phone's centre crop keeps it */
 .media { position: absolute; inset: 0; transform-origin: 50% 45%; }
-/* the closing push-in (ZOOM in InsideScroll.tsx) is anchored low, so the top of the control head leaves the frame */
-.video { width: 100%; height: 100%; object-fit: cover; transform-origin: 50% 70%; }
+.video { width: 100%; height: 100%; object-fit: cover; }
 /* pulls the charcoal studio toward the stage colour without touching the white cartridges much */
 .tint { position: absolute; inset: 0; background: var(--color-deep-current); mix-blend-mode: soft-light; opacity: .12; }
 /* vignette: the top and sides fade into the stage, with a deeper lift under the copy */

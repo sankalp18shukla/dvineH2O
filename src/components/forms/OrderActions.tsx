@@ -62,7 +62,7 @@ export function InstallationPreference({ number, slots }: { number: string; slot
   if (state?.ok) return <FormMessage state={state} />;
   const min = new Date(Date.now() + 86400_000).toISOString().slice(0, 10);
   return (
-    <form action={action} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+    <form action={action} className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
       <input type="hidden" name="number" value={number} />
       <Field name="date" label="Preferred date" type="date" min={min} required error={state?.errors?.date} />
       <Select name="slot" label="Time" options={slots} />

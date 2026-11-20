@@ -34,7 +34,7 @@ function Form({ variant, source, defaultInterest, submitLabel = 'Send Enquiry', 
   if (state?.ok) return <div className={dark ? 'rounded-2xl bg-white/10 p-6' : 'card p-6'}><FormMessage state={state} /></div>;
   const biz = variant === 'consultation';
   return (
-    <form action={action} className={`relative grid gap-4 sm:grid-cols-2 ${dark ? '[&_.label]:text-white [&_.hint]:text-white/70 [&_label.font-sans]:text-white/75' : ''}`} noValidate>
+    <form action={action} className={`relative grid grid-cols-1 gap-4 sm:grid-cols-2 ${dark ? '[&_.label]:text-white [&_.hint]:text-white/70 [&_label.font-sans]:text-white/75' : ''}`} noValidate>
       <Honeypot />
       <input type="hidden" name="type" value={variant} />
       <input type="hidden" name="source" value={source} />

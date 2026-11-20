@@ -14,7 +14,7 @@
 /* ── Panels (stacked) ──────────────────────────────────────────────────── */
 .track { list-style: none; margin: 0; padding: 0; }
 .panel + .panel .row { border-top: 1px solid var(--color-line); }
-.row { position: relative; display: grid; align-items: center; gap: clamp(28px, 5vw, 96px); padding-block: clamp(56px, 8vw, 120px); isolation: isolate; }
+.row { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; gap: clamp(28px, 5vw, 96px); padding-block: clamp(56px, 8vw, 120px); isolation: isolate; }
 @media (min-width: 1024px) {
   .row { grid-template-columns: 1.05fr 1fr; }
   .flip { grid-template-columns: 1fr 1.05fr; }
@@ -47,13 +47,13 @@
 .product { position: absolute; inset: 0; display: block; }
 .photo { object-fit: cover; }
 .media > .product { z-index: 3; inset: -2% 15% 9%; }
-/* each cutout framed to the same presence on its disc: the counter machine fills it, the tall floor unit
-   rises a little past its top, and the bottle stands at the hero's lean (about 24°; the photo has it at
-   about 50°, so it is turned back 26°) and is centred on the disc */
-.glacier .media > .product { inset: 1% 14% 9%; }
+/* each cutout sized to the product's real place in the range: the floor-standing Titan is the tallest and rises a
+   little past the disc's top, the counter-top Crystal stands at about three-quarters of it, and the hand-held Hyper is
+   the smallest, at the hero's lean (about 24°; its cut-out is upright) and centred on the disc */
+.glacier .media > .product { inset: 20% 16% 9%; }
 .volt .media > .product { inset: -3% 18% 9%; }
-.flash .media > .product { inset: 0 6% 6%; }
-.flash .cutout { rotate: -26deg; object-position: 50% 50%; }
+.flash .media > .product { inset: 19% 18% 17%; }
+.flash .cutout { rotate: 24deg; object-position: 50% 50%; }
 .cutout { object-fit: contain; object-position: 50% 100%; filter: drop-shadow(0 26px 24px rgb(4 22 74 / .32)); animation: bob 5.5s ease-in-out infinite; }
 .shadow { position: absolute; left: 24%; right: 24%; bottom: -1%; height: 7%; border-radius: 50%;
   background: radial-gradient(closest-side, rgb(4 22 74 / .42), transparent); animation: shadow 5.5s ease-in-out infinite; }
@@ -144,6 +144,22 @@
 .h .facts { margin-top: clamp(16px, 2.8svh, 30px); }
 .h .cta { margin-top: clamp(18px, 3svh, 34px); }
 @media (max-height: 760px) { .h .facts { display: none; } }
+/* small laptops and tablets in landscape (1024–1279): the disc is sized by the screen's height, so on a squarer
+   screen it grew wider than its column and pushed the copy off the right edge. Cap it by the width as well, give
+   the copy an even half and step the type down so the headline, facts and button all sit inside the stage. */
+@media (max-width: 1279px) {
+  .h .row, .h .row:not(.flip), .h .flip { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 3.5vw, 48px); }
+  .h .media { height: min(100%, 44vw, 600px); }
+  .h .copy { max-width: 100%; }
+  .h .heading :global(.lk-top) { font-size: clamp(34px, min(4.2vw, 7.5svh), 60px); }
+  .h .heading :global(.lk-bot) { font-size: clamp(48px, min(6.2vw, 11svh), 88px); }
+  .h .body { font-size: clamp(18px, min(1.75vw, 2.8svh), 22px); }
+  .h .facts > div { padding-right: 10px; }
+  .h .facts > div + div { padding-left: 10px; }
+  .h .facts dt { font-size: 13.5px; }
+  .h .facts dd { font-size: 12.5px; }
+  .h .sticker { font-size: 17px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .cutout, .shadow, .pattern { animation: none; }

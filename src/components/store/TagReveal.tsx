@@ -7,7 +7,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger);
 
 /** Pinned text across the site: headline lockups, label boxes and the band lockup. Sections marked
- * [data-own-motion] run their own heading entrance and are left alone. */
+ * [data-own-motion] run their own heading entrance and are left alone; under [data-still-tags] (the blog) they don't move. */
 export const TAGS = '.lk, .label-box, .band-lk';
 
 /**
@@ -18,7 +18,7 @@ export const TAGS = '.lk, .label-box, .band-lk';
 export function headlineOf(e: Element): HTMLElement | null {
   const sec = e.closest('section');
   const h = sec?.querySelector<HTMLElement>(TAGS);
-  if (!h || h === e || h.contains(e) || e.contains(h) || h.closest('[data-own-motion]')) return null;
+  if (!h || h === e || h.contains(e) || e.contains(h) || h.closest('[data-own-motion], [data-still-tags]')) return null;
   return h.compareDocumentPosition(e) & Node.DOCUMENT_POSITION_FOLLOWING ? h : null;
 }
 
@@ -53,7 +53,7 @@ export function TagReveal() {
   useEffect(() => {
     const mm = gsap.matchMedia();
     mm.add('(prefers-reduced-motion: no-preference)', () => {
-      const tags = gsap.utils.toArray<HTMLElement>(TAGS).filter(t => !t.closest('[data-own-motion]'));
+      const tags = gsap.utils.toArray<HTMLElement>(TAGS).filter(t => !t.closest('[data-own-motion], [data-still-tags]'));
       // --open is written straight to the element (see setOpen in FitShowcase.tsx for why)
       const holds = new Map<HTMLElement, HTMLElement[]>();
       const set = (t: HTMLElement, v: number) => {

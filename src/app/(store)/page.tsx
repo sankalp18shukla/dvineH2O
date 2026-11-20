@@ -3,7 +3,6 @@ import { seo } from '@/lib/seo-keywords';
 import { Header } from '@/components/store/Header';
 import { HeroShowcase } from '@/components/store/hero/HeroShowcase';
 import { HOME, HERO_SLIDES } from '@/lib/content';
-import { ActionBar } from '@/components/store/ActionBar';
 import { WaterTestScroll } from '@/components/store/WaterTestScroll';
 import { FitShowcase, type FitItem } from '@/components/store/FitShowcase';
 import { InsideScroll } from '@/components/store/InsideScroll';
@@ -76,7 +75,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
         {/* 07 · Assistance: the handover photo under moving wave lines, the copy, the buttons, then the sticker */}
         <AssistBand title={HOME.assistance.title} body={HOME.assistance.body} />
       </main>
-      <ActionBar watch="wt-title" title="Crystal" sub="Home water system" action={{ label: 'Shop Crystal', href: '/home-water-systems' }} />
     </>
   );
 }

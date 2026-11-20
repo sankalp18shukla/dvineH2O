@@ -21,10 +21,11 @@
 .front { z-index: 2; }
 
 .product { position: absolute; z-index: 3; inset: 6% 18% 10%; }
-.flash .product { inset: 4% 10% 8%; }
-/* .body carries the lean, the bob and the shadow, so the finish paint over the cutout (BottleFinish.tsx) moves with it */
+.flash .product { inset: 7% 12% 10%; }
+/* .body carries the lean, the bob and the shadow, so the finish layers (BottleFinish.tsx) move with it; the bottle's
+   cut-out is upright, so .flash turns it to the hero's lean */
 .body { position: absolute; inset: 0; filter: drop-shadow(0 26px 24px rgb(4 22 74 / .32)); animation: bob 5.5s ease-in-out infinite; }
-.flash .body { rotate: -26deg; }
+.flash .body { rotate: 24deg; }
 .cutout { object-fit: contain; object-position: 50% 100%; }
 .flash .cutout { object-position: 50% 50%; }
 .shadow { position: absolute; left: 26%; right: 26%; bottom: 0; height: 6%; border-radius: 50%; background: radial-gradient(closest-side, rgb(4 22 74 / .38), transparent); animation: shadow 5.5s ease-in-out infinite; }
@@ -33,10 +34,12 @@
 
 /* a photo slide covers the disc */
 .photo { position: absolute; inset: 0; z-index: 4; opacity: 0; transition: opacity .6s cubic-bezier(.22,1,.36,1), scale 1.2s cubic-bezier(.22,1,.36,1); scale: 1.06; }
-.photo.on { opacity: 1; scale: 1; }
+.photo.on { z-index: 6; opacity: 1; scale: 1; }
+/* the photo being left holds, fully shown, under the incoming one (no fade), so the cutout never shows between photos */
+.photo.held { z-index: 5; opacity: 1; scale: 1; transition: none; }
 .photo img { object-fit: cover; }
 
-.sticker { position: absolute; z-index: 5; right: 4px; top: -26px; font-size: clamp(20px, 2.2vw, 28px); --dc-rot: 7deg; }
+.sticker { position: absolute; z-index: 7; right: 4px; top: -26px; font-size: clamp(20px, 2.2vw, 28px); --dc-rot: 7deg; }
 .flash .sticker { --dc-fg: var(--color-ink); --dc-edge: var(--color-flash); }
 .volt .sticker { --dc-fg: var(--color-deep-current); --dc-edge: var(--color-voltage); }
 
@@ -48,7 +51,7 @@
 .thumb img { object-fit: cover; }
 .thumbDisc { position: absolute; inset: 14%; border-radius: 50%; background: var(--disc); }
 .thumbBody { position: absolute; inset: 8%; }
-.flash .thumbBody { rotate: -26deg; }
+.flash .thumbBody { rotate: 24deg; }
 .thumb .thumbBody img { object-fit: contain; object-position: 50% 50%; }
 
 /* PageStage.tsx: a photo held in the disc, with a fine white rim and a slow drift */

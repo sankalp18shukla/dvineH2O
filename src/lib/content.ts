@@ -57,7 +57,7 @@ export const POLICY_LINKS = [
 /* ───────────────────────── Hero slides (home) ───────────────────────── */
 export const HERO_SLIDES = [
   {
-    key: 'hyper', model: '/models/bottle.glb', accent: '#FF2E9C',
+    key: 'hyper', model: '/models/hyper-bottle.glb', accent: '#FF2E9C',
     name: 'Hyper', desc: ['Hydrogen', 'Water', 'Bottle'],
     lede: 'Hyper uses PEM electrolysis to generate dissolved molecular hydrogen in suitable drinking water. See the bottle, explore the controls and find out how to use it.',
     ctas: [{ href: '/hydrogen-bottles', label: 'Shop Hyper', primary: true }, { href: '/hydrogen-bottles#how-it-works', label: 'See how it works' }],
@@ -68,7 +68,7 @@ export const HERO_SLIDES = [
     ],
   },
   {
-    key: 'crystal', model: '/models/crystal.glb', accent: '#25FFE8',
+    key: 'crystal', model: '/models/crystal-countertop.glb', accent: '#25FFE8',
     name: 'Crystal', desc: ['Home', 'Water', 'System'],
     lede: 'A home water system with five platinum-coated titanium plates, PureCore multi-stage filtration and four water modes.',
     ctas: [{ href: '/home-water-systems', label: 'Shop Crystal', primary: true }, { href: '/book-demo?product=crystal', label: 'Book a Demo' }],
@@ -79,7 +79,7 @@ export const HERO_SLIDES = [
     ],
   },
   {
-    key: 'titan', model: '/models/titan.glb', accent: '#F0FF00',
+    key: 'titan', model: '/models/titan-floor.glb', accent: '#F0FF00',
     name: 'Titan', desc: ['Semi-commercial', 'Water', 'System'],
     lede: 'TitanForce 111 is a floor-standing system with a SmartFlow multi-mode display, designed for semi-commercial applications with greater water demand.',
     ctas: [{ href: '/for-business#enquiry', label: 'Request a Quote', primary: true }, { href: '/for-business', label: 'Explore Titan' }],
@@ -109,9 +109,9 @@ export const HOME = {
         feats: [
           { title: 'Drinking water', sub: 'Alkaline, pH 8.5–9.5' },
           { title: 'Kitchen and nursery', sub: 'Neutral water for cooking and infants' },
-          { title: '5-year Assured Care', sub: 'Installed by factory-trained technicians' },
+          { title: '1-year comprehensive warranty', sub: 'Installed by factory-trained technicians' },
         ],
-        cta: 'Shop Crystal', cutout: '/images/crystal_product.png', image: '/images/crystal.webp' },
+        cta: 'Shop Crystal', cutout: '/images/crystal/ivory.webp', image: '/images/crystal/duo.webp' },
       { slug: 'hyper', href: '/hydrogen-bottles', title: 'Hyper', where: 'On the go', desc: 'Hydrogen Water Bottle',
         body: 'Hydrogen-rich water wherever your day happens. It fits the routine you already have, in the gym bag or on the desk.',
         feats: [
@@ -119,7 +119,7 @@ export const HOME = {
           { title: 'One-touch timer', sub: 'With auto shut-off' },
           { title: 'Leak-proof body', sub: 'Built for daily and travel use' },
         ],
-        cta: 'Shop Hyper', cutout: '/images/hyper_product.png', image: '/images/hyper.webp' },
+        cta: 'Shop Hyper', cutout: '/images/hyper/rose.webp', image: '/images/hyper/duo.webp' },
       { slug: 'titan', href: '/for-business', title: 'Titan', where: 'For larger spaces', desc: 'Semi-commercial Water System',
         body: 'For when a household becomes a compound and an office becomes a statement. Crystal’s ionisation, grown to institutional scale.',
         feats: [
@@ -127,7 +127,7 @@ export const HOME = {
           { title: 'Multiple water modes', sub: 'Alkaline, neutral and functional' },
           { title: 'Pan-India service', sub: 'Certified engineers, 5-year care' },
         ],
-        cta: 'Explore Titan', cutout: '/images/titan_product.png', image: '/images/titan.webp' },
+        cta: 'Explore Titan', cutout: '/images/titan_product.png', image: '/images/titan/front.webp' },
     ],
   },
   technology: {
@@ -150,9 +150,9 @@ export const HOME = {
     // `image` is the section photo; until it is in public/, the card falls back to `fallback`
     // each option opens its product; `tone` is the product colour from the collection (Crystal glacier, Hyper flash, Titan volt)
     options: [
-      { title: 'At Home', product: 'Crystal', desc: 'Home Water System', tone: 'glacier', href: '/home-water-systems', image: '/images/crystal_sec.png', fallback: '/images/crystal.webp' },
+      { title: 'At Home', product: 'Crystal', desc: 'Home Water System', tone: 'glacier', href: '/home-water-systems', image: '/images/crystal_sec.png', fallback: '/images/crystal/duo.webp' },
       { title: 'On the Go', product: 'Hyper', desc: 'Hydrogen Water Bottle', tone: 'flash', href: '/hydrogen-bottles', image: '/images/hyper_sec.png', fallback: '/images/lifestyle-locker.webp' },
-      { title: 'For My Business', product: 'Titan', desc: 'Semi-commercial Water System', tone: 'volt', href: '/for-business', image: '/images/titan_sec.png', fallback: '/images/titan.webp' },
+      { title: 'For My Business', product: 'Titan', desc: 'Semi-commercial Water System', tone: 'volt', href: '/for-business', image: '/images/titan_sec.png', fallback: '/images/titan/front.webp' },
     ],
   },
   about: {
@@ -170,8 +170,16 @@ export const CRYSTAL = {
   hero: {
     title: 'Crystal. Made for your kitchen.',
     body: 'A home water system with five platinum-coated titanium plates, PureCore multi-stage filtration and four water modes. Explore the controls, check your installation requirements and choose when you’re ready.',
-    gallery: ['/images/crystal.webp', '/images/crystal-inside.webp', '/images/collection.webp', '/images/ripple.webp'],
+    gallery: ['/images/crystal/ivory-front.webp', '/images/crystal/ivory-angle.webp', '/images/crystal/ivory-side.webp', '/images/crystal/ivory-profile.webp'],
   },
+  /** Crystal's colours (BottleFinish.tsx): picking one wipes its own render up over the last on the product stage,
+   *  and the gallery shows that colour. The cut-outs share one canvas so the wipe lines up. */
+  finishes: [
+    { key: 'ivory', name: 'Ivory', swatch: '#e9e6df', cutout: '/images/crystal/ivory.webp',
+      photos: ['/images/crystal/ivory-front.webp', '/images/crystal/ivory-angle.webp', '/images/crystal/ivory-side.webp', '/images/crystal/ivory-profile.webp'] },
+    { key: 'midnight', name: 'Midnight', swatch: '#232326', cutout: '/images/crystal/midnight.webp',
+      photos: ['/images/crystal/midnight-front.webp', '/images/crystal/midnight-angle.webp', '/images/crystal/midnight-side.webp', '/images/crystal/midnight-profile.webp'] },
+  ],
   features: {
     title: '*The details that make* Crystal work.',
     cards: [
@@ -216,7 +224,7 @@ export const CRYSTAL = {
       { q: 'Delivery', a: 'Enter your pincode in the purchase panel to see whether we deliver to you and the expected date. We confirm the delivery date when you order and share tracking once it ships.' },
       { q: 'Installation', a: 'After delivery, our team contacts you to schedule installation. A DVINE-trained technician installs Crystal, connects the water line and walks you through the controls. Please keep the water connection and power point ready.' },
       { q: 'Care and maintenance', a: 'The touchscreen shows filter status. Follow the replacement guidance in the manual; usage and source-water conditions affect how often filters need replacing.' },
-      { q: 'Warranty', a: 'Crystal carries a five-year DVINE Assured Care warranty. It starts on the purchase date and is listed in your account with your order.' },
+      { q: 'Warranty', a: 'Crystal has a one-year comprehensive warranty, and its electrolysis chamber is covered for 4 years or 1,000 litres, whichever comes first. The warranty starts on the purchase date and is listed in your account with your order.' },
     ] as Faq[],
   },
   faq: {
@@ -234,26 +242,24 @@ export const HYPER = {
   hero: {
     title: 'Meet Hyper. A hydrogen water bottle to take along.',
     body: 'Hyper uses PEM electrolysis to generate dissolved molecular hydrogen in suitable drinking water. See the bottle, explore the controls and find out how to use it.',
-    gallery: ['/images/hyper.webp', '/images/hyper-water.webp', '/images/hyper-exploded.webp', '/images/bubbles.webp'],
+    gallery: ['/images/hyper/rose-front.webp', '/images/hyper/rose-angle.webp', '/images/hyper/rose-open.webp', '/images/hyper/inside.webp'],
   },
-  /** Bottle finishes (BottleFinish.tsx). The first is the colour in the photos; the others repaint the photo's metal.
-   *  `coat` is the paint at full light (multiplied by the photo's shading), `swatch` how the finish reads at a glance,
-   *  `gloss` how much of the photo's highlights to lift back onto the paint (more on dark finishes). */
+  /** Hyper comes in two colours (BottleFinish.tsx): picking one wipes its own photo up over the last on the product
+   *  stage, and the gallery shows that colour. The cut-outs share one canvas so the wipe lines up. */
   finishes: [
-    { key: 'burgundy', name: 'Burgundy', coat: '#9c4d50', swatch: '#6e1f27', gloss: 0 },
-    { key: 'midnight', name: 'Midnight', coat: '#34373e', swatch: '#1d2027', gloss: .55 },
-    { key: 'deep-current', name: 'Deep Current', coat: '#2f74e6', swatch: '#1b4fb0', gloss: .3 },
-    { key: 'sage', name: 'Sage', coat: '#a9c0a4', swatch: '#6f8a6c', gloss: .2 },
-    { key: 'lagoon', name: 'Lagoon', coat: '#3fd0bd', swatch: '#1f9a8c', gloss: .25 },
+    { key: 'rose', name: 'Rose', swatch: '#b4202a', cutout: '/images/hyper/rose.webp',
+      photos: ['/images/hyper/rose-front.webp', '/images/hyper/rose-angle.webp', '/images/hyper/rose-back.webp', '/images/hyper/rose-open.webp', '/images/hyper/inside.webp'] },
+    { key: 'gravity-grey', name: 'Gravity Grey', swatch: '#6f787b', cutout: '/images/hyper/grey.webp',
+      photos: ['/images/hyper/grey-front.webp', '/images/hyper/grey-angle.webp', '/images/hyper/grey-side.webp', '/images/hyper/grey-back.webp', '/images/hyper/inside.webp'] },
   ],
   everyday: {
     title: '*From your desk* to your day out.',
     body: 'Keep it on your desk, pack it with your gym kit or take it along when you head out. Explore a portable format that fits the way you already carry water.',
     cards: [
       // B05–B07: the card titles are the copy; `alt` follows the photo brief ("Photo: Hyper on a work desk")
-      { title: 'At your desk', alt: 'Hyper on a work desk', image: '/images/hyper.webp' },
+      { title: 'At your desk', alt: 'Hyper in Gravity Grey on a sunlit work desk beside a laptop and coffee', image: '/images/settings/hyper-desk.webp' },
       { title: 'In your bag', alt: 'Hyper in a bag side pocket', image: '/images/lifestyle-locker.webp' },
-      { title: 'Outdoors', alt: 'Hyper hand-held outdoors', image: '/images/lifestyle-move.webp' },
+      { title: 'Outdoors', alt: 'Hyper in Rose held up on a seafront promenade at sunset', image: '/images/settings/hyper-outdoors.webp' },
     ],
   },
   how: {
@@ -349,8 +355,8 @@ export const BUSINESS = {
     title: '*Meet* TitanForce 111.',
     body: 'Eleven platinum-coated titanium plates. A floor-standing system with a SmartFlow multi-mode display. Designed for semi-commercial applications with greater water demand.',
     views: [
-      { title: 'Front view', body: 'TitanForce 111, floor-standing.', image: '/images/titan.webp' },
-      { title: 'Controls', body: 'SmartFlow multi-mode display.', image: '/images/titan-display.webp' },
+      { title: 'Front view', body: 'TitanForce 111, floor-standing.', image: '/images/titan/front.webp' },
+      { title: 'Controls', body: 'SmartFlow multi-mode display.', image: '/images/titan/display.webp' },
     ],
     /** the four details around Titan on the office page, from its specifications */
     features: [
@@ -363,9 +369,9 @@ export const BUSINESS = {
   settings: {
     title: '*Plan around the way* your space works.',
     items: [
-      { title: 'Offices', body: 'Consider daily users, refill points and the busiest part of the day.', image: '/images/titan_sec.png', alt: 'Colleagues filling glasses at TitanForce 111 in an office' },
-      { title: 'Hospitality', body: 'Discuss guest areas, dining spaces and operating hours.', image: '/images/lifestyle-drink.webp', alt: 'Two people drinking water by the sea', pos: '82% 50%' },
-      { title: 'Larger residences', body: 'Assess household demand and the available installation space.', image: '/images/titan.webp', alt: 'TitanForce 111 standing in a warm-lit room' },
+      { title: 'Offices', body: 'Consider daily users, refill points and the busiest part of the day.', image: '/images/settings/titan-office.webp', alt: 'Colleagues queueing to fill a bottle at TitanForce 111 in an office pantry' },
+      { title: 'Hospitality', body: 'Discuss guest areas, dining spaces and operating hours.', image: '/images/settings/titan-hospitality.webp', alt: 'A server filling a carafe at TitanForce 111 in a restaurant' },
+      { title: 'Larger residences', body: 'Assess household demand and the available installation space.', image: '/images/settings/titan-residence.webp', alt: 'A parent filling a glass at TitanForce 111 as a child waits, in a family kitchen' },
     ],
   },
   setup: {
@@ -397,9 +403,9 @@ export const SUPPORT = {
     title: '*Choose your* product.',
     body: 'Select Crystal, Titan or Hyper to find the relevant guides, care instructions and service options.',
     items: [
-      { slug: 'crystal', title: 'Crystal', body: 'Home water system · guides, care, service', image: '/images/crystal.webp' },
-      { slug: 'titan', title: 'Titan', body: 'Business water system · guides, care, service', image: '/images/titan.webp' },
-      { slug: 'hyper', title: 'Hyper', body: 'Hydrogen bottle · guides, care, service', image: '/images/hyper.webp' },
+      { slug: 'crystal', title: 'Crystal', body: 'Home water system · guides, care, service', image: '/images/crystal/card.webp' },
+      { slug: 'titan', title: 'Titan', body: 'Business water system · guides, care, service', image: '/images/titan/front.webp' },
+      { slug: 'hyper', title: 'Hyper', body: 'Hydrogen bottle · guides, care, service', image: '/images/hyper/card.webp' },
     ],
   },
   order: { title: '*Need help with* an order?', body: 'Use your order details to check the current status or contact us about delivery. If installation applies to your purchase, you’ll find the next steps with your order information.' },
@@ -416,8 +422,30 @@ export const SUPPORT = {
   },
 };
 
-/* ───────────────────────── Policies (drafts) ───────────────────────── */
-export const POLICIES: Record<string, { title: string; sections: { h: string; p: string[] }[] }> = {
+/* ───────────────────────── Policies ─────────────────────────
+   Returns and Warranty are DVINE's own documents (public/docs/policies/*.pdf), set as web text; the PDFs are offered
+   for download on the page. Privacy, Terms and Shipping are still drafts (see docs/legal-review.md). */
+
+/** A paragraph, or a bulleted list when it is an array. */
+export type PolicyBlock = string | string[];
+export type PolicySection = { h: string; p: PolicyBlock[] };
+export type PolicyDoc = { label: string; href: string };
+/** A policy with different terms per product is split into parts, one per product. */
+export type PolicyPart = { id: string; title: string; intro?: string; docs?: PolicyDoc[]; sections: PolicySection[] };
+export type Policy = { title: string; intro?: string; sections?: PolicySection[]; parts?: PolicyPart[] };
+
+/** DVINE's documents, served from public/docs. */
+export const DOCS = {
+  crystalManual: { label: 'Crystal 5114 user manual', href: '/docs/manuals/crystal-5114-user-manual.pdf' },
+  hyperManual: { label: 'Hyper user guide', href: '/docs/manuals/hyper-hydrogen-bottle-manual.pdf' },
+  crystalWarranty: { label: 'Warranty policy', href: '/docs/policies/crystal-warranty-policy.pdf' },
+  crystalReturns: { label: 'Return and refund policy', href: '/docs/policies/crystal-return-refund-policy.pdf' },
+  crystalReplacement: { label: 'Replacement policy', href: '/docs/policies/crystal-replacement-policy.pdf' },
+  hyperReturns: { label: 'Return and refund policy', href: '/docs/policies/hyper-return-refund-policy.pdf' },
+  hyperReplacement: { label: 'Replacement terms', href: '/docs/policies/hyper-replacement-terms.pdf' },
+} satisfies Record<string, PolicyDoc>;
+
+export const POLICIES: Record<string, Policy> = {
   privacy: {
     title: 'Privacy policy',
     sections: [
@@ -440,25 +468,142 @@ export const POLICIES: Record<string, { title: string; sections: { h: string; p:
     sections: [
       { h: 'Delivery', p: ['Enter your pincode on the product page or at checkout to see whether we deliver to you and the expected delivery time.', 'You will receive tracking details when your order ships.'] },
       { h: 'Installation', p: ['Crystal is installed by a DVINE-trained technician. After delivery, our team contacts you to schedule installation. Please make sure the water connection and power point are available.'] },
+      // from the Crystal 5114 user manual (Installation guide, pp. 8–9)
+      { h: 'What Crystal needs', p: [
+        'Before the installation visit, please check that the place you have chosen has:',
+        ['A flat, stable surface that can hold 10 kg or more, or a wall for the optional wall mount', 'A cold tap water line within reach, at an inlet pressure of 40–100 psi', 'An earthed 220–240 V, 50–60 Hz power socket nearby', 'A drain or sink within reach of the drain pipe', 'At least 10 cm of clear space on both sides and at the back, away from direct sunlight, heat, humidity and standing water'],
+        'Crystal is made for standard tap water with a TDS of up to 350. Don’t connect it to seawater, industrial or chemically contaminated water. For borewell water, have the water tested and fit suitable pre-filtration first.',
+      ] },
     ],
   },
   returns: {
-    title: 'Returns and cancellations',
-    sections: [
-      { h: 'Cancelling an order', p: ['You can cancel from your account until the order is packed. A paid order is refunded in full to the original payment method.'] },
-      { h: 'Returns', p: ['If a product arrives damaged or not as described, request a return from your account within the return window shown on your order. Our team will review the request and arrange collection.'] },
-      { h: 'Refunds', p: ['Approved refunds are issued to the original payment method. Banks may take 5–7 working days to show the credit.'] },
+    title: 'Returns, refunds and replacement',
+    intro: 'Crystal and Hyper have different terms: Crystal is installed in your home, while Hyper is shipped to you ready to use. Choose your product below.',
+    parts: [
+      {
+        id: 'crystal', title: 'Crystal home water system', intro: 'The DVINE Alkaline Water Ionizer, Crystal 5114.',
+        docs: [DOCS.crystalReturns, DOCS.crystalReplacement],
+        sections: [
+          { h: 'Cancelling an order', p: [[
+            'Orders can be cancelled before dispatch at no charge.',
+            'If an order is cancelled after dispatch but before installation, the actual shipping and handling charges are deducted.',
+            'Orders cannot be cancelled once the product is installed.',
+          ]] },
+          { h: 'Returns', p: [
+            'Because of hygiene, health safety and technical installation requirements, Crystal is generally non-returnable once installed. A return may be accepted only if:',
+            ['The product is dead on arrival', 'A major manufacturing defect is found at the time of installation', 'The wrong product was delivered'],
+            'Raise the return request within 48 hours of delivery. The product must be unused (apart from testing during installation), in its original packaging, with all accessories and the invoice. Final approval is subject to technical inspection by our authorised service team.',
+          ] },
+          { h: 'Replacement', p: [
+            'Crystal is eligible for replacement only if:',
+            ['The unit has a manufacturing defect', 'It was damaged during delivery, reported within 48 hours', 'It is not working because of an internal technical fault, verified by an authorised technician'],
+            'Raise the replacement request within 7 days of delivery or installation. After 7 days, the issue is handled under the warranty instead.',
+            'Replacement is processed after inspection by DVINE-authorised service personnel. If a manufacturing defect is confirmed, the defective part or unit is replaced free of charge with a new or equivalent one, within 7–10 working days of approval. The original packaging, invoice and all accessories must be returned. A replacement is not approved if the product seal, warranty seal or internal components have been tampered with.',
+          ] },
+          { h: 'Refunds', p: [
+            'Refunds are made only when:',
+            ['The order was cancelled before dispatch', 'A return was approved for a confirmed manufacturing defect and a replacement isn’t possible'],
+            'Refunds are initiated within 7–14 working days of approval, to the original payment method. For EMI purchases, the refund follows the bank or finance partner’s policy.',
+          ] },
+          { h: 'Not eligible', p: [
+            'Returns, refunds and replacement do not apply to:',
+            ['Change of mind after installation', 'Dissatisfaction with the taste', 'Damage from mishandling, or installation by an unauthorised person', 'Damage from voltage fluctuation', 'Water quality or water pressure beyond the recommended limits', 'Unauthorised repairs or tampering', 'Normal wear and tear of filters, which are consumables'],
+          ] },
+          { h: 'Before you buy', p: ['Crystal is a health appliance set up for your home. Please make sure you understand its features, whether your water suits it and what installation needs before you order. If you’re unsure about your water, book a water test first.'] },
+        ],
+      },
+      {
+        id: 'hyper', title: 'Hyper hydrogen water bottle',
+        docs: [DOCS.hyperReturns, DOCS.hyperReplacement],
+        sections: [
+          { h: 'Cancelling an order', p: ['Orders can be cancelled within 24 hours of being placed. Once an order has shipped, it can’t be cancelled.'] },
+          { h: 'Returns', p: [
+            'You can request a return within 7 days of delivery if:',
+            ['The product is unused and in its original condition', 'The product safety seal is intact', 'All original packaging, accessories, the charging cable and the manual are included', 'There is no physical damage, scratches, dents or water damage', 'You have the original invoice'],
+            'A product that has been used, whose seal is broken, removed or tampered with, that has accidental or physical damage, or that comes back without its original packaging or parts can’t be returned.',
+          ] },
+          { h: 'Damaged or defective on arrival', p: [
+            'If Hyper arrives damaged, defective or not working, tell us within 48 hours of delivery and send:',
+            ['A complete unboxing video, without pauses or cuts', 'Clear photos of the product and packaging', 'Your order ID and a copy of the invoice', 'A description of the issue'],
+            'Without this proof, the request may be declined. After verification we arrange a pickup (where available) and our technical team inspects the product. If approved, a replacement is dispatched within 5–7 working days, or the product is repaired under warranty. If no defect is found, the product is sent back to you.',
+            'One replacement is allowed per order.',
+          ] },
+          { h: 'Refunds', p: [[
+            'Refunds are processed only after the product passes inspection.',
+            'Once approved, the refund is initiated within 5–7 working days, to the original payment method.',
+            'Shipping charges, if any, are non-refundable.',
+            'Cash on delivery orders are refunded by bank transfer or UPI.',
+          ]] },
+          { h: 'Not eligible', p: [
+            'Returns and replacements aren’t accepted for:',
+            ['Change of mind or personal preference', 'Minor variation in colour, design or shade', 'Improper handling or misuse', 'Damage from drops, voltage fluctuation, or immersion in water outside normal use', 'Battery damage from incorrect charging or a third-party charger', 'Normal wear and tear'],
+          ] },
+          { h: 'How to request a return', p: ['Call customer support on 1800 202 4504 or email reachout@dvineh2o.com with your order ID, contact details and the reason for the return. Signed-in customers can also start a return from their account.'] },
+        ],
+      },
     ],
   },
   warranty: {
     title: 'Warranty',
-    sections: [
-      { h: 'Coverage', p: ['Every DVINE system is backed by a five-year warranty covering parts, labour and performance (DVINE Assured Care). Warranty for Hyper is shown on the product page.', 'Your warranty starts on the purchase date and is listed in your account with the order.'] },
-      { h: 'Service', p: ['Raise a service request from your account or the Support page. A PAN India network of certified engineers handles service visits.'] },
-      { h: 'What is not covered', p: ['Damage from misuse, unauthorised repairs, or use outside the conditions in the product manual.'] },
+    intro: 'Warranty terms differ by product. Your warranty starts on the purchase date and is listed in your account with the order.',
+    parts: [
+      {
+        id: 'crystal', title: 'Crystal home water system', intro: 'The DVINE Water Ionizer, Crystal 5114.',
+        docs: [DOCS.crystalWarranty, DOCS.crystalManual],
+        sections: [
+          { h: 'One-year comprehensive warranty', p: [
+            'Crystal comes with a one-year comprehensive warranty from the date of purchase. It covers:',
+            ['All electrical components', 'Internal functional parts', 'Manufacturing defects', 'Display and control panel issues', 'The pump and internal fittings'],
+            'During this period, any defect arising from a manufacturing fault is repaired or the part replaced free of charge.',
+          ] },
+          { h: 'Electrolysis chamber: 4 years or 1,000 litres', p: ['The electrolysis chamber is covered for 4 years from the date of purchase or 1,000 litres of use, whichever comes first. This covers manufacturing defects and performance issues under normal household use.'] },
+          { h: 'Service', p: [[
+            'Service assistance is provided within 48 hours of a complaint being registered.',
+            'Service is available across Odisha.',
+            'Register a complaint on 1800 202 4504, through an authorised service representative, from your account or on the Support page.',
+          ]] },
+          { h: 'Conditions', p: [
+            'The warranty applies when:',
+            ['The product is used under normal domestic conditions', 'It was installed by an authorised technician', 'The purchase invoice is shown at the time of service', 'Recommended maintenance and filter replacements have been followed'],
+          ] },
+          { h: 'Warranty seal', p: [[
+            'Crystal is secured with an authorised warranty seal sticker. If the seal is broken, tampered with, removed or damaged, the warranty is void immediately.',
+            'A broken seal is treated as unauthorised internal repair or tampering, and service is then chargeable.',
+            'Only DVINE-authorised service technicians may open or service the machine’s internal components.',
+          ]] },
+          { h: 'What is not covered', p: [[
+            'Physical damage, mishandling or accidental breakage',
+            'Damage from improper installation or voltage fluctuation',
+            'Unauthorised repairs or tampering',
+            'Damage from water quality beyond the recommended limits',
+            'Consumables such as filters, unless stated separately',
+          ]] },
+          { h: 'Limitation of liability', p: ['DVINE’s responsibility is limited to repairing or replacing defective parts. Claims for indirect or consequential damage are not accepted.'] },
+        ],
+      },
+      {
+        id: 'hyper', title: 'Hyper hydrogen water bottle',
+        docs: [DOCS.hyperManual, DOCS.hyperReplacement],
+        sections: [
+          { h: 'Coverage', p: ['Hyper’s warranty term is shown on its product page and on your invoice. If Hyper arrives damaged, defective or not working, tell us within 48 hours of delivery; after verification it is replaced or repaired under warranty, as set out in the returns and replacement terms.'] },
+          { h: 'What is not covered', p: [[
+            'Using unapproved liquids. Fill Hyper only with clean drinking water such as filtered, distilled or purified water, never carbonated drinks, soda or heavy mineral water.',
+            'Battery damage from incorrect charging or a third-party charger. Charge only with the cable supplied.',
+            'Damage from drops, misuse, or immersing the generator base in water.',
+            'Opening or taking apart the internal components.',
+          ]] },
+        ],
+      },
+      {
+        id: 'titan', title: 'Titan',
+        sections: [{ h: 'Coverage', p: ['Titan is supplied on quotation after a site discussion. Its warranty and service terms are confirmed in your quotation.'] }],
+      },
     ],
   },
 };
+
+/** Every section of a policy, across its parts, for search. */
+export const policySections = (p: Policy) => [...(p.sections ?? []), ...(p.parts ?? []).flatMap(x => x.sections)];
 
 /* ───────────────────────── Site search index ───────────────────────── */
 export function searchIndex() {
@@ -470,7 +615,7 @@ export function searchIndex() {
     { href: '/support', title: 'Support', body: `${SUPPORT.hero.body} ${SUPPORT.order.body} ${SUPPORT.manuals.body}` },
     { href: '/track', title: 'Track my order', body: 'Order status delivery tracking shipment AWB' },
     { href: '/book-demo', title: 'Book a demo', body: 'Book a Crystal or Titan demonstration at home or on a video call.' },
-    ...Object.entries(POLICIES).map(([k, v]) => ({ href: `/policies/${k}`, title: v.title, body: v.sections.map(s => s.h + ' ' + s.p.join(' ')).join(' ') })),
+    ...Object.entries(POLICIES).map(([k, v]) => ({ href: `/policies/${k}`, title: v.title, body: policySections(v).map(s => s.h + ' ' + s.p.flat().join(' ')).join(' ') })),
   ];
   const faqs = [
     ...CRYSTAL.faq.items.map(f => ({ ...f, href: '/home-water-systems#faq' })),

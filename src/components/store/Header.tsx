@@ -41,9 +41,11 @@ export async function Header({ overlay = false, framed = false, home = false, sh
     <>
       {band}
       <HeaderShell overlay={false} framed glass={home}>
-        <div className="frame-x flex h-[68px] items-center lg:grid lg:h-[76px] lg:grid-cols-[1fr_auto_1fr]">
+        {/* The text nav needs ~1300px beside the logo and actions. Below 1280 the curtain menu takes over; 1280–1439 lets
+            the nav fill the gap between logo and actions; from 1440 it sits centred on the bar as designed. */}
+        <div className="frame-x flex h-[68px] items-center lg:h-[76px] min-[1440px]:grid min-[1440px]:grid-cols-[1fr_auto_1fr]">
           {logo}
-          <nav aria-label="Primary" className="hidden gap-5 font-sans text-[13px] font-medium lg:flex xl:gap-6 xl:text-[13.5px]">{links}</nav>
+          <nav aria-label="Primary" className="mx-6 hidden flex-1 justify-center gap-[18px] font-sans text-[13px] font-medium xl:flex min-[1440px]:mx-0 min-[1440px]:flex-none min-[1440px]:gap-6 min-[1440px]:text-[13.5px]">{links}</nav>
           {actions}
         </div>
       </HeaderShell>
@@ -54,7 +56,7 @@ export async function Header({ overlay = false, framed = false, home = false, sh
     <>
     {band}
     <HeaderShell overlay={overlay}>
-      <div className="hidden border-b border-current/10 lg:block">
+      <div className="hidden border-b border-current/10 xl:block">
         <nav aria-label="Utility" className="container-x flex h-8 items-center justify-end gap-3 font-sans text-[12.5px] opacity-75">
           {NAV.utility.map((l, i) => <span key={l.href} className="flex items-center gap-3">{i > 0 && <span aria-hidden="true" className="opacity-40">|</span>}<Link href={l.href} className="hover:underline">{l.label}</Link></span>)}
         </nav>
@@ -62,7 +64,7 @@ export async function Header({ overlay = false, framed = false, home = false, sh
       <div className="container-x">
         <div className="flex h-16 items-center gap-8 lg:h-[76px]">
           {logo}
-          <nav aria-label="Primary" className="hidden gap-5 font-sans text-[13px] font-medium lg:flex xl:gap-6">{links}</nav>
+          <nav aria-label="Primary" className="hidden gap-5 font-sans text-[13px] font-medium xl:flex xl:gap-6">{links}</nav>
           {actions}
         </div>
       </div>

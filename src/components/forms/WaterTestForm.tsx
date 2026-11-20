@@ -42,17 +42,20 @@ export function WaterTestForm({ options, slots, sources, initialPin = '' }: { op
 
       <fieldset className="card p-5 sm:p-6">
         <legend className="px-1 font-sans text-lg font-semibold">2. Choose your test</legend>
-        <div className="mt-3 grid gap-3 lg:grid-cols-3">
+        <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-3">
           {options.map(o => (
             <label key={o.id} className={`relative flex cursor-pointer flex-col rounded-2xl border-2 p-5 transition ${opt === o.id ? 'border-deep-current bg-deep-current/5' : 'border-line hover:border-deep-current/40'}`}>
               <input type="radio" name="optionId" value={o.id} checked={opt === o.id} onChange={() => setOpt(o.id)} className="sr-only" />
-              <span className="font-sans text-[17px] font-semibold">{o.name}</span>
+              {/* the badge sits in the title row, so a long test name wraps beside it instead of running under it */}
+              <span className="flex items-start justify-between gap-3">
+                <span className="font-sans text-[17px] font-semibold">{o.name}</span>
+                <span className={`badge mt-0.5 shrink-0 bg-deep-current text-white transition-opacity ${opt === o.id ? 'opacity-100' : 'opacity-0'}`} aria-hidden={opt !== o.id}>Selected</span>
+              </span>
               <span className="mt-1 font-sans text-2xl font-bold">{o.price ? formatINR(o.price) : 'Free'}</span>
               {o.summary && <span className="mt-2 text-[15px] text-muted">{o.summary}</span>}
               <span className="mt-3 font-sans text-[13px] text-muted"><b className="text-ink">Measures:</b> {o.parameters.join(', ')}</span>
               <span className="mt-1 font-sans text-[13px] text-muted"><b className="text-ink">Collection:</b> {o.collectionMethod}</span>
               <span className="mt-1 font-sans text-[13px] text-muted"><b className="text-ink">Report:</b> {o.turnaround}</span>
-              {opt === o.id && <span className="absolute top-4 right-4 badge bg-deep-current text-white">Selected</span>}
             </label>
           ))}
         </div>
@@ -61,7 +64,7 @@ export function WaterTestForm({ options, slots, sources, initialPin = '' }: { op
           onClick={() => { const d = document.getElementById('wt-details'); d?.scrollIntoView({ behavior: 'smooth', block: 'start' }); d?.querySelector<HTMLElement>('input')?.focus({ preventScroll: true }); }}>Continue</button>
       </fieldset>
 
-      <fieldset id="wt-details" className="card grid scroll-mt-32 gap-4 p-5 sm:grid-cols-2 sm:p-6">
+      <fieldset id="wt-details" className="card grid grid-cols-1 scroll-mt-32 gap-4 p-5 sm:grid-cols-2 sm:p-6">
         <legend className="px-1 font-sans text-lg font-semibold">3. Your details and slot</legend>
         {selected && <p className="sm:col-span-2 -mt-1 rounded-xl bg-paper px-4 py-3 font-sans text-[14px] text-muted">Selected: <b className="text-ink">{selected.name}</b> · {selected.collectionMethod} · report {selected.turnaround.toLowerCase()} · {selected.price ? formatINR(selected.price) : 'Free'}</p>}
         <Field name="name" label="Name" autoComplete="name" required defaultValue={v('name')} error={e.name} />

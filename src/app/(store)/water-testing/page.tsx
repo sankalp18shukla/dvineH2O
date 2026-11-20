@@ -49,7 +49,7 @@ export default async function WaterTestingPage({ searchParams }: { searchParams:
               <button className="cta cta-pill" style={{ ['--accent' as string]: 'var(--color-glacier)' }}><CtaChip /><span>Book a Water Test</span></button>
             </form>
             <div><Cta href="#upload" kind="glass">Upload My Report</Cta></div>
-            <ul className="grid gap-2 border-t border-line pt-5 font-sans text-[14px] text-muted sm:grid-cols-3 sm:gap-4">
+            <ul className="grid grid-cols-1 gap-2 border-t border-line pt-5 font-sans text-[14px] text-muted sm:grid-cols-3 sm:gap-4">
               <li className="flex items-center gap-2"><Icon name="drop" className="size-4 shrink-0 text-deep-current" /> {from === 0 ? 'Essential test free' : `From ${formatINR(from)}`}</li>
               <li className="flex items-center gap-2"><Icon name="calendar" className="size-4 shrink-0 text-deep-current" /> Pick your slot</li>
               <li className="flex items-center gap-2"><Icon name="shield" className="size-4 shrink-0 text-deep-current" /> Private reports</li>
@@ -61,7 +61,7 @@ export default async function WaterTestingPage({ searchParams }: { searchParams:
         <section id="tests" className="section" aria-labelledby="scope-title">
           <div className="container-x">
             <SectionHead id="scope-title" tone="blue" title={WATER_TESTING.scope.title} body={WATER_TESTING.scope.body} />
-            <div className="grid gap-x-10 gap-y-14 md:grid-cols-2 lg:grid-cols-3" data-rise>
+            <div className="grid grid-cols-1 gap-x-10 gap-y-14 md:grid-cols-2 lg:grid-cols-3" data-rise>
               {options.map((o, i) => (
                 <article key={o.id} className={`${css.tile} ${css.callout} group flex flex-col`}>
                   <div className="flex items-center justify-between">
@@ -88,7 +88,7 @@ export default async function WaterTestingPage({ searchParams }: { searchParams:
             beside the four steps, which draw down as you read, as Hyper's how it works */}
         <section className={`on-glacier relative overflow-clip text-ink ${css.bandTop} ${css.glacierCopy}`} aria-labelledby="how-title">
           <WaveBand tone="glacier" interactive knot />
-          <div className="container-x relative grid gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-20">
+          <div className="container-x relative grid grid-cols-1 gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-20">
             <div className="lg:sticky lg:top-32 lg:self-start">
               <GrowVideo id="wt-video" poster="/images/water-rings.webp" alt="Rings spreading across still water" label="Watch how testing works" pending="The explainer film is on its way." />
             </div>
@@ -122,7 +122,7 @@ export default async function WaterTestingPage({ searchParams }: { searchParams:
         {/* 05 · Existing report upload: a redacted sample report (W04) taped beside the copy, the upload form right */}
         <section id="upload" className={`on-glacier relative overflow-clip text-ink ${css.bandPad} ${css.glacierCopy}`} aria-labelledby="up-title">
           <WaveBand tone="glacier" interactive knot />
-          <div className="container-x relative grid gap-14 lg:grid-cols-[1fr_1.3fr] lg:gap-16">
+          <div className="container-x relative grid grid-cols-1 gap-14 lg:grid-cols-[1fr_1.3fr] lg:gap-16">
             <div className="relative">
               <Lockup id="up-title" title={WATER_TESTING.upload.title} tone="flash" size="md" />
               <p className="lede mt-9" data-words><Words text={WATER_TESTING.upload.body} /></p>

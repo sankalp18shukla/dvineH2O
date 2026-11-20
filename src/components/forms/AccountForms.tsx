@@ -22,7 +22,7 @@ export function ProfileForm({ c }: { c: { name: string; email: string | null; ph
   const [state, action] = useActionState<FormState, FormData>(updateProfile, undefined);
   const e = state?.errors ?? {};
   return (
-    <form action={action} className="grid gap-4 sm:grid-cols-2">
+    <form action={action} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <Field name="name" label="Full name" defaultValue={c.name} required error={e.name} />
       <Field name="email" label="Email" defaultValue={c.email ?? ''} disabled hint="Contact support to change your email." />
       <Field name="phone" label="Mobile number" defaultValue={c.phone ?? ''} required error={e.phone} />
@@ -38,7 +38,7 @@ export function AddressForm() {
   const [state, action] = useActionState<FormState, FormData>(saveAddress, undefined);
   const e = state?.errors ?? {};
   return (
-    <form action={action} className="grid gap-4 sm:grid-cols-2" key={state?.ok ? String(Date.now()) : 'a'}>
+    <form action={action} className="grid grid-cols-1 gap-4 sm:grid-cols-2" key={state?.ok ? String(Date.now()) : 'a'}>
       <Field name="name" label="Name" required error={e.name} />
       <Field name="phone" label="Phone" required error={e.phone} />
       <Field name="line1" label="Address" required error={e.line1} className="sm:col-span-2" />

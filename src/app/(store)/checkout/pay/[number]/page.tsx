@@ -28,7 +28,7 @@ export default async function PayPage({ params, searchParams }: { params: Promis
         <CheckoutSteps current={3} />
         <Lockup as="h1" title="*Complete* your payment." tone="glacier" size="sm" />
         <p className="lede mt-8">Order <b className="text-ink">{o.number}</b>{mins != null && !expired && (mins > 180 ? <> · link valid until {o.reservationExpiresAt!.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', timeZone: 'Asia/Kolkata' })}</> : <> · items held for {mins} more minute{mins === 1 ? '' : 's'}</>)}</p>
-        <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_420px]">
+        <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_420px]">
           <OrderSummary order={o} />
           <div>
             {expired

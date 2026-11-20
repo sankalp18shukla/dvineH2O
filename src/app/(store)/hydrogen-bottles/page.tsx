@@ -48,11 +48,12 @@ export default async function HyperPage({ searchParams }: { searchParams: Promis
       <main id="main">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(productJsonLd(p, '/hydrogen-bottles')) }} />
 
-        {/* 01 · Hero: gallery left, purchase right. Picking a finish repaints the bottle on the stage in place: a wavy
-            fill line runs up the metal in the new colour (BottleFinish.tsx); the glass, logo and drops stay the photo's. */}
+        {/* 01 · Hero: gallery left, purchase right. Picking a colour changes the bottle on the stage in place: a wavy
+            fill line runs up it and the photo of the new colour follows behind (BottleFinish.tsx); the thumbnails
+            switch to that colour's photos. */}
         <FinishProvider finishes={HYPER.finishes}>
           <ProductHero name="Hyper" title="Hydrogen water bottle" tone="flash" sticker="Sip Check." body={HYPER.hero.body}
-            cutout="/images/hyper_product.png" shell="/images/hyper_shell.png" axis={-41} images={p.images ?? HYPER.hero.gallery} alt="Hyper hydrogen water bottle">
+            cutout={HYPER.finishes[0].cutout} images={p.images ?? HYPER.hero.gallery} alt="Hyper hydrogen water bottle">
             <FinishPicker />
             <BuyBox p={p} tone="flash" offer={promo.offer} why={blog.price} />
           </ProductHero>
@@ -67,7 +68,7 @@ export default async function HyperPage({ searchParams }: { searchParams: Promis
         <section className="section overflow-hidden" aria-labelledby="day-title">
           <div className="container-x">
             <SectionHead id="day-title" tone="flash" title={HYPER.everyday.title} body={HYPER.everyday.body} />
-            <div className="grid gap-6 md:grid-cols-3 lg:gap-8">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8">
               {HYPER.everyday.cards.map((c, i) => (
                 <figure key={c.title} className={`${css.card} relative ${i === 1 ? 'md:mt-24' : i === 2 ? 'md:mt-10' : ''}`} data-speed={['.25', '-.2', '.1'][i]}>
                   <div className="pin-frame relative aspect-[3/4]" style={{ ['--pin' as string]: 'var(--color-flash)' }}>
@@ -87,9 +88,9 @@ export default async function HyperPage({ searchParams }: { searchParams: Promis
             follows the pointer. The film stays beside the three steps, which light up as you read down. */}
         <section id="how-it-works" className={`on-glacier relative overflow-clip text-ink ${css.bandTop}`} aria-labelledby="how-title">
           <WaveBand tone="glacier" interactive knot />
-          <div className="container-x relative grid gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-20">
+          <div className="container-x relative grid grid-cols-1 gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-20">
             <div className="lg:sticky lg:top-32 lg:self-start">
-              <GrowVideo id="hyper-video" src={p.videoUrl} poster="/images/hyper-water.webp" alt="Hyper filled with water" label="Watch How to Use Hyper" pending="The demonstration film is on its way." />
+              <GrowVideo id="hyper-video" src={p.videoUrl} poster="/images/hyper/duo.webp" alt="Hyper in Rose and Gravity Grey" label="Watch How to Use Hyper" pending="The demonstration film is on its way." />
             </div>
             <div>
               <Lockup id="how-title" title={HYPER.how.title} tone="blue" size="md" />
@@ -121,11 +122,11 @@ export default async function HyperPage({ searchParams }: { searchParams: Promis
         {/* 05 · Care and box contents, on a second Glacier wave band with its own knot */}
         <section id="care" className={`on-glacier relative overflow-clip text-ink ${css.glacierCopy} ${css.bandPad}`} aria-labelledby="care-title">
           <WaveBand tone="glacier" interactive knot />
-          <div className="container-x relative grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
+          <div className="container-x relative grid grid-cols-1 items-start gap-12 lg:grid-cols-2 lg:gap-16">
             <div>
               <Lockup id="care-title" title={HYPER.care.title} tone="blue" size="md" />
               <p className="lede mt-9" data-words><Words text={HYPER.care.body} /></p>
-              <ol className="mt-10 grid gap-4 sm:grid-cols-3" data-rise>
+              <ol className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3" data-rise>
                 {HYPER.care.steps.map((s, i) => (
                   <li key={s.title} className={css.care}>
                     <span className={`${css.careN} font-serif text-[40px] leading-none text-deep-current italic`}>{i + 1}</span>
@@ -142,7 +143,7 @@ export default async function HyperPage({ searchParams }: { searchParams: Promis
             <div className="relative grid gap-12">
               <FrameTuckSquiggle className="-top-16 -right-11 z-[3] hidden w-48 text-deep-current lg:block" />
               <div className="pin-frame relative aspect-[16/10]" style={{ ['--pin' as string]: 'var(--color-flash)' }}>
-                <div className="absolute inset-0 overflow-hidden"><Image src="/images/brand-hand-bottle.webp" alt="Hyper held in one hand" fill sizes="(min-width:1024px) 50vw, 100vw" className="scale-[1.14] object-cover" data-speed=".3" /></div>
+                <div className="absolute inset-0 overflow-hidden"><Image src="/images/brand-handover.webp" alt="A Hyper bottle passed from one hand to another" fill sizes="(min-width:1024px) 50vw, 100vw" className="scale-[1.14] object-cover" data-speed=".3" /></div>
               </div>
               <div data-reveal><BoxContents p={p} /></div>
             </div>

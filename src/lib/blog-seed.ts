@@ -16,7 +16,7 @@ const OURS: Seed[] = [
     slug: 'what-you-pay-for-with-crystal', category: 'value', product: 'crystal', featured: true, published: '2026-11-10',
     title: 'What you are paying for when you buy Crystal',
     excerpt: 'Crystal costs more than a filter because it is more than a filter. Here is where the money goes, part by part, and what stays with you after the sale.',
-    coverImage: '/images/crystal-inside.webp', coverAlt: 'Inside Crystal: filter cartridges and the ionisation chamber',
+    coverImage: '/images/crystal/kitchen-pour.webp', coverAlt: 'Crystal on a kitchen counter, pouring a glass of water',
     body: `Crystal sits in a different price bracket from a kitchen water filter, and it is fair to ask why. The short answer is that a filter only takes things out of water. Crystal filters the water first and then changes it by electrolysis, and the parts that do that work are expensive to make well.
 
 This page goes through the machine part by part, so you can judge the price for yourself.
@@ -106,7 +106,7 @@ Hyper does not purify water. Fill it with suitable drinking water, as the guide 
     slug: 'how-a-titan-quotation-is-worked-out', category: 'value', product: 'titan', published: '2026-11-12',
     title: 'How a Titan quotation is worked out',
     excerpt: 'TitanForce 111 has no listed price because no two sites are the same. These are the things we ask about, and how each one affects your quotation.',
-    coverImage: '/images/titan-display.webp', coverAlt: 'The SmartFlow multi-mode display on TitanForce 111',
+    coverImage: '/images/titan/blog-cover.webp', coverAlt: 'TitanForce 111 installed at a client site',
     body: `TitanForce 111 is priced on quotation. That can look like a way of hiding the number, so here is exactly how the number is reached.
 
 ## Why there is no listed price

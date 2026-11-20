@@ -42,7 +42,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   return (
     <>
       <Header framed page="blog" />
-      <main id="main">
+      <main id="main" data-still-tags>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(ld) }} />
         <article className="container-x pt-10 pb-16 sm:pt-14 sm:pb-24">
           <header id="post-head" className="mx-auto max-w-[60rem]">

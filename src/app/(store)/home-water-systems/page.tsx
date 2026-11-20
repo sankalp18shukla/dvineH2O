@@ -29,6 +29,7 @@ import { TuckedSquiggle } from '@/components/store/TuckedSquiggle';
 import { WaveBand } from '@/components/store/WaveBand';
 import { LightUp } from '@/components/store/LightUp';
 import { WorthReading } from '@/components/store/WorthReading';
+import { FinishPicker, FinishProvider } from '@/components/store/BottleFinish';
 import { getProductReads } from '@/lib/blog.server';
 import css from './crystal.module.css';
 
@@ -70,11 +71,15 @@ export default async function CrystalPage({ searchParams }: { searchParams: Prom
       <main id="main">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(productJsonLd(p, '/home-water-systems')) }} />
 
-        {/* 01 · Hero: gallery left, purchase right */}
-        <ProductHero name="Crystal" title="Home water system" tone="glacier" sticker={'Soft Launching\n“My Water Era.”'} body={CRYSTAL.hero.body}
-          cutout="/images/crystal_product.png" images={p.images ?? CRYSTAL.hero.gallery} alt="Crystal home water system">
-          <BuyBox p={p} tone="glacier" offer={promo.offer} why={blog.price} secondary={{ href: '/book-demo?product=crystal', label: 'Book a Demo' }} />
-        </ProductHero>
+        {/* 01 · Hero: gallery left, purchase right. Picking a colour changes Crystal on the stage as on Hyper: a wavy
+            line runs up it and the render in the new colour follows (BottleFinish.tsx); the thumbnails follow too. */}
+        <FinishProvider finishes={CRYSTAL.finishes}>
+          <ProductHero name="Crystal" title="Home water system" tone="glacier" sticker={'Soft Launching\n“My Water Era.”'} body={CRYSTAL.hero.body}
+            cutout={CRYSTAL.finishes[0].cutout} images={p.images ?? CRYSTAL.hero.gallery} alt="Crystal home water system">
+            <FinishPicker />
+            <BuyBox p={p} tone="glacier" offer={promo.offer} why={blog.price} secondary={{ href: '/book-demo?product=crystal', label: 'Book a Demo' }} />
+          </ProductHero>
+        </FinishProvider>
 
         {promo.banner?.placement === 'hero' && banner}
 
@@ -88,15 +93,18 @@ export default async function CrystalPage({ searchParams }: { searchParams: Prom
           <div className="container-x relative">
             <SectionHead id="feat-title" tone="blue" title={CRYSTAL.features.title} align="center" />
             {/* the four light up one by one with the scroll, row by row: top left, top right, bottom left, bottom right */}
-            <LightUp armClass={css.armed} litClass={css.lit} className="grid items-center gap-12 lg:grid-cols-[1fr_minmax(260px,400px)_1fr] lg:gap-[clamp(64px,7vw,128px)]">
-              <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[0]} n={0} side="l" cite={1} /><Callout c={f[1]} n={2} side="l" cite={2} /></div>
+            <LightUp armClass={css.armed} litClass={css.lit} className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1fr_minmax(260px,400px)_1fr] lg:gap-[clamp(64px,7vw,128px)]">
+              <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[0]} n={0} side="l" cite={1} /><Callout c={f[1]} n={2} side="l" cite={2} /></div>
               <div className="relative order-first mx-auto aspect-[4/5] w-full max-w-[400px] lg:order-none" data-speed="-.4">
                 <span className={`${css.ring} absolute inset-x-[4%] top-[12%] aspect-square rounded-full`} aria-hidden="true" />
                 <span className={`${css.disc} absolute z-[1] inset-x-[4%] top-[12%] aspect-square rounded-full shadow-[inset_0_-30px_60px_-30px_rgb(4_22_74/.18)]`} aria-hidden="true" data-tuck-disc />
                 <TuckedSquiggle className="top-[6%] -right-6 w-36 text-deep-current" />
-                <Image src="/images/crystal_product.png" alt="Crystal, front view" fill sizes="400px" data-tuck-product className="z-[3] object-contain object-bottom drop-shadow-[0_30px_30px_rgb(4_22_74/.3)]" />
+                {/* a little smaller than the disc's frame, so the squiggle and the four details have room */}
+                <span data-tuck-product className="absolute inset-x-[11%] top-[14%] bottom-[3%] z-[3]">
+                  <Image src="/images/crystal/midnight-side-cut.webp" alt="Crystal in Midnight" fill sizes="320px" className="object-contain object-bottom drop-shadow-[0_30px_30px_rgb(4_22_74/.3)]" />
+                </span>
               </div>
-              <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[2]} n={1} side="r" /><Callout c={f[3]} n={3} side="r" /></div>
+              <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[2]} n={1} side="r" /><Callout c={f[3]} n={3} side="r" /></div>
             </LightUp>
             <div className="mt-16 flex justify-center" data-rise><Cta href="#specs" kind="ink">See Specifications</Cta></div>
           </div>
@@ -110,7 +118,7 @@ export default async function CrystalPage({ searchParams }: { searchParams: Prom
         {/* 04 · Technology and demonstration: the film opens out with the scroll, the path through the machine draws in under it */}
         <section id="technology" className="section" aria-labelledby="demo-title">
           <div className="container-x">
-            <div className="mb-14 grid items-end gap-8 lg:grid-cols-[1fr_auto]">
+            <div className="mb-14 grid grid-cols-1 items-end gap-8 lg:grid-cols-[1fr_auto]">
               <div>
                 <Lockup id="demo-title" title={CRYSTAL.demo.title} tone="blue" size="md" />
                 <p className="lede mt-9 max-w-2xl" data-words><Words text={CRYSTAL.demo.body} /></p>
@@ -123,7 +131,7 @@ export default async function CrystalPage({ searchParams }: { searchParams: Prom
             <GrowVideo id="demo" src={p.videoUrl} poster="/videos/inside-poster.jpg" alt="Inside Crystal: filter cartridges and ionisation chamber" label="Watch Crystal Demo" pending="The demonstration film is on its way. Request a live demo in the meantime." />
             <div className="relative mt-16" role="group" aria-label="How water moves through Crystal">
               <span className="absolute top-6 right-[12%] left-[12%] hidden h-[2px] bg-ink lg:block" data-draw="x" aria-hidden="true" />
-              <ol className="relative grid gap-10 sm:grid-cols-2 lg:grid-cols-4" data-rise>
+              <ol className="relative grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4" data-rise>
                 {FLOW.map((s, i) => (
                   <li key={s.label} className="flex flex-col items-start lg:items-center lg:text-center">
                     <span className="grid size-12 place-items-center rounded-full bg-glacier text-ink ring-8 ring-paper"><Icon name={s.icon} className="size-6" strokeWidth={1.4} /></span>
@@ -143,7 +151,7 @@ export default async function CrystalPage({ searchParams }: { searchParams: Prom
             <SectionHead id="spec-title" tone="glacier" title={CRYSTAL.fit.title} body={CRYSTAL.fit.body}>
               <div className="cta-row" data-rise><Cta href="#setup" kind="ink">Check My Setup</Cta></div>
             </SectionHead>
-            <div className="grid gap-14 lg:grid-cols-[1fr_1.25fr]">
+            <div className="grid grid-cols-1 gap-14 lg:grid-cols-[1fr_1.25fr]">
               <div data-reveal>
                 <h3 className="eyebrow mb-4">What your kitchen needs</h3>
                 <Facts cols={2} items={CRYSTAL.fit.needs.map(n => ({ title: n.title, body: n.body, icon: <Icon name={n.icon} className="fact-icon" strokeWidth={1.4} /> }))} />
@@ -152,13 +160,13 @@ export default async function CrystalPage({ searchParams }: { searchParams: Prom
               <div data-reveal><h3 className="eyebrow mb-4">Specifications</h3><Specs p={p} initial={5} box={false} /></div>
             </div>
             <div id="setup" className="pin-frame relative mt-24 scroll-mt-32" style={{ ['--pin' as string]: 'var(--color-glacier)' }}>
-              <div className="relative grid gap-10 bg-white p-6 sm:p-12 lg:grid-cols-[1fr_1.3fr]">
+              <div className="relative grid grid-cols-1 gap-10 bg-white p-6 sm:p-12 lg:grid-cols-[1fr_1.3fr]">
                 <div className="flex flex-col">
                   <Lockup title={CRYSTAL.fit.setup.title} tone="glacier" size="sm" />
                   <p className="lede mt-8" data-words><Words text={CRYSTAL.fit.setup.body} /></p>
                   {/* fills the column down to the foot of the form */}
                   <div className="relative mt-10 aspect-[4/5] overflow-hidden lg:aspect-auto lg:min-h-[320px] lg:flex-1" data-reveal>
-                    <Image src="/images/crystal_sec.png" alt="Crystal on a kitchen counter beside the window" fill sizes="(min-width:1024px) 38vw, 100vw" className="object-cover object-[50%_35%]" />
+                    <Image src="/images/crystal/kitchen-setup.webp" alt="Crystal installed on a kitchen counter, with a glass set under the tap" fill sizes="(min-width:1024px) 38vw, 100vw" className="object-cover object-[42%_50%]" />
                   </div>
                 </div>
                 <EnquiryForm variant="product" source="/home-water-systems#setup" defaultInterest="crystal" submitLabel="Check My Setup" photos />
@@ -170,21 +178,21 @@ export default async function CrystalPage({ searchParams }: { searchParams: Prom
         {/* 06 · Delivery and care */}
         <section id="delivery" className={`${css.glacierCopy} relative overflow-clip py-32 text-ink sm:py-44`} aria-labelledby="del-title">
           <WaveBand tone="glacier" interactive />
-          <div className="container-x relative grid items-start gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
+          <div className="container-x relative grid grid-cols-1 items-start gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
             <div>
               <Lockup id="del-title" title={CRYSTAL.delivery.title} tone="volt" size="md" />
               <p className="lede mt-9" data-words><Words text={CRYSTAL.delivery.body} /></p>
               <div className="mt-8" data-reveal><Faq items={CRYSTAL.delivery.items} single /></div>
               <div className="cta-row mt-9" data-rise>
                 <Cta href="#buy" kind="ink" icon="truck">Check Delivery</Cta>
-                <Cta href="/policies/warranty" kind="glass">Read Warranty</Cta>
+                <Cta href="/policies/warranty#crystal" kind="glass">Read Warranty</Cta>
                 <Cta href="/support/crystal" kind="glass">Product Care</Cta>
               </div>
             </div>
             <div className="relative lg:sticky lg:top-36">
               <Squiggle className="pointer-events-none absolute -top-14 -right-10 z-[3] hidden w-44 text-deep-current lg:block" />
               <div className="pin-frame relative aspect-[4/5]" style={{ ['--pin' as string]: 'var(--color-flash)' }}><div className="relative size-full overflow-hidden">
-                <Image src="/images/crystal.webp" alt="Crystal installed on a kitchen counter" fill sizes="(min-width:1024px) 40vw, 100vw" className="scale-[1.14] object-cover" data-speed=".3" />
+                <Image src="/images/crystal/kitchen-counter.webp" alt="Crystal on a kitchen counter, between flowers and a fruit bowl" fill sizes="(min-width:1024px) 40vw, 100vw" className="scale-[1.14] object-cover object-[53%_50%]" data-speed=".3" />
               </div></div>
             </div>
           </div>

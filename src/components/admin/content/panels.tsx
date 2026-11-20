@@ -120,9 +120,9 @@ function SlideMock({ p, layer }: { p: PromoSlide; layer?: (l: 'back' | 'front') 
       {p.fit !== 'cover' && layer?.('back')}
       {p.fit === 'lineup' && (
         <div className="pointer-events-none absolute inset-y-[8%] right-[3%] left-[50%] flex items-end justify-center gap-[3%] pb-[6%]">
-          <img src="/images/crystal_product.png" alt="" className="h-[52%] object-contain drop-shadow-2xl" />
+          <img src="/images/crystal/ivory.webp" alt="" className="h-[52%] object-contain drop-shadow-2xl" />
           <img src="/images/titan_product.png" alt="" className="h-[78%] object-contain drop-shadow-2xl" />
-          <img src="/images/hyper_product.png" alt="" className="h-[40%] object-contain drop-shadow-2xl" />
+          <img src="/images/hyper/rose.webp" alt="" className="h-[38%] rotate-[24deg] object-contain drop-shadow-2xl" />
         </div>
       )}
       {m && p.fit !== 'lineup' && (p.fit === 'cover'

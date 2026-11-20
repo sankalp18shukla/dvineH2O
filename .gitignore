@@ -21,3 +21,17 @@ tests/out
 supabase/.temp
 supabase/.branches
 .env*.local
+
+# raw product shoots (hundreds of MB); the site uses the web images built from them in public/images
+public/zips/
+# DVINE's original PDFs as received (one is 221 MB); the site serves the web copies in public/docs
+public/somepdfs/
+# raw camera footage the Titan/Crystal photos were pulled from (one clip is 131 MB, over GitHub's 100 MB limit)
+public/videoforpic/
+# uncut video sources; the site serves the trimmed, re-encoded clips next to them
+public/videos/video_component.mp4
+public/videos/water_drop.mp4
+# working files for regenerating the "inside" video (prompt + reference photos), not served
+docs/inside-video/
+# uncompressed 3D model sources + the compressor; public/models holds the meshopt-compressed copies the site loads
+assets-src/

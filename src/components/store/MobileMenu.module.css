@@ -45,7 +45,7 @@
 .stage { position: relative; display: block; aspect-ratio: 1 / 1.08; }
 .disc { position: absolute; left: 50%; bottom: 4%; width: 86%; aspect-ratio: 1; translate: -50% 0; border-radius: 50%; background: var(--tone);
   box-shadow: 0 0 34px -6px var(--tone); scale: .4; opacity: 0; transition: scale .3s ease, opacity .2s ease; }
-.product { position: absolute; inset: 0 6% 2%; width: 88%; height: 98%; object-fit: contain; object-position: center bottom;
+.product { position: absolute; inset: auto 6% 2%; width: 88%; height: var(--h, 98%); object-fit: contain; object-position: center bottom;
   filter: drop-shadow(0 12px 12px rgb(2 8 30 / .45)); translate: 0 18%; opacity: 0; transition: translate .3s ease, opacity .2s ease; }
 .root[data-open="true"] .disc { scale: 1; opacity: 1; transition: scale .8s cubic-bezier(.34, 1.4, .64, 1) calc(.38s + var(--i, 0) * 45ms), opacity .4s ease calc(.38s + var(--i, 0) * 45ms); }
 .root[data-open="true"] .product { translate: 0 0; opacity: 1; transition: translate .9s var(--out) calc(.46s + var(--i, 0) * 45ms), opacity .4s ease calc(.46s + var(--i, 0) * 45ms); }
@@ -83,6 +83,19 @@
   .foot { padding-bottom: max(24px, env(safe-area-inset-bottom)); }
   .name { font-size: 19px; }
   .sub { font-size: 16px; }
+}
+
+/* small laptops / tablet landscape (the menu serves up to 1279px): match the 76px bar and keep a centred column */
+@media (min-width: 1024px) { .bar { height: 76px; } }
+@media (min-width: 900px) {
+  .scroll > * { max-width: 760px; margin-left: auto; margin-right: auto; }
+  .foot { display: grid; justify-items: center; }
+  .foot > * { width: min(100%, 760px); }
+}
+@media (hover: hover) {
+  .tile:hover { background-color: rgb(255 255 255 / .05); }
+  .link:hover .go { background: var(--color-glacier); color: var(--color-ink); box-shadow: none; translate: 3px 0; }
+  .ghost:hover { background-color: rgb(255 255 255 / .08); }
 }
 
 @media (prefers-reduced-motion: reduce) {

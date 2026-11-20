@@ -10,7 +10,7 @@ export function ModeExplorer({ title, items, note, children }: { title: string; 
     <section id="modes" className="on-dark section relative overflow-hidden py-28 text-white sm:py-40" aria-labelledby="modes-title">
       <WaveBand />
       <div className="pointer-events-none absolute inset-0 transition-[background] duration-700" style={{ background: `radial-gradient(40% 60% at 70% 50%, ${m.color}33, transparent 70%)` }} aria-hidden="true" />
-      <div className="container-x relative grid items-center gap-12 lg:grid-cols-2">
+      <div className="container-x relative grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
         <div>
           <Lockup id="modes-title" title={title} tone="glacier" size="md" />
           <div className="mt-10 flex flex-wrap gap-2" role="tablist" aria-label="Water modes">

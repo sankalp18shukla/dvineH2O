@@ -15,7 +15,7 @@ export function OrderDetail({ o, invoiceHref, retryHref, children }: { o: FullOr
   const inv = o.invoices.find(i => i.kind === 'invoice');
   const inst = o.installations[0];
   return (
-    <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_400px]">
       <div className="flex flex-col gap-6">
         <div className="card p-6">
           <div className="flex flex-wrap items-center gap-2"><Status value={o.status} /><Status value={o.paymentStatus} /></div>
@@ -41,7 +41,7 @@ export function OrderDetail({ o, invoiceHref, retryHref, children }: { o: FullOr
         {ship && (
           <div className="card p-6 font-sans">
             <h2 className="flex items-center gap-2 text-lg font-semibold"><Icon name="truck" /> Shipment</h2>
-            <dl className="mt-4 grid gap-3 text-[15px] sm:grid-cols-3">
+            <dl className="mt-4 grid grid-cols-1 gap-3 text-[15px] sm:grid-cols-3">
               <div><dt className="text-sm text-muted">Courier</dt><dd className="font-medium">{ship.courier ?? 'Assigning'}</dd></div>
               <div><dt className="text-sm text-muted">AWB</dt><dd className="font-medium">{ship.awb ?? '—'}</dd></div>
               <div><dt className="text-sm text-muted">Status</dt><dd><Status value={ship.status} /></dd></div>

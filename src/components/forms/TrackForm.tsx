@@ -9,7 +9,7 @@ export function TrackForm() {
   const [state, action] = useActionState<FormState, FormData>(trackOrder, undefined);
   const e = state?.errors ?? {};
   return (
-    <form action={action} className="card grid gap-4 p-6 sm:grid-cols-[1fr_1fr_auto] sm:items-end" noValidate>
+    <form action={action} className="card grid grid-cols-1 gap-4 p-6 sm:grid-cols-[1fr_1fr_auto] sm:items-end" noValidate>
       <Field name="number" label="Order number" placeholder="DV-26-000123" required defaultValue={(state?.data?.number as string) ?? ''} error={e.number} className="uppercase" />
       <Field name="contact" label="Email or phone used" required defaultValue={(state?.data?.contact as string) ?? ''} error={e.contact} />
       <SubmitButton pendingLabel="Finding…">Track My Order</SubmitButton>

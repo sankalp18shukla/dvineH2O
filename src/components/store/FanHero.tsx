@@ -45,7 +45,7 @@ export function FanHero({ id, title, tone, body, front, back, sticker, children 
 
   return (
     <section ref={root} className="overflow-x-clip pt-8 pb-10 sm:pt-14 sm:pb-14" aria-labelledby={id}>
-      <div className="container-x grid items-center gap-16 lg:grid-cols-[1fr_1.1fr] lg:gap-20 [&>*]:min-w-0">
+      <div className="container-x grid grid-cols-1 items-center gap-16 lg:grid-cols-[1fr_1.1fr] lg:gap-20 [&>*]:min-w-0">
         <div className="flex flex-col gap-8">
           <Lockup id={id} as="h1" title={title} tone={tone} size="md" />
           {body && <p className="max-w-xl font-serif text-[21px] leading-snug text-ink italic sm:text-[24px]" data-words><Words text={body} /></p>}

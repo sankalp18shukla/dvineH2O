@@ -15,7 +15,7 @@ export default async function Profile() {
       <section className="card p-6"><h2 className="mb-4 font-sans text-lg font-semibold">Profile</h2><ProfileForm c={c} /></section>
       <section className="card p-6">
         <h2 className="font-sans text-lg font-semibold">Saved addresses</h2>
-        {list.length > 0 && <ul className="mt-4 grid gap-3 sm:grid-cols-2">{list.map(a => (
+        {list.length > 0 && <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">{list.map(a => (
           <li key={a.id} className="rounded-2xl border border-line p-4 font-sans text-sm">
             <p className="font-semibold">{a.name}{a.isDefault && <span className="badge ml-2 bg-paper">Default</span>}</p>
             <p className="mt-1 text-muted">{a.line1}{a.line2 ? `, ${a.line2}` : ''}, {a.city}, {a.state} {a.pincode}<br />{a.phone}</p>

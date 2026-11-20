@@ -14,7 +14,7 @@ export function SupportForm({ topics, defaultProduct }: { topics: string[]; defa
   return (
     <form action={action} className="relative grid gap-4" noValidate>
       <Honeypot />
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Select name="topic" label="Topic" options={topics} placeholder="Choose a topic" required defaultValue={v('topic')} error={e.topic} />
         <Select name="product" label="Product" options={[{ value: '', label: 'Not product-specific' }, { value: 'crystal', label: 'Crystal' }, { value: 'hyper', label: 'Hyper' }, { value: 'titan', label: 'Titan' }]} defaultValue={v('product') || defaultProduct || ''} />
         <Field name="name" label="Name" autoComplete="name" required defaultValue={v('name')} error={e.name} />

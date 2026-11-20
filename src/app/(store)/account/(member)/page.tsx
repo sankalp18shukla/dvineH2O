@@ -15,7 +15,7 @@ export default async function AccountHome() {
   ]);
   return (
     <div className="grid gap-6">
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Link href="/account/orders" className="card p-5 hover:border-deep-current"><p className="font-sans text-sm text-muted">Orders</p><p className="mt-1 font-sans text-3xl font-bold">{recent.length ? recent.length : 0}{recent.length === 3 ? '+' : ''}</p></Link>
         <Link href="/account/warranties" className="card p-5 hover:border-deep-current"><p className="font-sans text-sm text-muted">Active warranties</p><p className="mt-1 font-sans text-3xl font-bold">{w}</p></Link>
         <Link href="/account/service" className="card p-5 hover:border-deep-current"><p className="font-sans text-sm text-muted">Open service requests</p><p className="mt-1 font-sans text-3xl font-bold">{open}</p></Link>

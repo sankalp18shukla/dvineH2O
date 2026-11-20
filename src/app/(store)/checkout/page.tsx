@@ -32,7 +32,7 @@ export default async function CheckoutPage() {
           <Lockup as="h1" title="*Check*out." tone="glacier" size="sm" />
           {!c && <p className="font-sans text-sm text-muted">Have an account? <Link href="/account/login?next=/checkout" className="link">Sign in</Link> · or continue as a guest</p>}
         </div>
-        <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_400px]">
+        <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_400px]">
           <CheckoutForm prefill={prefill} total={formatINR(totals.total)} />
           <aside className="card h-fit p-6 lg:sticky lg:top-24">
             <h2 className="font-sans text-lg font-semibold">In your order</h2>

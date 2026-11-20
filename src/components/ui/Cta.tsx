@@ -28,6 +28,8 @@ export function Cta({ href, children, kind = 'pill', tone = 'glacier', icon = 'a
 }) {
   const inner = <>{kind !== 'glass' && <CtaChip icon={icon} />}<span>{children}</span></>;
   const props = { id, className: ctaClass(kind, className), style: ctaStyle(tone) };
+  // a document (a manual or policy PDF) opens in a new tab rather than as a page
+  if (/\.pdf($|[?#])/i.test(href)) return <a href={href} target="_blank" rel="noopener" {...props}>{inner}</a>;
   return href.startsWith('/') ? <Link href={href} {...props}>{inner}</Link> : <a href={href} {...props}>{inner}</a>;
 }
 

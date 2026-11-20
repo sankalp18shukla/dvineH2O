@@ -26,7 +26,7 @@ export default async function CartPage() {
             <div className="mt-6 flex flex-wrap justify-center gap-3"><Link href="/home-water-systems" className="btn btn-primary">Shop Crystal</Link><Link href="/hydrogen-bottles" className="btn btn-outline">Shop Hyper</Link></div>
           </div>
         ) : (
-          <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_400px]">
+          <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_400px]">
             <ul className="card divide-y divide-line">
               {items.map(i => (
                 <li key={i.id} className="flex gap-5 p-5">

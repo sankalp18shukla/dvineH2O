@@ -22,7 +22,7 @@ export function OrderSummary({ order: o, compact = false }: { order: O; compact?
         <div className="flex justify-between text-[13px] text-muted"><dt>Includes GST</dt><dd>{formatINR(o.taxTotal, true)}</dd></div>
       </dl>
       {!compact && (
-        <div className="mt-5 grid gap-4 border-t border-line pt-4 font-sans text-[14px] sm:grid-cols-2">
+        <div className="mt-5 grid grid-cols-1 gap-4 border-t border-line pt-4 font-sans text-[14px] sm:grid-cols-2">
           <div><p className="font-semibold">Delivering to</p><p className="mt-1 text-muted">{o.shippingAddress.name}<br />{o.shippingAddress.line1}{o.shippingAddress.line2 ? `, ${o.shippingAddress.line2}` : ''}<br />{o.shippingAddress.city}, {o.shippingAddress.state} {o.shippingAddress.pincode}</p></div>
           <div><p className="font-semibold">Contact</p><p className="mt-1 text-muted">{o.contactEmail}<br />{o.contactPhone}</p></div>
         </div>

@@ -12,17 +12,17 @@ import s from './InsideScroll.module.css';
 gsap.registerPlugin(ScrollTrigger);
 
 /**
- * public/videos/inside-1280.mp4: the generated walkthrough with its misdrawn wordmark painted out of the control
- * head (frames 195–239), all-intra so seeks are instant. Ends a frame short of 10s so the last seek always lands.
+ * public/videos/inside-1280.mp4: the generated one-take walkthrough (source public/videos/video_component.mp4,
+ * prompt in docs/inside-video/), re-encoded all-intra so seeks are instant. Ends a frame short of 10s so the
+ * last seek always lands.
  */
 const CLIP = 9.95;
 /**
  * When each step's copy changes over, in clip seconds: the camera leaves the cartridges for the ionisation
- * chamber at ~3.5s and passes out through the front of the machine at ~7.5s, settling on the panel by ~8s.
+ * chamber at ~3.8s (the chamber is the subject by ~4.3s), pulls back out of the side at ~7.2s and is square on
+ * the front panel by ~8s.
  */
-const STEPS = [{ at: 0, out: 3.1 }, { at: 3.6, out: 6.7 }, { at: 7.8, out: Infinity }];
-/** The push-in on the outside shots, hidden in the blur of passing through the front panel: it crops the top of the control head out of frame. */
-const ZOOM = { at: 7.2, dur: .9, scale: 1.32 };
+const STEPS = [{ at: 0, out: 3.4 }, { at: 3.9, out: 7 }, { at: 7.8, out: Infinity }];
 /** Scroll held on the last frame (in clip seconds) before the stage lets go. */
 const HOLD = 1;
 /** The stage's shape off the section: inset from the sides with rounded corners, as it arrives and as it leaves. */
@@ -101,7 +101,6 @@ export function InsideScroll({ title, steps, cta }: { title: string; steps: Step
       // pinned: the clip runs with the scroll, each step's copy handing over to the next as the camera moves on
       const tl = gsap.timeline({ scrollTrigger: { trigger: el, start: () => `top ${hdr()}px`, end: 'bottom bottom', scrub: .8, invalidateOnRefresh: true } })
         .to(clip, { t: CLIP, duration: CLIP, ease: 'none' }, 0)
-        .to(v, { scale: ZOOM.scale, duration: ZOOM.dur, ease: 'power2.inOut' }, ZOOM.at)
         .to({}, { duration: HOLD }, CLIP);
       STEPS.forEach((st, i) => {
         if (i > 0) tl.add(enter(i), st.at);

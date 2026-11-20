@@ -19,7 +19,7 @@
 .h .grid { height: 100%; }
 .h .grid > :first-child { align-self: start; padding-top: max(24px, calc((100svh - 76px - 700px) / 2)); }
 
-.grid { position: relative; display: grid; gap: clamp(48px, 6vw, 96px); align-items: center; width: 100%; }
+.grid { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(48px, 6vw, 96px); align-items: center; width: 100%; }
 @media (min-width: 1024px) { .grid { grid-template-columns: 1fr 1fr; } }
 
 

@@ -189,6 +189,12 @@
   .lk.is-md .lk-bot { font-size: clamp(34px, 4.1vw, 64px); }
   .lk.is-sm .lk-top { font-size: clamp(26px, 2.6vw, 40px); }
   .lk.is-sm .lk-bot { font-size: clamp(28px, 3vw, 46px); }
+  /* small phones (homepage lockups; inner pages fit theirs below): the 40px floor wrapped a two-line lockup
+     to three or four lines at 360px, so the floor follows the screen there */
+  @media (max-width: 419px) {
+    .lk-top { font-size: clamp(30px, 10vw, 40px); }
+    .lk-bot { font-size: clamp(30px, 10.4vw, 42px); }
+  }
   /* italic last ("Check the fit. *Know what comes with it.*"): sans line on top, italic hanging under it and
      over its bottom edge; the pins swap so they still mark the first line's top-left and the last line's bottom-right */
   .lk.is-tail .lk-bot { margin: 0; }
@@ -314,6 +320,8 @@
 
   .prose-dvine p { @apply mb-4; }
   .prose-dvine h2 { @apply mt-10 mb-3 text-2xl font-bold; }
+  .prose-dvine h3 { @apply mt-8 mb-2 text-lg font-bold; }
+  .prose-dvine ul { @apply mb-4 list-disc space-y-1.5 pl-5 marker:text-ink/40; }
 
   /* data table (admin + account) */
   .table { @apply w-full border-collapse font-sans text-sm; }
@@ -455,6 +463,8 @@ html:has(.site-ribbon) { --ribbon-h: 34px; }
 @media (prefers-reduced-motion: no-preference) {
   .js :is(.lk, .label-box, .band-lk, .pin-frame, [data-words], [data-rise] > *, [data-pop], [data-draw]):not([data-own-motion] *, .m-on),
   .js [data-m]:not(.m-on) { visibility: hidden; animation: m-failsafe 0s 3s forwards; }
+  /* [data-still-tags] (the blog): headings and labels sit still, so they are never hidden */
+  .js [data-still-tags] :is(.lk, .label-box, .band-lk) { visibility: visible; animation: none; }
 }
 @keyframes m-failsafe { to { visibility: visible; } }
 /* a section's copy waits for its headline (TagReveal.tsx): faint and a little low, it fades up into place as the

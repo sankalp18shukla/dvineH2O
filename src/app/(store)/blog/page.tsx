@@ -46,7 +46,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
   return (
     <>
       <Header framed page="blog" />
-      <main id="main">
+      <main id="main" data-still-tags>
         <section className="section pb-10 sm:pb-14" aria-labelledby="blog-title">
           <div className="container-x">
             <Lockup id="blog-title" as="h1" title="*Worth knowing* about water." tone="glacier" />
@@ -64,7 +64,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
         {lead && (
           <section className="pb-16 sm:pb-20" aria-label="Featured article">
             <div className="container-x">
-              <Link href={`/blog/${lead.slug}`} className="group grid items-center gap-8 lg:grid-cols-[1.15fr_1fr] lg:gap-16" data-reveal>
+              <Link href={`/blog/${lead.slug}`} className="group grid grid-cols-1 items-center gap-8 lg:grid-cols-[1.15fr_1fr] lg:gap-16" data-reveal>
                 <div className="pin-frame relative aspect-[16/11]" style={{ ['--pin' as string]: 'var(--color-flash)' }}>
                   <div className="absolute inset-0 overflow-hidden bg-fog">{lead.coverImage && <Image src={lead.coverImage} alt={lead.coverAlt ?? ''} fill priority sizes="(min-width:1024px) 55vw, 100vw" className="object-cover transition duration-[1.2s] ease-out group-hover:scale-105" />}</div>
                 </div>
@@ -82,7 +82,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
         <section className="pb-16 sm:pb-24" aria-label={topic ? topic.label : 'All articles'}>
           <div className="container-x">
             {rest.length > 0
-              ? <div className="grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">{rest.map((p, i) => <Card key={p.id} p={p} i={i} />)}</div>
+              ? <div className="grid grid-cols-1 gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">{rest.map((p, i) => <Card key={p.id} p={p} i={i} />)}</div>
               : !lead && <p className="border-t-2 border-ink pt-6 font-sans text-muted">New articles are on their way. In the meantime, <Link href="/support#contact" className="link">ask us anything</Link>.</p>}
           </div>
         </section>

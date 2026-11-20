@@ -48,7 +48,7 @@ function Item({ f, dark }: { f: F; dark: boolean }) {
 /** Accessible accordion built on <details>, works without JavaScript. Ruled rows with a Voltage toggle, as the home fact rows and steps. */
 export function Faq({ items, dark = false, single = false }: { items: F[]; dark?: boolean; single?: boolean }) {
   return (
-    <div className={`grid gap-x-12 ${single ? '' : 'md:grid-cols-2'}`}>
+    <div className={`grid grid-cols-1 gap-x-12 ${single ? '' : 'md:grid-cols-2'}`}>
       {items.map(f => <Item key={f.q} f={f} dark={dark} />)}
     </div>
   );

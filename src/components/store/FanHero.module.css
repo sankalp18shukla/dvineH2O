@@ -27,8 +27,12 @@
 @media (max-width: 639px) {
   .hand { aspect-ratio: 1 / 1.02; }
   .front { width: 62%; left: 19%; }
-  .left, .right { width: 50%; }
-  .sticker { right: -8%; }
+  /* inset from the screen edges: the prints tilt and fan outward as the page scrolls, and flush with the
+     edges they were cut off by the side of the screen */
+  .left, .right { width: 46%; }
+  .left { left: 5%; }
+  .right { right: 5%; }
+  .sticker { right: -4%; }
 }
 
 @media (prefers-reduced-motion: reduce) { .paper, .photo > * { transition: none; } }

@@ -42,7 +42,7 @@ export function BuyBox({ p, tone = 'glacier', secondary, offer, why }: { p: Prod
       </div>
       <AddToCart productId={p.id} max={Math.min(p.available, p.maxPerOrder)} tone={tone} />
       {secondary && <div><Cta href={secondary.href} kind="glass">{secondary.label}</Cta></div>}
-      <ul className="grid gap-2 border-t border-line pt-5 font-sans text-[14px] text-muted sm:grid-cols-3 sm:gap-4">
+      <ul className="grid grid-cols-1 gap-2 border-t border-line pt-5 font-sans text-[14px] text-muted sm:grid-cols-3 sm:gap-4">
         <li className="flex items-center gap-2"><Icon name="shield" className="size-4 shrink-0 text-deep-current" /> {p.warrantyMonths >= 12 ? `${p.warrantyMonths / 12}-year` : `${p.warrantyMonths}-month`} warranty</li>
         <li className="flex items-center gap-2"><Icon name="card" className="size-4 shrink-0 text-deep-current" /> UPI, cards and EMI</li>
         <li className="flex items-center gap-2"><Icon name="doc" className="size-4 shrink-0 text-deep-current" /> GST invoice</li>

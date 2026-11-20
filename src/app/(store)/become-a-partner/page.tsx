@@ -67,7 +67,7 @@ export default async function PartnerPage({ searchParams }: { searchParams: Prom
           <section className="section" aria-labelledby="why-title">
             <div className="container-x">
               <SectionHead id="why-title" tone="volt" title={p.benefitsTitle || '*Why partner* with us.'} />
-              <LightUp armClass={css.armed} litClass={css.lit} className={`grid gap-x-8 gap-y-14 sm:grid-cols-2 ${p.benefits.length % 3 === 0 ? 'lg:grid-cols-3' : 'lg:grid-cols-4'}`}>
+              <LightUp armClass={css.armed} litClass={css.lit} className={`grid grid-cols-1 gap-x-8 gap-y-14 sm:grid-cols-2 ${p.benefits.length % 3 === 0 ? 'lg:grid-cols-3' : 'lg:grid-cols-4'}`}>
                 {p.benefits.map((b, i) => (
                   <article key={b.id} className={`${css.tile} ${css.callout}`} data-light={i}>
                     <div className="flex items-center justify-between">
@@ -88,7 +88,7 @@ export default async function PartnerPage({ searchParams }: { searchParams: Prom
         {p.steps.length > 0 && (
           <section className={`on-glacier relative overflow-clip text-ink ${css.bandTop} ${css.glacierCopy}`} aria-labelledby="how-title">
             <WaveBand tone="glacier" interactive knot />
-            <div className="container-x relative grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-20">
+            <div className="container-x relative grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-20">
               <div className="lg:sticky lg:top-36 lg:self-start">
                 <Lockup id="how-title" title={p.stepsTitle || '*How it* works.'} tone="blue" size="md" />
                 <div className="mt-10" data-rise><Cta href="#apply" kind="ink">Apply to Partner</Cta></div>
@@ -110,7 +110,7 @@ export default async function PartnerPage({ searchParams }: { searchParams: Prom
         <section id="apply" className={`on-dark relative overflow-clip text-white ${p.steps.length > 0 ? `${css.overlap} ${css.bandUnder}` : css.bandPad}`} aria-labelledby="apply-title">
           <WaveBand interactive knot />
           <span className={css.scrim} aria-hidden="true" />
-          <div className="container-x relative grid gap-14 lg:grid-cols-[1fr_1.4fr] lg:gap-20">
+          <div className="container-x relative grid grid-cols-1 gap-14 lg:grid-cols-[1fr_1.4fr] lg:gap-20">
             <div className="lg:sticky lg:top-32 lg:self-start">
               <Lockup id="apply-title" title={p.formTitle || '*Tell us* about your business.'} tone="volt" size="md" />
               {p.formBody && <p className="lede mt-9" data-words><Words text={p.formBody} /></p>}

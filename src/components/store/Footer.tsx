@@ -15,7 +15,7 @@ export function Footer() {
     <footer id="site-footer" className="site-footer on-dark no-print overflow-hidden bg-stage-deep text-white">
       <FooterWaves className="pointer-events-none absolute inset-0 size-full" />
       <div className="container-x relative pt-14 pb-6 lg:pt-20">
-        <div className="flex flex-col gap-12 lg:flex-row lg:justify-between">
+        <div className="flex flex-col gap-12 xl:flex-row xl:justify-between">
           <div className="max-w-xs">
             <Link href="/" aria-label="DVINE H2O home" className="inline-block"><Logo className="h-6 w-auto" /></Link>
             <p className="mt-5 font-serif text-2xl italic text-white/85">Water should do more.</p>
@@ -29,12 +29,12 @@ export function Footer() {
               ))}
             </ul>
           </div>
-          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-10 gap-y-9 sm:grid-cols-4 lg:gap-x-16">
+          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-6 gap-y-9 sm:grid-cols-4 sm:gap-x-10 lg:gap-x-16">
             {FOOTER.map(col => (
               <div key={col.title}>
                 <h2 className="font-sans text-sm font-semibold text-white">{col.title}</h2>
                 <ul className="mt-4 space-y-2.5 font-sans text-sm text-white/65">
-                  {col.links.map(l => <li key={l.href}>{l.href.startsWith('http') ? <a href={l.href} target="_blank" rel="noopener noreferrer" className="hover:text-white">{l.label}</a> : <Link href={l.href} className="hover:text-white">{l.label}</Link>}</li>)}
+                  {col.links.map(l => <li key={l.href}>{l.href.startsWith('http') ? <a href={l.href} target="_blank" rel="noopener noreferrer" className="hover:text-white">{l.label}</a> : <Link href={l.href} className="hover:text-white">{wrapEmail(l.label)}</Link>}</li>)}
                 </ul>
               </div>
             ))}
@@ -53,4 +53,10 @@ export function Footer() {
       </div>
     </footer>
   );
+}
+
+/** An email address is wider than a phone's footer column: let it break before the @ instead of running off-screen. */
+function wrapEmail(label: string) {
+  const at = label.indexOf('@');
+  return at > 0 ? <>{label.slice(0, at)}<wbr />{label.slice(at)}</> : label;
 }

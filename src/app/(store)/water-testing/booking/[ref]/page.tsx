@@ -26,10 +26,10 @@ export default async function BookingPage({ params, searchParams }: { params: Pr
         <p className="eyebrow">Water test · {w.ref}</p>
         <Lockup as="h1" title={needsPay ? '*One step left:* payment.' : '*Your water test* is requested.'} tone="glacier" size="sm" className="mt-8" />
         <p className="lede mt-8">{needsPay ? 'Complete payment to confirm your booking. We’ll then confirm your collection slot.' : 'We’ll confirm your collection slot by phone or message. Keep this reference handy.'}</p>
-        <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_420px]">
+        <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_420px]">
           <div className="card p-6 font-sans">
             <div className="flex flex-wrap gap-2"><Status value={w.status} /><Status value={w.paymentStatus} /></div>
-            <dl className="mt-5 grid gap-4 sm:grid-cols-2">
+            <dl className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div><dt className="text-sm text-muted">Test</dt><dd className="font-semibold">{w.option?.name}</dd></div>
               <div><dt className="text-sm text-muted">Price</dt><dd className="font-semibold">{w.price ? formatINR(w.price) : 'Free'}</dd></div>
               <div><dt className="text-sm text-muted">Preferred slot</dt><dd className="font-semibold">{w.preferredDate} · {w.slot}</dd></div>

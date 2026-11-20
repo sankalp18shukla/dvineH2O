@@ -16,7 +16,7 @@ function Form() {
   const v = (k: string) => (state?.data?.[k] as string) ?? '';
   if (state?.ok) return <div className="card p-6"><FormMessage state={state} /></div>;
   return (
-    <form action={action} className="grid gap-4 sm:grid-cols-2" noValidate>
+    <form action={action} className="grid grid-cols-1 gap-4 sm:grid-cols-2" noValidate>
       <div className="field sm:col-span-2">
         <label htmlFor="f-report" className="label">Report file <span className="text-pulse" aria-hidden="true">*</span></label>
         <input id="f-report" name="report" type="file" accept="application/pdf,image/jpeg,image/png" required aria-invalid={!!e.report} aria-describedby="f-report-h" className="input py-3 file:mr-4 file:rounded-full file:border-0 file:bg-paper file:px-4 file:py-1.5 file:font-sans file:font-semibold" />
