@@ -24,10 +24,11 @@
 .heading :global(.lk-top) { font-size: var(--top); }
 .heading :global(.lk-bot) { font-size: clamp(40px, 5.5vw, 88px); margin: -.36em 0 0 clamp(20px, 3.4vw, 56px); translate: none; }
 .heading.designed :global(.lk-bot) { margin: -.36em 0 0 calc(var(--top) * 2.57 - .2em); }
-/* small phones: the sans line is indented under "do", which left it too little room and it broke over three lines */
+/* phones: "about your water?" stays on one line. Both lines are sized to the card's inner width (the screen less
+   the stage's and frame's side padding, 72px), and the sans line steps in a little instead of all the way under "do" */
 @media (max-width: 479px) {
-  .heading { --top: clamp(26px, 8.4vw, 34px); }
-  .heading :global(.lk-bot) { font-size: clamp(30px, 9.6vw, 40px); }
+  .heading { --top: calc((100vw - 72px) / 11); }
+  .heading :global(.lk-bot), .heading.designed :global(.lk-bot) { font-size: calc((100vw - 72px) / 10); white-space: nowrap; margin-left: calc(var(--top) * .9); }
 }
 /* pins ride --gap (0 when open): they start together at the centre and slide out to their corners */
 .heading :global(.lk-top)::after { left: calc(var(--gap, 0px) - 6px); }

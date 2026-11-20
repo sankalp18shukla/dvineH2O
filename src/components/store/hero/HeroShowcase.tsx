@@ -107,7 +107,7 @@ export function HeroShowcase({ slides, promos = [] }: { slides: Slide[]; promos?
         const first = entries[state.current.current];
         const st = await mod.createStage({
           canvas: canvas.current, hero: hero.current, models: slides.map(x => x.model), accents: slides.map(x => x.accent), squiggle: SQUIGGLE,
-          placement: PLACEMENT, lineup: LINEUP, copyFor: i => hero.current!.querySelectorAll<HTMLElement>('[data-copy]')[i],
+          placement: PLACEMENT, lineup: LINEUP, copyFor: i => hero.current?.querySelectorAll<HTMLElement>('[data-copy]')[i],
           lineupCopy: () => hero.current?.querySelector<HTMLElement>('[data-lineup-copy]') ?? undefined,
           onFirstLoad: () => setLoaded(true), initial: first.kind === 'product' ? first.idx : 0,
         });

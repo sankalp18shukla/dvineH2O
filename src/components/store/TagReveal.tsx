@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ENTER, isLanded } from './landing';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -70,15 +71,17 @@ export function TagReveal() {
         if (t.classList.contains('band-lk')) t.classList.toggle('is-stuck', v >= 1);
       };
       tags.forEach(t => {
-        set(t, 0);
         t.classList.add('m-on'); // start state set: lift the first-paint gate (globals.css)
+        // landed on by a link (landing.ts): shown open, no entrance
+        if (isLanded(t)) { set(t, 1); return; }
+        set(t, 0);
         const o = { v: 0 }, onUpdate = () => set(t, o.v);
         if (t.getBoundingClientRect().top < innerHeight * .8) gsap.to(o, { v: 1, duration: 1, delay: .25, ease: 'power4.inOut', onUpdate });
         else {
           const held = heldBy(t);
           held.forEach(x => { x.classList.add('hl-hold'); x.style.setProperty('--hl', '0'); });
           holds.set(t, held);
-          gsap.to(o, { v: 1, ease: 'power4.inOut', onUpdate, scrollTrigger: { trigger: t, start: 'top 80%', end: 'top 45%', scrub: .8 } });
+          gsap.to(o, { v: 1, ease: 'power4.inOut', onUpdate, scrollTrigger: { id: ENTER, trigger: t, start: 'top 80%', end: 'top 45%', scrub: .8 } });
         }
       });
       return () => {

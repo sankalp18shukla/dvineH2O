@@ -18,10 +18,12 @@ export function ProductHero({ name, title, tone, sticker, body, cutout, images, 
   axis?: number;
 }) {
   return (
-    <section className="pt-6 pb-20 sm:pt-10 sm:pb-28" aria-labelledby="p-title">
+    // pt-11 on phones: the die-cut sticker rides 26px above the frame and must clear the header at the top of the page
+    <section className="pt-11 pb-20 sm:pt-10 sm:pb-28" aria-labelledby="p-title">
       <div className="container-x grid grid-cols-1 gap-12 lg:grid-cols-[1.2fr_1fr] lg:gap-16 [&>*]:min-w-0">
         <ProductStage name={name} tone={tone} cutout={cutout} images={images} alt={alt} sticker={sticker} stickerTone={STICKER[tone]} axis={axis} />
-        <div className="flex flex-col gap-8 lg:pt-4">
+        {/* data-still: the product's name and intro are simply there, with no scroll entrance (landing.ts) */}
+        <div className="flex flex-col gap-8 lg:pt-4" data-still>
           <Lockup id="p-title" as="h1" title={`*${title}* ${name}.`} tone={tone} className="ph-lk" />
           <p className="font-serif text-[21px] leading-snug text-ink italic sm:text-[24px]" data-words><Words text={body} /></p>
           {children}

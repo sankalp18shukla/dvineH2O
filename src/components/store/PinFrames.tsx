@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ENTER, isLanded } from './landing';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -23,11 +24,12 @@ export function PinFrames() {
         f.classList.toggle('is-opening', v < 1);
       };
       frames.forEach(f => {
-        set(f, 0);
         f.classList.add('m-on'); // start state set: lift the first-paint gate (globals.css)
+        if (isLanded(f)) return; // landed on by a link (landing.ts): shown open
+        set(f, 0);
         const o = { v: 0 };
         gsap.to(o, { v: 1, ease: 'power3.inOut', onUpdate: () => set(f, o.v),
-          scrollTrigger: { trigger: f, start: 'top 92%', end: 'top 38%', scrub: .8 } });
+          scrollTrigger: { id: ENTER, trigger: f, start: 'top 92%', end: 'top 38%', scrub: .8 } });
       });
       return () => frames.forEach(f => { f.style.removeProperty('--open'); f.classList.remove('is-opening'); });
     });

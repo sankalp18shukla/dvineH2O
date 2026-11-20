@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { headlineOf } from './TagReveal';
+import { ENTER, isLanded } from './landing';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -23,6 +24,8 @@ export function ScrollCopy() {
     const mm = gsap.matchMedia();
     mm.add('(prefers-reduced-motion: no-preference)', () => {
       const all = (sel: string) => gsap.utils.toArray<HTMLElement>(sel).filter(e => !e.closest('[data-own-motion]'));
+      /** entrances skip a section landed on by a link (landing.ts): it shows at rest (globals.css lifts its gate) */
+      const enter = (sel: string) => all(sel).filter(e => !isLanded(e));
       const onScreen = (e: Element) => e.getBoundingClientRect().top < innerHeight * .85;
       const top = (x: Element) => x.getBoundingClientRect().top + scrollY;
       /** scrubbed while the element's top travels from `a` to `b` (fractions of the screen height), or played once if
@@ -34,7 +37,7 @@ export function ScrollCopy() {
           const own = top(e) - innerHeight * a, h = headlineOf(e);
           return h ? Math.max(own, top(h) - innerHeight * .62) : own;
         };
-        ScrollTrigger.create({ animation: tl, trigger: e, start: from, end: () => from() + innerHeight * (a - b), scrub: .8, invalidateOnRefresh: true });
+        ScrollTrigger.create({ id: ENTER, animation: tl, trigger: e, start: from, end: () => from() + innerHeight * (a - b), scrub: .8, invalidateOnRefresh: true });
       };
       /** start state set: lift the first-paint gate (globals.css) */
       const claim = (els: Element[]) => els.forEach(x => x.classList.add('m-on'));
@@ -45,7 +48,7 @@ export function ScrollCopy() {
         tl.eventCallback('onUpdate', sync); sync();
       };
 
-      all('[data-words]').forEach(e => {
+      enter('[data-words]').forEach(e => {
         const words = e.querySelectorAll('.sw');
         if (!words.length) return claim([e]);
         gsap.set(words, { opacity: .14 });
@@ -53,7 +56,7 @@ export function ScrollCopy() {
         drive(e, gsap.timeline({ paused: true }).to(words, { opacity: 1, duration: .4, stagger: 1.2 / words.length, ease: 'none' }));
       });
 
-      all('[data-rise]').forEach(e => {
+      enter('[data-rise]').forEach(e => {
         const kids = Array.from(e.children);
         gsap.set(kids, { opacity: 0, y: 30 });
         claim(kids);
@@ -62,11 +65,11 @@ export function ScrollCopy() {
         drive(e, tl, .92, .6);
       });
 
-      all('[data-draw]').forEach(e => {
+      enter('[data-draw]').forEach(e => {
         const x = e.dataset.draw?.startsWith('x');
         gsap.set(e, x ? { scaleX: 0, transformOrigin: e.dataset.draw === 'x-rev' ? '100% 50%' : '0 50%' } : { scaleY: 0, transformOrigin: '50% 0' });
         claim([e]);
-        gsap.to(e, { [x ? 'scaleX' : 'scaleY']: 1, ease: 'none', scrollTrigger: { trigger: e, start: 'top 80%', end: x ? 'top 40%' : 'bottom 55%', scrub: .8 } });
+        gsap.to(e, { [x ? 'scaleX' : 'scaleY']: 1, ease: 'none', scrollTrigger: { id: ENTER, trigger: e, start: 'top 80%', end: x ? 'top 40%' : 'bottom 55%', scrub: .8 } });
       });
 
       all('[data-speed]').forEach(e => {
@@ -74,7 +77,7 @@ export function ScrollCopy() {
         gsap.fromTo(e, { yPercent: n }, { yPercent: -n, ease: 'none', scrollTrigger: { trigger: e, start: 'top bottom', end: 'bottom top', scrub: .4 } });
       });
 
-      all('[data-pop]').forEach(e => {
+      enter('[data-pop]').forEach(e => {
         gsap.set(e, { scale: 0, rotate: 28, opacity: 0 });
         claim([e]);
         const tl = gsap.timeline({ paused: true }).to(e, { scale: 1, rotate: 0, opacity: 1, duration: .6, ease: 'back.out(2.6)' });

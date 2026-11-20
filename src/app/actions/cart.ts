@@ -6,6 +6,9 @@ import { pincodes } from '@/lib/db/schema';
 import { setItem, setCoupon, loadCart } from '@/lib/cart';
 import { pincode as pincodeSchema } from '@/lib/validators';
 import { limitRequest, TOO_MANY } from '@/lib/security';
+import { queuePincodeRefresh } from '@/lib/sheet-queue';
+import { liveCoupon } from '@/lib/promo-codes';
+import { CODE_RE, describeCoupon, normaliseCode } from '@/lib/coupon-info';
 
 export async function addToCart(productId: number, qty = 1) {
   const r = await setItem(productId, qty, 'add');
@@ -26,6 +29,17 @@ export async function applyCode(_: unknown, fd: FormData) {
   revalidatePath('/cart'); revalidatePath('/checkout');
   return { ok: true };
 }
+/** One-tap apply from a promotion (offer ticket, card, hero slide). The discount shows once the cart has a product it covers. */
+export async function applyPromoCode(raw: string): Promise<{ ok: true; text: string } | { ok: false; error: string }> {
+  const code = normaliseCode(raw);
+  if (!CODE_RE.test(code)) return { ok: false, error: 'This code is not valid.' };
+  if (!(await limitRequest('coupon'))) return { ok: false, error: TOO_MANY };
+  const r = await liveCoupon(code);
+  if ('error' in r) return { ok: false, error: r.error };
+  await setCoupon(code);
+  revalidatePath('/cart'); revalidatePath('/checkout');
+  return { ok: true, text: describeCoupon(r.coupon) };
+}
 export async function removeCode() {
   await setCoupon(null);
   revalidatePath('/cart'); revalidatePath('/checkout');
@@ -36,6 +50,7 @@ export async function checkPincode(pin: string): Promise<PincodeResult> {
   const p = pincodeSchema.safeParse(pin);
   if (!p.success) return { ok: false, message: 'Enter a valid 6-digit pincode.' };
   if (!(await limitRequest('pincode'))) return { ok: false, message: TOO_MANY };
+  queuePincodeRefresh();
   const row = await db.query.pincodes.findFirst({ where: eq(pincodes.pincode, p.data) });
   if (!row || !row.serviceable) return { ok: false, message: `We don't deliver to ${p.data} yet. Send us an enquiry and we'll check for you.` };
   const by = new Date(Date.now() + row.deliveryDays * 86400_000).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });

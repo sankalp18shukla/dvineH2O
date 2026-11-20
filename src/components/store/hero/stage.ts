@@ -153,6 +153,12 @@ export async function createStage(o: Opts) {
     const copy = o.copyFor(i);
     const top = copy ? (copy.offsetTop + copy.offsetHeight + 24) / H : .55;
     const avail = 1 - top;
+    // phones: each product stands whole in the space under the copy (its lean taken into account), none
+    // cut off by the card's bottom edge; tablets keep the larger, bleeding placement
+    if (innerWidth < 640) {
+      if (i === 1) return { cx: .5, cy: top + avail * .48, h: avail * .74, w: .86 };
+      return { cx: i === 0 ? .52 : .5, cy: top + avail * .49, h: avail * .86, w: i === 0 ? .5 : .62 };
+    }
     if (i === 1) return { cx: .5, cy: top + avail * 0.47, h: avail * 0.72, w: .84 };
     const h = avail * (i === 0 ? 1.0 : 1.12);
     return { cx: i === 0 ? .54 : .5, cy: top + h / 2 + 0.02, h, w: i === 0 ? .42 : .62 };
@@ -184,7 +190,9 @@ export async function createStage(o: Opts) {
       let need = 0;
       for (let i = 0; i < slots.length; i++) { const c = o.copyFor(i); if (c) need = Math.max(need, c.offsetTop + c.offsetHeight); }
       const lc = o.lineupCopy(); if (lc) need = Math.max(need, lc.offsetTop + lc.offsetHeight);
-      o.hero.style.setProperty('--mh', Math.max(innerHeight - o.hero.offsetTop - 8, need + 24 + 400) + 'px');
+      // the card fills the first screen; it grows past it only when the copy leaves the product less than this
+      const product = innerWidth < 640 ? 250 : 400;
+      o.hero.style.setProperty('--mh', Math.max(innerHeight - o.hero.offsetTop - 8, need + 24 + product) + 'px');
     } else o.hero.style.removeProperty('--mh');
     const r = o.hero.getBoundingClientRect(); W = r.width; H = r.height;
     renderer.setSize(W, H, false);

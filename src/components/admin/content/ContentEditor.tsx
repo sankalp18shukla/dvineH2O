@@ -7,6 +7,8 @@ import { SlideSchema, CardSchema, PRODUCT_PAGES, RIBBON_PAGES, TEMPLATES, THEMES
 import { CardsPanel, PartnerPanel, RibbonPanel, Section, SlidesPanel, WaterPanel, type Set } from './panels';
 import { Pill } from './fields';
 import { ProductsPanel } from './ProductsPanel';
+import { CouponsContext } from './CouponField';
+import type { CouponInfo } from '@/lib/coupon-info';
 
 /** Short summary of where the ribbon shows, e.g. "homepage", "3 pages", "every page". */
 const ribbonWhere = (r: Parameters<typeof ribbonPages>[0]) => {
@@ -28,7 +30,7 @@ const TABS: { key: Tab; label: string; icon: string; sub: string }[] = [
 ];
 const toast = (ok: boolean, message: string) => window.dispatchEvent(new CustomEvent('dvine-admin-toast', { detail: { ok, message } }));
 
-export function ContentEditor({ live, draft, hasDraft: initialHasDraft, siteImages }: { live: SiteContent; draft: SiteContent; hasDraft: boolean; siteImages: string[] }) {
+export function ContentEditor({ live, draft, hasDraft: initialHasDraft, siteImages, coupons }: { live: SiteContent; draft: SiteContent; hasDraft: boolean; siteImages: string[]; coupons: CouponInfo[] }) {
   const [doc, setDoc] = useState(draft);
   const [saved, setSaved] = useState(() => JSON.stringify(draft));
   const [liveJson, setLiveJson] = useState(() => JSON.stringify(live));
@@ -76,6 +78,7 @@ export function ContentEditor({ live, draft, hasDraft: initialHasDraft, siteImag
   const previewPath = tab === 'partner' ? '/become-a-partner?preview=1' : tab === 'products' ? `${PRODUCT_PAGES.find(p => p.key === product)!.path}?preview=1` : '/?preview=1';
 
   return (
+    <CouponsContext.Provider value={coupons}>
     <div className={`grid gap-6 ${preview ? 'xl:grid-cols-[minmax(0,1fr)_minmax(420px,44%)]' : ''}`}>
       <div className="min-w-0">
         {/* toolbar */}
@@ -111,6 +114,7 @@ export function ContentEditor({ live, draft, hasDraft: initialHasDraft, siteImag
 
       {preview && <Preview path={previewPath} reloadKey={previewKey} dirty={dirty} onRefresh={() => (dirty ? save('draft') : setPreviewKey(k => k + 1))} />}
     </div>
+    </CouponsContext.Provider>
   );
 }
 

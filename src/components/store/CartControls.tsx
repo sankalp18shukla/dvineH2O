@@ -1,7 +1,8 @@
 'use client';
-import { useActionState, useTransition } from 'react';
+import { useActionState, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { updateCartQty, applyCode, removeCode } from '@/app/actions/cart';
+import { updateCartQty, applyCode, applyPromoCode, removeCode } from '@/app/actions/cart';
+import { formatINR } from '@/lib/money';
 import { Icon } from '../ui/Icon';
 
 export function QtyControl({ productId, qty, max }: { productId: number; qty: number; max: number }) {
@@ -39,5 +40,40 @@ export function CodeForm({ applied, error, isReferral }: { applied: string | nul
       </div>
       {(error || state?.error) && <p id="code-e" className="error-text mt-1.5">{error ?? state?.error}</p>}
     </form>
+  );
+}
+
+/** Offers running on the site today (CartOffer from promo-codes.ts), each with what it saves on this cart. */
+export function OfferList({ offers, applied }: { offers: { code: string; text: string; saving: number; reason?: string }[]; applied: string | null }) {
+  const [pending, start] = useTransition();
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<{ code: string; text: string } | null>(null);
+  const router = useRouter();
+  if (!offers.length) return null;
+  const apply = (code: string) => { setBusy(code); setError(null); start(async () => {
+    const r = await applyPromoCode(code);
+    if (!r.ok) setError({ code, text: r.error });
+    router.refresh(); setBusy(null);
+  }); };
+  return (
+    <div className="mt-5 border-t border-line pt-5 font-sans">
+      <p className="label">Offers running now</p>
+      <ul className="mt-2 grid gap-2">
+        {offers.map(o => {
+          const on = applied === o.code;
+          return (
+            <li key={o.code} className={`flex items-center gap-3 rounded-xl border px-3.5 py-3 ${on ? 'border-[#1B6B2C]/40 bg-[#DFF5E3]' : 'border-dashed border-line'}`}>
+              <Icon name="tag" className={`size-[18px] shrink-0 ${on ? 'text-[#1B6B2C]' : 'text-deep-current'}`} />
+              <div className="min-w-0 flex-1">
+                <p className="text-[14px] font-bold tracking-wide">{o.code}{o.saving > 0 && <span className="ml-2 font-semibold tracking-normal text-[#1B6B2C]">Save {formatINR(o.saving)}</span>}</p>
+                <p className="text-[12.5px] leading-snug text-muted">{error?.code === o.code ? error.text : o.saving ? o.text : (o.reason ?? o.text)}</p>
+              </div>
+              {on ? <span className="flex items-center gap-1 text-[13px] font-semibold text-[#14532D]"><Icon name="check" className="size-4" />Applied</span>
+                : <button type="button" disabled={pending || !o.saving} onClick={() => apply(o.code)} className="btn btn-outline btn-sm min-h-9 shrink-0 disabled:opacity-40">{busy === o.code ? 'Applying…' : 'Apply'}</button>}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }

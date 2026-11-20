@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { THEMES, themeVars, type Offer } from '@/lib/site-content';
 import { LabelBox, Squiggle } from '@/components/ui/Brand';
 import { Icon } from '@/components/ui/Icon';
+import { useApplyCode } from './CouponCode';
 import s from './OfferTicket.module.css';
 
 /** The last moment of the run date, in India time (run dates are inclusive, see isLive). */
@@ -42,8 +43,8 @@ function Countdown({ to }: { to: string }) {
   );
 }
 
-/** Tap to copy the coupon code; it says "Copied" for a moment. */
-function Code({ code, hint }: { code: string; hint: string }) {
+/** Titan: tap to copy the code, which visitors quote when they enquire; it says "Copied" for a moment. */
+function CopyCode({ code, hint }: { code: string; hint: string }) {
   const [done, setDone] = useState(false);
   const t = useRef(0);
   const copy = async () => {
@@ -70,20 +71,35 @@ function Code({ code, hint }: { code: string; hint: string }) {
   );
 }
 
+/** Crystal and Hyper: tap the code to put it on the cart; the label above it says what happened. */
+function ApplyCode({ code }: { code: string }) {
+  const { phase, message, apply } = useApplyCode(code);
+  const done = phase === 'done';
+  return (
+    <div className={s.stub}>
+      <span className={s.stubLabel} data-error={phase === 'error' || undefined} aria-live="polite">{done ? 'Applied to your cart' : phase === 'error' ? message : 'Tap to apply'}</span>
+      <button type="button" onClick={apply} disabled={phase === 'busy' || done} className={s.code} data-done={done || undefined} aria-label={done ? `Code ${code} applied to your cart` : `Apply code ${code} to your cart`}>
+        <span className={s.codeTxt}>{code}</span>
+        <span className={s.codeIcon} aria-hidden="true"><Icon name={done ? 'check' : 'plus'} className="size-4" strokeWidth={2.2} /></span>
+      </button>
+    </div>
+  );
+}
+
 /**
  * Offer ticket in the product's purchase panel (Admin › Homepage & promotions › Product pages). A brand-colour
  * coupon with notched edges and a perforation: the pinned label, the offer, small print and a countdown on the
- * left; the code to copy on the tear-off stub. The stub sits on the right when there is room and below on phones
+ * left; the code on the tear-off stub, applied to the cart with a tap (copied, on Titan's quotation page). The stub sits on the right when there is room and below on phones
  * (a container query, so it follows the panel's width rather than the screen's).
  */
-export function OfferTicket({ offer, codeHint = 'Use code at cart' }: { offer: Offer; codeHint?: string }) {
+export function OfferTicket({ offer, copyHint }: { offer: Offer; /** Titan: the code is copied, with this hint, instead of applied */ copyHint?: string }) {
   const t = THEMES[offer.theme] ?? THEMES.volt;
   const code = offer.code.trim().toUpperCase();
   const to = offer.countdown && offer.schedule.to ? offer.schedule.to : '';
   const link = offer.link.label && offer.link.href ? offer.link : null;
   return (
     <div className={s.wrap}>
-      <div className={`${s.ticket} ${code ? s.hasCode : ''} ${t.dark ? 'on-dark' : ''}`} style={{ ...themeVars(offer.theme), ['--stubW' as string]: `${Math.min(260, Math.max(172, code.length * 15 + 92))}px` }} role="group" aria-label={`Offer: ${offer.tag || offer.title}`}>
+      <div className={`${s.ticket} ${code ? s.hasCode : ''} ${t.dark ? 'on-dark' : ''}`} style={{ ...themeVars(offer.theme), ['--stubW' as string]: `${Math.min(290, Math.max(180, code.length * 17 + 112))}px` }} role="group" aria-label={`Offer: ${offer.tag || offer.title}`}>
         <div className={s.main}>
           <Squiggle className={s.squiggle} />
           {offer.tag && <LabelBox tone={t.dark ? 'volt' : 'blue'} className={s.tag}>{offer.tag}</LabelBox>}
@@ -96,7 +112,7 @@ export function OfferTicket({ offer, codeHint = 'Use code at cart' }: { offer: O
             </p>
           )}
         </div>
-        {code && <Code code={code} hint={codeHint} />}
+        {code && (copyHint ? <CopyCode code={code} hint={copyHint} /> : <ApplyCode code={code} />)}
       </div>
     </div>
   );

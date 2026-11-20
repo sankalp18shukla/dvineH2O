@@ -45,6 +45,9 @@
 /* ── the dial: an instrument, not a glow. Hairline rings, a ticked bezel that turns with the orbs, flat discs. ── */
 .dial { position: relative; width: min(100%, 520px); aspect-ratio: 1; justify-self: center; }
 .h .dial { width: min(100%, 520px, 62svh); }
+/* below 1024 the dial never turns with the scroll (that runs on desktop only), so it would sit there as a large
+   still graphic: phones and tablets get the mode list alone, whose rows open on tap */
+@media (max-width: 1023px) { .dial { display: none; } }
 .ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .index { transition: fill .6s; }
 .orbit { position: absolute; inset: 0; rotate: var(--rot, 0deg); transition: rotate .9s cubic-bezier(.22,1,.36,1); }

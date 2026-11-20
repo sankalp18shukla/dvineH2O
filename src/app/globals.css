@@ -454,6 +454,8 @@ html:has(.site-ribbon) { --ribbon-h: 34px; }
 /* reveal-on-scroll (progressive: content is visible without JS) */
 .js [data-reveal] { opacity: 0; transform: translateY(22px); transition: opacity .9s var(--ease-out-soft), transform .9s var(--ease-out-soft); }
 .js [data-reveal].in { opacity: 1; transform: none; }
+/* a section landed on by a link (HashLanding.tsx) is simply there, no fade */
+:is([data-landed], [data-still]) [data-reveal] { transition: none; }
 @media (prefers-reduced-motion: reduce) { .js [data-reveal] { opacity: 1; transform: none; transition: none; } }
 
 /* Motion gate: everything the scroll scripts (TagReveal, PinFrames, ScrollCopy, [data-m] sections) animate in
@@ -461,7 +463,7 @@ html:has(.site-ribbon) { --ribbon-h: 34px; }
    server-rendered page paints it fully shown, then hydration snaps it shut and it opens again: a flash. If the
    script never runs, the failsafe shows it after 3s. Reduced motion shows everything at once. */
 @media (prefers-reduced-motion: no-preference) {
-  .js :is(.lk, .label-box, .band-lk, .pin-frame, [data-words], [data-rise] > *, [data-pop], [data-draw]):not([data-own-motion] *, .m-on),
+  .js :is(.lk, .label-box, .band-lk, .pin-frame, [data-words], [data-rise] > *, [data-pop], [data-draw]):not([data-own-motion] *, [data-landed] *, [data-still] *, .m-on),
   .js [data-m]:not(.m-on) { visibility: hidden; animation: m-failsafe 0s 3s forwards; }
   /* [data-still-tags] (the blog): headings and labels sit still, so they are never hidden */
   .js [data-still-tags] :is(.lk, .label-box, .band-lk) { visibility: visible; animation: none; }

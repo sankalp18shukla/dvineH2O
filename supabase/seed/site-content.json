@@ -168,7 +168,7 @@
         "body": "A hydrogen water bottle for everyone on your list. Bulk and corporate gifting available.",
         "cta": {
           "label": "Explore gifting",
-          "href": "/for-business#bulk"
+          "href": "/hydrogen-bottles"
         },
         "media": {
           "type": "image",
@@ -199,7 +199,7 @@
             "opacity": 1,
             "layer": "front",
             "motion": "float",
-            "mobile": true
+            "mobile": false
           },
           {
             "id": "54cdbcln",

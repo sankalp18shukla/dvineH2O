@@ -12,7 +12,7 @@ import { AdminForm, AdminError } from '@/components/admin/AdminForm';
 import { SubmitButton } from '@/components/forms/SubmitButton';
 import { Status, humanize } from '@/components/ui/Status';
 import { AutoRefresh } from '@/components/admin/AutoRefresh';
-import { updateEnquiry, replyToChat, createPaymentLink } from '@/app/actions/admin';
+import { updateEnquiry, createPaymentLink } from '@/app/actions/admin';
 import { CopyButton } from '@/components/CopyButton';
 import { INDIAN_STATES } from '@/lib/gst';
 import { formatINR } from '@/lib/money';
@@ -59,12 +59,11 @@ export default async function Enquiry({ params }: { params: Promise<{ id: string
           </Panel>
 
           {e.type === 'chat' && data.transcript && (
-            <Panel title="Live chat" actions={<AutoRefresh seconds={8} />}>
+            <Panel title="Chat transcript">
               <ol className="max-h-[460px] space-y-2 overflow-y-auto rounded-xl bg-paper p-3 font-sans text-sm">
                 {data.transcript.map((m, i) => <li key={i} className={`flex ${m.from === 'user' ? 'justify-start' : 'justify-end'}`}><span className={`max-w-[80%] rounded-2xl px-3 py-2 ${m.from === 'user' ? 'bg-white' : m.from === 'agent' ? 'bg-deep-current text-white' : 'bg-[#E8E4FF]'}`}><span className="block text-[10px] font-semibold uppercase opacity-70">{m.from === 'user' ? e.name : m.from === 'agent' ? 'DVINE team' : 'Assistant'} · {m.at ? new Date(m.at).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' }) : ''}</span>{m.text}</span></li>)}
               </ol>
-              <AdminForm action={replyToChat} className="mt-3 flex gap-2" reset><input type="hidden" name="id" value={e.id} /><input name="text" className="input flex-1 text-sm" placeholder="Reply to the customer" aria-label="Reply" autoComplete="off" /><SubmitButton className="btn btn-primary btn-sm min-h-12" pendingLabel="Sending">Send</SubmitButton><AdminError name="text" /></AdminForm>
-              <p className="mt-2 font-sans text-[12px] text-muted">The customer sees replies in their chat window while it’s open. Otherwise call them on {e.phone}.</p>
+              <p className="mt-2 font-sans text-[12px] text-muted">From the website’s earlier live chat. Reply by calling {e.phone} or on WhatsApp.</p>
             </Panel>
           )}
 

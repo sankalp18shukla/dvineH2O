@@ -12,6 +12,7 @@ import { createTicket } from '@/lib/enquiries';
 import { getCommerce } from '@/lib/settings';
 import { address, formToObject, name, password, phone, zodErrors, type FormState } from '@/lib/validators';
 import { saveUpload, UploadError } from '@/lib/uploads';
+import { queueSheetSync } from '@/lib/sheet-queue';
 
 async function ownOrder(number: string) {
   const c = await requireCustomer();
@@ -63,6 +64,7 @@ export async function submitReview(_: FormState, fd: FormData): Promise<FormStat
     try { media.push((await saveUpload(f, { allowed: ['image/jpeg', 'image/png', 'image/webp'], maxMb: 5, visibility: 'public', folder: 'reviews' })).publicUrl!); }
     catch (e) { if (e instanceof UploadError) return { errors: { photos: e.message } }; throw e; }
   }
+  queueSheetSync('reviews');
   await db.insert(reviews).values({ productId: p.data.productId, customerId: c.id, orderId: o.id, rating: p.data.rating, title: p.data.title || null, body: p.data.body, media, verified: true });
   revalidatePath(`/account/orders/${o.number}`);
   return { ok: true, message: 'Thank you. Your review will appear once our team has checked it.' };
@@ -93,6 +95,7 @@ export async function raiseServiceRequest(_: FormState, fd: FormData): Promise<F
 }
 
 export async function rateService(fd: FormData) {
+  queueSheetSync('tickets');
   const c = await requireCustomer();
   const id = Number(fd.get('id')); const rating = Math.min(5, Math.max(1, Number(fd.get('rating'))));
   const { serviceTickets } = await import('@/lib/db/schema');
@@ -101,6 +104,7 @@ export async function rateService(fd: FormData) {
 }
 
 export async function updateProfile(_: FormState, fd: FormData): Promise<FormState> {
+  queueSheetSync('customers');
   const c = await requireCustomer();
   const o = formToObject(fd) as Record<string, string>;
   const p = z.object({ name, phone, marketing: z.string().optional() }).safeParse(o);

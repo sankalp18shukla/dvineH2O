@@ -6,6 +6,7 @@ import { OfferTicket } from '@/components/store/OfferTicket';
 import { PromoCards } from '@/components/store/PromoCards';
 import { CardSchema, PRODUCT_PAGES, THEMES, isLive, newId, type ProductKey, type ThemeKey } from '@/lib/site-content';
 import { DecorEditor } from './DecorEditor';
+import { CouponField } from './CouponField';
 import { MediaField } from './MediaField';
 import { Area, IconBtn, ItemCard, LinkField, Pill, Schedule, Segmented, Text, ThemePicker, Toggle, moveItem, useSortable } from './fields';
 import { CardMock, Section, status, type PanelProps } from './panels';
@@ -61,22 +62,23 @@ export function ProductsPanel({ doc, set, siteImages, product, setProduct }: Pan
 
       {/* offer ticket */}
       <Section title={<>Offer ticket <span className="font-normal text-muted">· {page.name}</span></>}
-        sub={`A coupon-style ticket ${titan ? 'beside the quotation' : 'right under the price'}, with an optional code to copy and a countdown to the end date. On phones its label also rides in the bottom bar.`}
+        sub={`A coupon-style ticket ${titan ? 'beside the quotation' : 'right under the price'}, with an optional code ${titan ? 'to copy' : 'visitors apply with a tap'} and a countdown to the end date. On phones its label also rides in the bottom bar.`}
         aside={<Toggle checked={o.enabled} onChange={v => set(d => { d.products[product].offer.enabled = v; })} label={o.enabled ? 'On' : 'Off'} />}>
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div className="grid content-start gap-4">
             <Text label="Pinned label" value={o.tag} max={40} onChange={v => set(d => { d.products[product].offer.tag = v; })} placeholder="Diwali offer" hint="Also shown in the phone’s bottom bar" />
             <Text label="Offer" value={o.title} max={90} onChange={v => set(d => { d.products[product].offer.title = v; })} placeholder={titan ? 'Free first-year service on Titan' : `Festive pricing on ${page.name}`} />
             <Area label="Small print (optional)" value={o.body} max={220} rows={2} onChange={v => set(d => { d.products[product].offer.body = v; })} placeholder="For a limited period. Cannot be combined with other offers." />
-            <Text label="Code (optional)" mono value={o.code} max={24} onChange={v => set(d => { d.products[product].offer.code = v.toUpperCase().replace(/\s+/g, ''); })} placeholder="DIWALI10"
-              hint={titan ? 'Visitors quote it when they enquire' : <>Create the same code in <Link href="/admin/marketing" className="font-semibold text-deep-current hover:underline">Marketing</Link> so it works in the cart</>} />
+            {titan
+              ? <Text label="Code (optional)" mono value={o.code} max={24} onChange={v => set(d => { d.products[product].offer.code = v.toUpperCase().replace(/\s+/g, ''); })} placeholder="TITAN-SERVICE" hint="Visitors quote it when they enquire" />
+              : <CouponField value={o.code} onChange={v => set(d => { d.products[product].offer.code = v; })} schedule={o.schedule} product={product} hint="On the ticket’s stub; a tap applies it" />}
             <LinkField label="Link (optional)" value={o.link} onChange={v => set(d => { d.products[product].offer.link = v; })} />
           </div>
           <div className="grid content-start gap-4">
             <div>
               <p className="mb-2 font-sans text-[12px] font-semibold uppercase tracking-wider text-muted">Preview</p>
               <div className={`rounded-2xl border border-line bg-paper p-5 ${SHOW}`}>
-                {o.title || o.tag || o.code ? <OfferTicket offer={o} codeHint={titan ? 'Quote it when you enquire' : undefined} /> : <p className="py-6 text-center font-sans text-[13px] text-muted">Write the offer to see the ticket.</p>}
+                {o.title || o.tag || o.code ? <OfferTicket offer={o} copyHint={titan ? 'Quote it when you enquire' : undefined} /> : <p className="py-6 text-center font-sans text-[13px] text-muted">Write the offer to see the ticket.</p>}
               </div>
               <p className="mt-2 font-sans text-[12px] text-muted">The code moves under the offer on narrow screens and phones.</p>
             </div>
@@ -124,6 +126,7 @@ export function ProductsPanel({ doc, set, siteImages, product, setProduct }: Pan
                       <Text label="Title" value={c.title} max={90} onChange={v => upd(x => { x.title = v; })} />
                       <Area label="Text" value={c.body} max={280} onChange={v => upd(x => { x.body = v; })} />
                       <LinkField label="Link" value={c.cta} onChange={v => upd(x => { x.cta = v; })} />
+                      <CouponField value={c.code} onChange={v => upd(x => { x.code = v; })} schedule={c.schedule} product={titan ? undefined : product} />
                     </div>
                     <div className="grid content-start gap-4">
                       <MediaField label="Photo or video" value={c.media} onChange={m => upd(x => { x.media = m; })} siteImages={siteImages} compact />

@@ -12,11 +12,18 @@ const SEP: Record<R['separator'], React.ReactNode> = {
 /**
  * Announcement ribbon above the header: promotion messages scrolling right to left in a brand theme.
  * Two identical tracks loop seamlessly (the second is hidden from assistive tech); hover pauses it,
- * reduced motion shows the messages still. Edited in Admin › Homepage & promotions.
+ * reduced motion shows the messages still. Edited in Admin › Homepage & promotions; an optional coupon code
+ * rides along as the last message and tapping the ribbon applies it.
  */
 export function Ribbon({ ribbon, preview = false }: { ribbon: R; preview?: boolean }) {
-  const items = ribbon.items.map(i => i.text).filter(Boolean);
+  const code = ribbon.code.trim().toUpperCase();
+  const items: React.ReactNode[] = ribbon.items.map(i => i.text).filter(Boolean);
+  // a live code joins the messages; tapping the ribbon then applies it (/offer/CODE) and opens the ribbon's link,
+  // or comes back to the same page
+  if (code) items.push(<>Use code <b className={s.code}>{code}</b></>);
   if (!items.length) return null;
+  const href = code ? `/offer/${encodeURIComponent(code)}${ribbon.href ? `?to=${encodeURIComponent(ribbon.href)}` : ''}` : ribbon.href;
+  const label = [...ribbon.items.map(i => i.text).filter(Boolean), code && `Use code ${code}`].filter(Boolean).join('. ');
   // repeat short lists so one track is always wider than the screen
   const reps = Math.max(1, Math.ceil(8 / items.length));
   const list = Array.from({ length: reps }, () => items).flat();
@@ -31,7 +38,9 @@ export function Ribbon({ ribbon, preview = false }: { ribbon: R; preview?: boole
     </div>
   );
   const cls = `site-ribbon no-print ${s.ribbon} ${preview ? s.preview : ''}`;
-  return ribbon.href
-    ? <Link href={ribbon.href} className={cls} style={themeVars(ribbon.theme)} aria-label={`Offers: ${items.join('. ')}`}>{body}</Link>
+  // the offer link is a route that applies the code, so it is a plain link, never prefetched
+  if (code) return <a href={href} className={cls} style={themeVars(ribbon.theme)} aria-label={`Offers: ${label}. Tap to apply the code`}>{body}</a>;
+  return href
+    ? <Link href={href} className={cls} style={themeVars(ribbon.theme)} aria-label={`Offers: ${label}`}>{body}</Link>
     : <aside className={cls} style={themeVars(ribbon.theme)} aria-label="Offers">{body}</aside>;
 }

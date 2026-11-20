@@ -87,7 +87,8 @@ export default function SupportPage() {
                 <li className="flex items-start gap-3"><Icon name="pin" className="mt-0.5 size-5 shrink-0 text-deep-current" /><a href={SITE.mapsUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">{SITE.address[0]}<br />{SITE.address[1]}</a></li>
               </ul>
             </div>
-            <SupportForm topics={SUPPORT.contact.topics} />
+            {/* "Ask Us a Question" buttons land here, on the form itself */}
+            <div id="ask"><SupportForm topics={SUPPORT.contact.topics} /></div>
           </div>
         </section>
 

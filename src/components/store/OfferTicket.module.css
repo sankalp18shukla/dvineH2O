@@ -89,3 +89,5 @@
   .code, .link, .link :global(svg) { transition: none; }
 }
 @media print { .ticket::after { display: none; } }
+.code:disabled { cursor: default; }
+.stubLabel[data-error] { opacity: 1; text-transform: none; letter-spacing: 0; font-size: 12px; }

@@ -3,6 +3,8 @@ import { asc, desc, eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { waterTests, testOptions } from '@/lib/db/schema';
 import { requireStaff } from '@/lib/auth';
+import { getLink } from '@/lib/sheet-sync';
+import { SheetButton } from '@/components/admin/SheetButton';
 import { can } from '@/lib/session';
 import { formatINR } from '@/lib/money';
 import { PageHead, Panel, TableWrap, Filters, Empty, dt } from '@/components/admin/ui';
@@ -16,13 +18,15 @@ const STATUSES = ['requested', 'confirmed', 'collected', 'report_ready', 'comple
 
 export default async function WaterTests({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   const s = await requireStaff('enquiries');
+  const sheet = await getLink('form:water_test').catch(() => null);
+  const canLink = can(s.role, 'settings');
   const { status } = await searchParams;
   const where = status && (STATUSES as readonly string[]).includes(status) ? eq(waterTests.status, status as typeof STATUSES[number]) : undefined;
   const [list, opts] = await Promise.all([db.query.waterTests.findMany({ where, orderBy: desc(waterTests.createdAt), limit: 200, with: { option: true } }), db.query.testOptions.findMany({ orderBy: asc(testOptions.sort) })]);
   const sel = 'input min-h-10 text-sm';
   return (
     <>
-      <PageHead title="Water tests" sub="Bookings, sample collection, reports and conversion." actions={<a href="/api/admin/export?type=water_tests&range=30d" className="btn btn-outline btn-sm">Export CSV</a>} />
+      <PageHead title="Water tests" sub="Bookings, sample collection, reports and conversion." actions={<><SheetButton feed="form:water_test" link={sheet} canLink={canLink} /><a href="/api/admin/export?type=water_tests&range=30d" className="btn btn-outline btn-sm">Export CSV</a></>} />
       <Filters><div className="field"><label className="label" htmlFor="st">Status</label><select id="st" name="status" defaultValue={status ?? ''} className="input w-44"><option value="">All</option>{STATUSES.map(x => <option key={x} value={x}>{humanize(x)}</option>)}</select></div></Filters>
       <Panel>
         {list.length === 0 ? <Empty>No water tests yet.</Empty> : (

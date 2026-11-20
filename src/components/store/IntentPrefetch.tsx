@@ -20,7 +20,7 @@ export function IntentPrefetch() {
       if (!a || a.target === '_blank' || a.hasAttribute('download')) return;
       const url = new URL(a.href, location.href);
       if (url.origin !== location.origin || url.pathname === location.pathname) return; // same page: a hash jump
-      if (/^\/(api|admin|media|invoice|checkout\/phonepe)\b/.test(url.pathname)) return; // route handlers, never pages
+      if (/^\/(api|admin|media|invoice|offer|checkout\/phonepe)\b/.test(url.pathname)) return; // route handlers, never pages (an offer link applies its code)
       const key = url.pathname + url.search;
       if (done.has(key)) return;
       done.add(key);

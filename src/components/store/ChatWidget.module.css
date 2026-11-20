@@ -187,17 +187,13 @@
 .typing i:nth-child(3) { animation-delay: .3s; }
 @keyframes bob { 0%, 60%, 100% { transform: translateY(0); opacity: .35; } 30% { transform: translateY(-4px); opacity: 1; } }
 
-.card { padding: 16px; border-radius: 22px; }
-.card:hover { background: rgb(255 255 255 / .1); }
-.field {
-  width: 100%; min-height: 44px; padding: 0 14px; border-radius: 14px; font-size: 15px; color: #fff;
-  background: rgb(255 255 255 / .08); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .16); transition: box-shadow .2s ease;
-}
-.field::placeholder { color: rgb(255 255 255 / .5); }
-.field:focus { outline: none; box-shadow: inset 0 0 0 1.5px var(--color-glacier); }
 .cta { min-height: 38px; border-radius: 999px; background: var(--color-glacier); color: var(--color-ink); font-size: 13.5px; font-weight: 700; transition: transform .35s var(--ease); }
 .cta:hover { transform: scale(1.03); }
 .cta:disabled { opacity: .5; }
+/* the hand-over to WhatsApp under an answer */
+.handoff { display: inline-flex; align-items: center; gap: 8px; padding: 0 16px; min-height: 40px; }
+/* links and buttons under an answer arrive once it has finished typing */
+.after { animation: rise .4s var(--ease-out) both; }
 
 /* composer: a glass pill; the send button lights up glacier when there is something to send */
 .composer { display: flex; flex: 1; align-items: center; gap: 6px; padding: 4px; border-radius: 999px; }
@@ -216,5 +212,5 @@
     transition-duration: 0.01ms !important;
     transition-delay: 0s !important;
   }
-  .starBig, .starSmall, .msg, .chips .pill, .orbs i, .typing i { animation: none !important; }
+  .starBig, .starSmall, .msg, .after, .chips .pill, .orbs i, .typing i { animation: none !important; }
 }

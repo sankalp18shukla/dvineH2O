@@ -4,6 +4,7 @@ import { enquiries, waterTests, serviceTickets, testOptions, ENQUIRY_TYPES, INTE
 import { enquiryRef, waterTestRef, ticketNumber, randomToken } from './numbering';
 import { findOrCreateCustomer } from './customers';
 import { notify, notifyTeam, templates, links } from './notify';
+import { queueSheetSync } from './sheet-queue';
 
 export type EnquiryType = typeof ENQUIRY_TYPES[number];
 export type Interest = typeof INTERESTS[number];
@@ -30,6 +31,7 @@ export async function createEnquiry(input: EnquiryInput, opts: { silent?: boolea
     email: input.email || null, phone: input.phone || null, company: input.company || null, city: input.city || null, pincode: input.pincode || null,
     message: input.message || null, preferredAt: input.preferredAt || null, data: input.data ?? null, source: input.source ?? null, consent: input.consent,
   }).returning();
+  queueSheetSync(`form:${input.type}`);
   if (!opts.silent) await notify({ email: row.email }, templates.enquiryReceived({ ref, name: input.name.split(' ')[0], what: ENQUIRY_LABEL[input.type].toLowerCase() }));
   return row;
 }
@@ -60,6 +62,7 @@ export async function createTicket(input: TicketInput) {
     number, customerId: customer?.id ?? null, productId: input.productId ?? null, warrantyId: input.warrantyId ?? null, orderId: input.orderId ?? null,
     name: input.name, phone: input.phone ?? null, email: input.email ?? null, issue: input.issue, priority: input.priority ?? 'normal',
   }).returning();
+  queueSheetSync('tickets');
   await notify({ email: input.email, phone: input.phone }, templates.ticketOpened({ number, name: input.name.split(' ')[0] }));
   await notifyTeam(templates.ticketForTeam({ number, name: input.name, contact: [input.phone, input.email].filter(Boolean).join(', ') || 'no contact given', issue: input.issue.slice(0, 600), link: `${(process.env.NEXT_PUBLIC_SITE_URL ?? '').replace(/\/$/, '')}/admin/service?ticket=${t.id}` }));
   return t;

@@ -3,10 +3,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Header } from '@/components/store/Header';
 import { Lockup } from '@/components/ui/Brand';
-import { QtyControl, CodeForm } from '@/components/store/CartControls';
+import { QtyControl, CodeForm, OfferList } from '@/components/store/CartControls';
 import { Totals } from '@/components/store/Totals';
 import { Icon } from '@/components/ui/Icon';
 import { loadCart } from '@/lib/cart';
+import { getLiveContent } from '@/lib/site-content.server';
+import { cartOffers } from '@/lib/promo-codes';
 import { formatINR } from '@/lib/money';
 
 export const metadata: Metadata = { title: 'Your cart', robots: { index: false } };
@@ -15,6 +17,8 @@ const HREF: Record<string, string> = { hyper: '/hydrogen-bottles', crystal: '/ho
 
 export default async function CartPage() {
   const { items, totals } = await loadCart();
+  // the codes promoted on the site today, with what each saves on this cart
+  const offers = items.length ? await cartOffers(await getLiveContent(), items.map(i => ({ productId: i.product.id, slug: i.product.slug, sku: i.product.sku, name: i.product.name, hsn: i.product.hsn, qty: i.qty, unitPrice: i.product.price, gstRate: i.product.gstRate }))) : [];
   return (
     <>
       <Header framed page="cart" />
@@ -46,6 +50,7 @@ export default async function CartPage() {
             <aside className="flex flex-col gap-5 lg:sticky lg:top-24 lg:self-start">
               <div className="card p-6">
                 <CodeForm applied={totals.couponCode ?? null} error={totals.couponError} isReferral={'isReferral' in totals && !!totals.isReferral} />
+                <OfferList offers={offers} applied={totals.couponCode ?? null} />
                 <div className="mt-6"><Totals t={totals} /></div>
                 <Link href="/checkout" className={`btn btn-primary mt-6 w-full ${items.some(i => i.qty > i.available) ? 'pointer-events-none opacity-50' : ''}`} aria-disabled={items.some(i => i.qty > i.available)}>Checkout <Icon name="arrow" className="size-4" /></Link>
                 <p className="mt-3 text-center font-sans text-[13px] text-muted">Guest checkout available. No account needed.</p>

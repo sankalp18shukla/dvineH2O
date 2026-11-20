@@ -3,6 +3,7 @@ import path from 'node:path';
 import { requireStaff } from '@/lib/auth';
 import { getEditorContent } from '@/lib/site-content.server';
 import { ContentEditor } from '@/components/admin/content/ContentEditor';
+import { publicCoupons } from '@/lib/promo-codes';
 
 export const metadata = { title: 'Homepage & promotions' };
 
@@ -17,6 +18,6 @@ async function siteImages() {
 
 export default async function ContentPage() {
   await requireStaff('content');
-  const [c, images] = await Promise.all([getEditorContent(), siteImages()]);
-  return <ContentEditor live={c.live} draft={c.draft} hasDraft={c.hasDraft} siteImages={images} />;
+  const [c, images, coupons] = await Promise.all([getEditorContent(), siteImages(), publicCoupons().catch(() => [])]);
+  return <ContentEditor live={c.live} draft={c.draft} hasDraft={c.hasDraft} siteImages={images} coupons={coupons} />;
 }

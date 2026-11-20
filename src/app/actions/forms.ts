@@ -9,6 +9,7 @@ import { getCustomer } from '@/lib/auth';
 import { email, formToObject, name, optional, phone, pincode, zodErrors, type FormState } from '@/lib/validators';
 import { saveUpload, UploadError } from '@/lib/uploads';
 import { limitRequest, TOO_MANY } from '@/lib/security';
+import { queuePincodeRefresh } from '@/lib/sheet-queue';
 
 const consent = z.literal('on', { errorMap: () => ({ message: 'Please agree so we can contact you about this request.' }) });
 const interest = z.enum(INTERESTS).default('not_sure');
@@ -67,6 +68,7 @@ export async function bookWaterTest(_: FormState, fd: FormData): Promise<FormSta
   const day = new Date(d.preferredDate + 'T00:00:00');
   const today = new Date(); today.setHours(0, 0, 0, 0);
   if (day < new Date(today.getTime() + 86400_000)) return { errors: { preferredDate: 'Choose a date from tomorrow onwards' }, data: o };
+  queuePincodeRefresh();
   const pin = await db.query.pincodes.findFirst({ where: eq(pincodes.pincode, d.pincode) });
   if (!pin || !pin.waterTesting) return { errors: { pincode: 'Water testing is not available at this pincode yet. Upload an existing report, or send us an enquiry.' }, data: o };
   const customer = await getCustomer();

@@ -5,6 +5,7 @@ import { db } from './db';
 import { settings } from './db/schema';
 import { getStaff } from './auth';
 import { DEFAULT_CONTENT, isLive, parseContent, todayIST, type ProductKey, type SiteContent } from './site-content';
+import { withLiveCodes } from './promo-codes';
 
 /** The published document is what visitors see; the draft is what the editor saves until "Publish". */
 const LIVE = 'site.content', DRAFT = 'site.content.draft';
@@ -14,14 +15,17 @@ async function read(key: string): Promise<SiteContent | null> {
   return row ? parseContent(row.value) : null;
 }
 
-/** Published content. Without a database (frontend-only preview) the site renders its designed defaults. */
-export const getLiveContent = cache(async (): Promise<SiteContent> => (await read(LIVE).catch(() => null)) ?? DEFAULT_CONTENT);
+/**
+ * Published content. Without a database (frontend-only preview) the site renders its designed defaults.
+ * Promotion codes are kept only while their coupon is live (promo-codes.ts), on the live site and in previews.
+ */
+export const getLiveContent = cache(async (): Promise<SiteContent> => withLiveCodes((await read(LIVE).catch(() => null)) ?? DEFAULT_CONTENT));
 
 /** For ?preview=1: a signed-in staff member sees the unpublished draft, everyone else the live site. */
 export async function getContent(preview?: string | string[]): Promise<SiteContent> {
   if (preview === '1' && (await getStaff().catch(() => null))) {
     const d = await read(DRAFT).catch(() => null);
-    if (d) return d;
+    if (d) return withLiveCodes(d);
   }
   return getLiveContent();
 }

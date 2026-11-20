@@ -1,6 +1,6 @@
 import {
   ArrowLeft, ArrowRight, BadgePercent, Download, BarChart3, Bell, Boxes, Building2, CalendarDays, Check, ChevronDown, ChevronRight,
-  CircleAlert, Copy, CreditCard, Droplet, ExternalLink, Eye, FileText, GripVertical, Handshake, History, Home, Image, Inbox,
+  CircleAlert, Copy, CreditCard, Droplet, ExternalLink, Eye, FileSpreadsheet, FileText, Link2, Unlink, GripVertical, Handshake, History, Home, Image, Inbox,
   Info, LayoutDashboard, LayoutTemplate, LifeBuoy, LogOut, Mail, MapPin, Menu, MessageCircle, MessagesSquare, Minus, Monitor,
   Package, PanelTop, Phone, Play, Plus, Printer, RefreshCw, Search, Send, Settings, ShieldCheck, ShoppingBag, ShoppingCart,
   Smartphone, Sparkles, Star, Tag, Ticket, Trash2, Truck, Upload, User, Users, Video, Wrench, X, type LucideIcon,
@@ -19,7 +19,7 @@ const icons: Record<string, LucideIcon> = {
   copy: Copy, image: Image, video: Video, upload: Upload, grip: GripVertical, eye: Eye, play: Play, refresh: RefreshCw,
   alert: CircleAlert, info: Info, download: Download, calendar: CalendarDays, desktop: Monitor, mobile: Smartphone, search: Search,
   print: Printer, ticket: Ticket, truck: Truck, phone: Phone, mail: Mail, pin: MapPin, home: Home, bag: ShoppingBag,
-  cart: ShoppingCart, building: Building2, partner: Handshake, support: LifeBuoy, shield: ShieldCheck, inboxTray: Inbox,
+  cart: ShoppingCart, sheet: FileSpreadsheet, link: Link2, unlink: Unlink, building: Building2, partner: Handshake, support: LifeBuoy, shield: ShieldCheck, inboxTray: Inbox,
 };
 
 export function Icon({ name, className = 'size-5', strokeWidth = 1.75 }: { name: string; className?: string; strokeWidth?: number }) {

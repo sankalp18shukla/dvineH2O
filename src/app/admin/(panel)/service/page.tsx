@@ -3,6 +3,9 @@ import { desc, eq, inArray } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { serviceTickets, warranties, installations, staff } from '@/lib/db/schema';
 import { requireStaff } from '@/lib/auth';
+import { can } from '@/lib/session';
+import { getLink } from '@/lib/sheet-sync';
+import { SheetButton } from '@/components/admin/SheetButton';
 import { PageHead, Panel, TableWrap, Empty, dt, day } from '@/components/admin/ui';
 import { AdminForm } from '@/components/admin/AdminForm';
 import { SubmitButton } from '@/components/forms/SubmitButton';
@@ -12,7 +15,9 @@ import { updateTicket, createAdminTicket } from '@/app/actions/admin';
 export const metadata = { title: 'Warranty & service' };
 
 export default async function Service({ searchParams }: { searchParams: Promise<{ tab?: string; ticket?: string; all?: string }> }) {
-  await requireStaff('service');
+  const me = await requireStaff('service');
+  const sheet = await getLink('tickets').catch(() => null);
+  const canLink = can(me.role, 'settings');
   const { tab = 'tickets', ticket, all } = await searchParams;
   const sel = 'input min-h-9 text-[13px]';
   const [team, prods] = await Promise.all([db.query.staff.findMany({ where: eq(staff.active, true) }), db.query.products.findMany()]);
@@ -61,7 +66,7 @@ export default async function Service({ searchParams }: { searchParams: Promise<
   }
   return (
     <>
-      <PageHead title="Warranty & service" actions={<><a href="/api/admin/export?type=service&range=30d" className="btn btn-outline btn-sm">Export tickets</a><a href="/api/admin/export?type=warranties" className="btn btn-outline btn-sm">Export warranties</a></>} />
+      <PageHead title="Warranty & service" actions={<><SheetButton feed="tickets" link={sheet} canLink={canLink} /><a href="/api/admin/export?type=service&range=30d" className="btn btn-outline btn-sm">Export tickets</a><a href="/api/admin/export?type=warranties" className="btn btn-outline btn-sm">Export warranties</a></>} />
       <div className="mb-4 flex gap-2"><Link href="/admin/service" className={tabCls('tickets')}>Service tickets</Link><Link href="/admin/service?tab=installations" className={tabCls('installations')}>Installations</Link><Link href="/admin/service?tab=warranties" className={tabCls('warranties')}>Warranties</Link></div>
       {body}
     </>

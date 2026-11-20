@@ -2,6 +2,7 @@ import { and, asc, eq, isNull } from 'drizzle-orm';
 import { db, type Tx } from './db';
 import { customers, staff } from './db/schema';
 import { ensureReferralCode } from './referrals';
+import { queueSheetSync } from './sheet-queue';
 
 type Input = { name: string; email?: string | null; phone?: string | null; city?: string | null; state?: string | null; pincode?: string | null; consent?: boolean; marketing?: boolean };
 
@@ -31,13 +32,14 @@ export async function findOrCreateCustomer(input: Input, tx: Tx | typeof db = db
     }
     if (input.consent && !existing.consentPrivacyAt) { patch.consentPrivacyAt = now; patch.consentTermsAt = now; }
     if (input.marketing) patch.consentMarketing = true;
-    if (Object.keys(patch).length) await tx.update(customers).set(patch).where(eq(customers.id, existing.id));
+    if (Object.keys(patch).length) { await tx.update(customers).set(patch).where(eq(customers.id, existing.id)); queueSheetSync('customers'); }
     return { ...existing, ...patch };
   }
   const [row] = await tx.insert(customers).values({
     name: input.name, email, phone, city: input.city ?? null, state: input.state ?? null, pincode: input.pincode ?? null,
     consentPrivacyAt: input.consent ? now : null, consentTermsAt: input.consent ? now : null, consentMarketing: !!input.marketing,
   }).returning();
+  queueSheetSync('customers');
   return row;
 }
 
@@ -77,6 +79,7 @@ export async function linkCustomerAccount(user: AuthUser) {
       id = c.id;
     }
     await ensureReferralCode(id);
+    queueSheetSync('customers');
   } catch (e) {
     // a concurrent request linked it first (unique auth_user_id) — fall through and read it back
     console.warn('[customers] link race', (e as Error).message);

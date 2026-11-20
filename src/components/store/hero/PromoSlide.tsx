@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react';
 import { THEMES, type PromoSlide as P } from '@/lib/site-content';
 import { Icon } from '@/components/ui/Icon';
 import { DecorLayer } from '../DecorLayer';
+import { CouponChip } from '../CouponCode';
 import h from './Hero.module.css';
 import s from './Promo.module.css';
 
@@ -59,8 +60,9 @@ export function PromoSlide({ p, cls, active, leaving, label }: { p: P; cls: stri
         </h2>
         <div className={h.body}>
           {p.body && <p className={`${h.lede} ${h.f}`} style={{ ['--i' as string]: 2 }}>{p.body}</p>}
+          {p.code && <div className={`${s.coupon} ${h.f}`} style={{ ['--i' as string]: 3 }}><CouponChip code={p.code} variant="hero" tabIndex={active ? 0 : -1} /></div>}
           {ctas.length > 0 && (
-            <div className={`${h.ctas} ${h.f}`} style={{ ['--i' as string]: 3 }}>
+            <div className={`${h.ctas} ${h.f}`} style={{ ['--i' as string]: p.code ? 4 : 3 }}>
               {ctas.map((c, k) => (
                 <Link key={k} href={c.href} tabIndex={active ? 0 : -1} className={`${h.cta} ${k === 0 ? h.primary : `${h.ghost} glare`}`}>
                   {k === 0 && <span className={h.chip} aria-hidden="true"><Icon name="arrow" /></span>}

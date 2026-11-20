@@ -4,13 +4,18 @@ import { db } from '@/lib/db';
 import { customers, orders, enquiries } from '@/lib/db/schema';
 import { likeTerm } from '@/lib/validators';
 import { requireStaff } from '@/lib/auth';
+import { can } from '@/lib/session';
+import { getLink } from '@/lib/sheet-sync';
+import { SheetButton } from '@/components/admin/SheetButton';
 import { formatINR } from '@/lib/money';
 import { PageHead, Panel, TableWrap, Filters, Empty, day } from '@/components/admin/ui';
 
 export const metadata = { title: 'Customers' };
 
 export default async function Customers({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  await requireStaff('customers');
+  const me = await requireStaff('customers');
+  const sheet = await getLink('customers').catch(() => null);
+  const canLink = can(me.role, 'settings');
   const { q } = await searchParams;
   const where = q ? or(ilike(customers.name, likeTerm(q)), ilike(customers.email, likeTerm(q)), ilike(customers.phone, likeTerm(q)), ilike(customers.city, likeTerm(q))) : undefined;
   const rows = await db.select({
@@ -22,7 +27,7 @@ export default async function Customers({ searchParams }: { searchParams: Promis
   }).from(customers).where(where).orderBy(desc(customers.createdAt)).limit(200);
   return (
     <>
-      <PageHead title="Customers" sub="One record per person across orders, enquiries, tests and service." actions={<a href="/api/admin/export?type=customers" className="btn btn-outline btn-sm">Export CSV</a>} />
+      <PageHead title="Customers" sub="One record per person across orders, enquiries, tests and service." actions={<><SheetButton feed="customers" link={sheet} canLink={canLink} /><a href="/api/admin/export?type=customers" className="btn btn-outline btn-sm">Export CSV</a></>} />
       <Filters><div className="field"><label className="label" htmlFor="q">Search</label><input id="q" name="q" defaultValue={q} placeholder="Name, email, phone, city" className="input w-72" /></div></Filters>
       <Panel>
         {rows.length === 0 ? <Empty>No customers yet.</Empty> : (

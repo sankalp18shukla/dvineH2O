@@ -18,7 +18,8 @@ const TICKS = Array.from({ length: 72 }, (_, k) => k * 5);
  * Crystal 03 · Water modes. Four modes on a dial. On desktop the band pins under the header and the ring turns
  * with the scroll, straight and smooth (no snapping, no progress bar): each mode in turn comes up to the top,
  * lit in its own colour, while its row opens on the left and the band takes on its colour. Clicking a row
- * scrolls to that mode. Phones and reduced motion get a plain band where tapping a row turns the dial.
+ * scrolls to that mode. Reduced motion gets a plain band where tapping a row turns the dial; below 1024 the dial
+ * is left out (it would never turn with the scroll there) and tapping a row opens it.
  */
 export function ModeDial({ title, items, note, children, overlap = false }: { title: string; items: Mode[]; note: string; children?: ReactNode; overlap?: boolean }) {
   const root = useRef<HTMLElement>(null);

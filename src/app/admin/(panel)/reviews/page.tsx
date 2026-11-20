@@ -4,6 +4,9 @@ import { desc, eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { reviews } from '@/lib/db/schema';
 import { requireStaff } from '@/lib/auth';
+import { can } from '@/lib/session';
+import { getLink } from '@/lib/sheet-sync';
+import { SheetButton } from '@/components/admin/SheetButton';
 import { PageHead, Panel, Empty, day } from '@/components/admin/ui';
 import { AdminForm } from '@/components/admin/AdminForm';
 import { SubmitButton } from '@/components/forms/SubmitButton';
@@ -13,12 +16,14 @@ import { moderateReview } from '@/app/actions/admin';
 export const metadata = { title: 'Reviews' };
 
 export default async function Reviews({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
-  await requireStaff('marketing');
+  const me = await requireStaff('marketing');
+  const sheet = await getLink('reviews').catch(() => null);
+  const canLink = can(me.role, 'settings');
   const status = ((await searchParams).status ?? 'pending') as 'pending' | 'approved' | 'rejected';
   const list = await db.query.reviews.findMany({ where: eq(reviews.status, status), orderBy: desc(reviews.createdAt), with: { product: true, customer: true } });
   return (
     <>
-      <PageHead title="Reviews" sub="Verified-purchase reviews appear on product pages once approved." />
+      <PageHead title="Reviews" sub="Verified-purchase reviews appear on product pages once approved." actions={<SheetButton feed="reviews" link={sheet} canLink={canLink} />} />
       <div className="mb-4 flex gap-2 font-sans text-sm">{(['pending', 'approved', 'rejected'] as const).map(s => <Link key={s} href={`/admin/reviews?status=${s}`} className={`rounded-full px-4 py-2 ${status === s ? 'bg-ink font-semibold text-white' : 'bg-white'}`}>{s[0].toUpperCase() + s.slice(1)}</Link>)}</div>
       {list.length === 0 ? <Panel><Empty>Nothing here.</Empty></Panel> : (
         <div className="grid gap-4 lg:grid-cols-2">{list.map(r => (

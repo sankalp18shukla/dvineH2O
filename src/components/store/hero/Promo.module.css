@@ -32,3 +32,7 @@
   .on .media { animation: none; opacity: 1; }
   .side .el { animation: none !important; }
 }
+
+/* the slide's coupon code with its Apply button (CouponCode.tsx), between the text and the buttons */
+.coupon { margin-top: 18px; }
+@media (max-width: 899px) { .coupon { margin-top: 12px; } }

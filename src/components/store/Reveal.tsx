@@ -1,12 +1,18 @@
 'use client';
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { isLanded } from './landing';
 
 /** Adds .in to [data-reveal] elements as they enter the viewport. */
 export function Reveal() {
   const path = usePathname();
   useEffect(() => {
-    const els = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]:not(.in)'));
+    // a section landed on by a link (landing.ts) shows at once
+    const els = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]:not(.in)')).filter(e => {
+      if (!isLanded(e)) return true;
+      e.classList.add('in');
+      return false;
+    });
     if (!('IntersectionObserver' in window)) { els.forEach(e => e.classList.add('in')); return; }
     const io = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
     els.forEach(e => io.observe(e));

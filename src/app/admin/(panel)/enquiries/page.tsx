@@ -4,6 +4,9 @@ import { likeTerm } from '@/lib/validators';
 import { db } from '@/lib/db';
 import { enquiries, ENQUIRY_TYPES, ENQUIRY_STATUSES, INTERESTS } from '@/lib/db/schema';
 import { requireStaff } from '@/lib/auth';
+import { can } from '@/lib/session';
+import { getLinks } from '@/lib/sheet-sync';
+import { SheetButton } from '@/components/admin/SheetButton';
 import { INTEREST_LABEL } from '@/lib/enquiries';
 import { FORMS, formOf } from '@/lib/form-responses';
 import { PageHead, Panel, TableWrap, Filters, Empty, dt } from '@/components/admin/ui';
@@ -15,7 +18,7 @@ export const metadata = { title: 'Form responses' };
 type SP = { type?: string; status?: string; interest?: string; q?: string };
 
 export default async function FormResponses({ searchParams }: { searchParams: Promise<SP> }) {
-  await requireStaff('enquiries');
+  const staff = await requireStaff('enquiries');
   const sp = await searchParams;
   const type = sp.type && (ENQUIRY_TYPES as readonly string[]).includes(sp.type) ? sp.type as typeof ENQUIRY_TYPES[number] : undefined;
   const conds = [
@@ -24,10 +27,13 @@ export default async function FormResponses({ searchParams }: { searchParams: Pr
     sp.interest && (INTERESTS as readonly string[]).includes(sp.interest) ? eq(enquiries.productInterest, sp.interest as typeof INTERESTS[number]) : undefined,
     sp.q ? or(ilike(enquiries.name, likeTerm(sp.q)), ilike(enquiries.phone, likeTerm(sp.q)), ilike(enquiries.email, likeTerm(sp.q)), ilike(enquiries.ref, likeTerm(sp.q)), ilike(enquiries.company, likeTerm(sp.q))) : undefined,
   ].filter(Boolean);
-  const [list, tally] = await Promise.all([
+  const [list, tally, links] = await Promise.all([
     db.query.enquiries.findMany({ where: conds.length ? and(...(conds as NonNullable<typeof conds[number]>[])) : undefined, orderBy: desc(enquiries.createdAt), limit: 200, with: { assignee: true } }),
     db.select({ type: enquiries.type, total: count(), fresh: sql<number>`count(*) filter (where ${enquiries.status} = 'new')`.mapWith(Number) }).from(enquiries).groupBy(enquiries.type),
+    getLinks().catch(() => new Map()),
   ]);
+  const canLink = can(staff.role, 'settings');
+  const linkedForms = FORMS.filter(f => links.has(`form:${f.type}`)).length;
   const by = new Map(tally.map(t => [t.type, t]));
   const allNew = tally.reduce((n, t) => n + t.fresh, 0);
   const allTotal = tally.reduce((n, t) => n + t.total, 0);
@@ -52,7 +58,12 @@ export default async function FormResponses({ searchParams }: { searchParams: Pr
   return (
     <>
       <PageHead title="Form responses" sub={current ? `${current.tab} · sent from the ${current.from.toLowerCase()}` : 'Everything people send through the website’s forms and chat, newest first.'}
-        actions={<a href="/api/admin/export?type=enquiries&range=30d" className="btn btn-outline btn-sm"><Icon name="download" className="size-4" />Export CSV</a>} />
+        actions={<>
+          {type
+            ? <SheetButton feed={`form:${type}`} link={links.get(`form:${type}`)} canLink={canLink} />
+            : canLink && <a href="/admin/settings/sheets" className="btn btn-outline btn-sm"><Icon name="sheet" className="size-4" />Google Sheets{linkedForms ? ` · ${linkedForms} linked` : ''}</a>}
+          <a href="/api/admin/export?type=enquiries&range=30d" className="btn btn-outline btn-sm"><Icon name="download" className="size-4" />Export CSV</a>
+        </>} />
 
       <nav aria-label="Forms" className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
         {tab(undefined, 'All forms', allNew, allTotal)}

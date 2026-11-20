@@ -45,7 +45,8 @@ export function CartDrawer() {
         </div>
         <div className="flex-1 overflow-y-auto p-5">
           {!cart ? <p className="text-muted">Loading your cart…</p> : (
-            <ul className="grid gap-3">
+            // grid-cols-1 (minmax(0, 1fr)): an auto column took the long product name's full width and pushed the row off-screen
+            <ul className="grid grid-cols-1 gap-3">
               {cart.items.map(i => (
                 <li key={i.id} className="card flex items-center gap-4 p-3">
                   <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-stage">{i.image && <Image src={i.image} alt="" fill sizes="64px" className="object-cover" />}</div>

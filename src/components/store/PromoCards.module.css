@@ -6,7 +6,10 @@
 @media (min-width: 1024px) { .n3 { grid-template-columns: repeat(3, 1fr); } }
 @media (min-width: 768px) and (max-width: 1023px) { .n3 { grid-template-columns: repeat(2, 1fr); } .n3 > :last-child { grid-column: 1 / -1; } }
 
-.card { position: relative; display: flex; flex-direction: column-reverse; background: var(--p-bg); color: var(--p-fg); text-decoration: none; isolation: isolate; }
+/* the colour block opens with the pinned frame (--open, PinFrames.tsx) as its photo and copy do; painted in full,
+   it showed as an empty slab of colour until the frame had opened */
+.card { position: relative; display: flex; flex-direction: column-reverse; color: var(--p-fg); text-decoration: none; isolation: isolate;
+  background: linear-gradient(var(--p-bg) 0 0) 50% 50% / calc(100% * var(--open, 1)) calc(100% * var(--open, 1)) no-repeat; }
 .media { position: relative; z-index: 1; aspect-ratio: 4 / 3; overflow: hidden; background: rgb(4 22 74 / .08); }
 .el { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1.1s cubic-bezier(.22,1,.36,1); }
 .card:hover .el { transform: scale(1.045); }
@@ -36,3 +39,8 @@
   .wide .squiggle { width: 220px; right: -60px; top: -70px; }
 }
 @media (prefers-reduced-motion: reduce) { .el, .squiggle, .cta, .cta :global(svg) { transition: none; } }
+
+/* a card with a code (CouponCode.tsx): its call to action is the link, underlined on its own hover */
+.coupon { margin-top: 4px; }
+.card .ctaLink { color: inherit; text-decoration: none; }
+.card .ctaLink:hover { background-size: 100% 1.5px; }

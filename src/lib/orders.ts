@@ -18,6 +18,7 @@ import { activeGateway } from './payments-mode';
 import { qualifyReferral, voidReferral } from './referrals';
 import { priceCart } from './cart-pricing';
 import { splitInclusive } from './gst';
+import { queueSheetSync } from './sheet-queue';
 
 export type OrderStatus = typeof orders.$inferSelect['status'];
 
@@ -49,6 +50,7 @@ type CheckoutInput = {
 
 /** Creates a pending-payment order from the cart and holds stock until payment or expiry. */
 export async function createOrderFromCart(input: CheckoutInput) {
+  queueSheetSync('orders'); // runs after the response, once the change is saved
   const commerce = await getCommerce();
   return db.transaction(async tx => {
     const cart = await tx.query.carts.findFirst({ where: eq(carts.id, input.cartId), with: { items: { with: { product: true } } } });
@@ -99,6 +101,7 @@ type QuoteInput = {
  * The order then follows the normal flow: payment → invoice, warranty, installation, fulfilment.
  */
 export async function createQuoteOrder(input: QuoteInput) {
+  queueSheetSync('orders'); // runs after the response, once the change is saved
   return db.transaction(async tx => {
     const e = await tx.query.enquiries.findFirst({ where: eq(enquiries.id, input.enquiryId) });
     if (!e) throw new CheckoutError('Enquiry not found.');
@@ -193,6 +196,7 @@ export async function syncPhonePePayment(gatewayOrderId: string) {
 
 /** Marks a payment successful and fulfils whatever it pays for. Safe to call more than once (webhook + callback). */
 export async function applyPaymentSuccess(gatewayOrderId: string, gatewayPaymentId: string, method?: string) {
+  queueSheetSync('orders'); // runs after the response, once the change is saved
   const result = await db.transaction(async tx => {
     const p = await tx.query.payments.findFirst({ where: eq(payments.gatewayOrderId, gatewayOrderId) });
     if (!p) throw new Error('Unknown payment');
@@ -210,6 +214,7 @@ export async function applyPaymentSuccess(gatewayOrderId: string, gatewayPayment
 }
 
 export async function applyPaymentFailure(gatewayOrderId: string, info: { gatewayPaymentId?: string; code?: string; description?: string; stage?: string; method?: string }) {
+  queueSheetSync('orders'); // runs after the response, once the change is saved
   const p = await db.query.payments.findFirst({ where: eq(payments.gatewayOrderId, gatewayOrderId) });
   if (!p || p.status === 'success') return p;
   await db.update(payments).set({ status: 'failed', gatewayPaymentId: info.gatewayPaymentId ?? p.gatewayPaymentId, errorCode: info.code, errorDescription: info.description, failureStage: info.stage, method: info.method }).where(eq(payments.id, p.id));
@@ -252,6 +257,7 @@ async function markOrderPaid(tx: Tx, orderId: number) {
 /* ─────────────────────────── Fulfilment ─────────────────────────── */
 
 export async function setOrderStatus(orderId: number, to: OrderStatus, actor: string, note?: string) {
+  queueSheetSync('orders'); // runs after the response, once the change is saved
   const order = await db.query.orders.findFirst({ where: eq(orders.id, orderId), with: { items: true } });
   if (!order) throw new Error('Order not found');
   if (!TRANSITIONS[order.status].includes(to)) throw new Error(`Cannot move an order from ${STATUS_LABEL[order.status]} to ${STATUS_LABEL[to]}.`);
@@ -276,6 +282,7 @@ export async function setOrderStatus(orderId: number, to: OrderStatus, actor: st
 
 /** Cancels an order: releases held stock or returns committed stock, and refunds a paid order in full. */
 export async function cancelOrder(orderId: number, actor: string, reason: string, staffId?: number) {
+  queueSheetSync('orders'); // runs after the response, once the change is saved
   const order = await db.query.orders.findFirst({ where: eq(orders.id, orderId), with: { items: true } });
   if (!order) throw new Error('Order not found');
   if (['shipped', 'delivered', 'cancelled', 'returned'].includes(order.status)) throw new Error('This order can no longer be cancelled.');
@@ -295,6 +302,7 @@ export async function cancelOrder(orderId: number, actor: string, reason: string
 
 /** Refunds part or all of a paid order through the gateway that took the payment, with a GST credit note. */
 export async function refundOrder(orderId: number, amount: number, reason: string, staffId?: number) {
+  queueSheetSync('orders'); // runs after the response, once the change is saved
   const order = await db.query.orders.findFirst({ where: eq(orders.id, orderId) });
   if (!order) throw new Error('Order not found');
   const pay = await db.query.payments.findFirst({ where: and(eq(payments.orderId, orderId), eq(payments.status, 'success')) });

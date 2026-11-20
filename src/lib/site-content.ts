@@ -52,6 +52,8 @@ export const RibbonSchema = z.object({
   speed: z.number().min(8).max(120).catch(36).default(36),
   separator: z.enum(['drop', 'star', 'dot', 'spark']).catch('drop').default('drop'),
   href: s(300),
+  /** a coupon from Admin › Marketing, shown with an Apply button while that coupon is live */
+  code: s(24),
   /** Older setting, used only while `pages` is unset. home: the homepage; shop: + product pages; all: every page */
   scope: z.enum(['home', 'shop', 'all']).catch('home').default('home'),
   /** The pages the ribbon shows on (keys of RIBBON_PAGES). Unset = follow `scope`. */
@@ -109,6 +111,8 @@ export const SlideSchema = z.object({
   body: s(320),
   primary: Link.catch({ label: '', href: '' }).default({ label: '', href: '' }),
   secondary: Link.catch({ label: '', href: '' }).default({ label: '', href: '' }),
+  /** a coupon from Admin › Marketing, shown with an Apply button while that coupon is live */
+  code: s(24),
   media: Media,
   /** cover: photo or video fills the card behind the copy; side: shown on the right, as the products are;
       lineup: no media, the three 3D products stand together on the right (Crystal, Titan in the middle, Hyper) */
@@ -129,6 +133,8 @@ export const CardSchema = z.object({
   title: s(90),
   body: s(280),
   cta: Link.catch({ label: '', href: '' }).default({ label: '', href: '' }),
+  /** a coupon from Admin › Marketing, shown with an Apply button while that coupon is live */
+  code: s(24),
   media: Media,
   decor: Decor,
   schedule: Schedule,
@@ -157,7 +163,7 @@ export const OfferSchema = z.object({
   tag: s(40),
   title: s(90),
   body: s(220),
-  /** a coupon from Admin › Marketing; visitors tap to copy it and apply it in the cart */
+  /** a coupon from Admin › Marketing that visitors apply with a tap (Titan: free text they quote when enquiring) */
   code: s(24),
   /** counts down to the schedule's end date (a live clock on the last day) */
   countdown: bool(true),
@@ -328,10 +334,11 @@ export const TEMPLATES: Template[] = [
     ribbon: ['Festive offers on Crystal and Hyper', 'Gift Hyper this Diwali', 'Free installation on Crystal this season', 'Book a free home demo'],
     slide: { tag: 'This Diwali Festive Offers', title: 'Light up\nevery sip.', body: 'Festive pricing on Crystal and Hyper for a limited period. Gift better water to the people you celebrate with.', primary: { label: 'Shop the Offers', href: '/home-water-systems' }, media: '', fit: 'lineup',
       decor: DIWALI_SLIDE_DECOR },
-    card: { tag: 'Diwali gifting', title: 'Gift Hyper this Diwali', body: 'A hydrogen water bottle for everyone on your list. Bulk and corporate gifting available.', cta: { label: 'Explore gifting', href: '/for-business#bulk' }, media: '/images/brand-handover.webp',
+    card: { tag: 'Diwali gifting', title: 'Gift Hyper this Diwali', body: 'A hydrogen water bottle for everyone on your list. Bulk and corporate gifting available.', cta: { label: 'Explore gifting', href: '/hydrogen-bottles' }, media: '/images/brand-handover.webp',
       decor: decor([
         { src: '/decor/diwali/lights.png', x: 50, y: 7, w: 80, layer: 'front', motion: 'none' },
-        { src: '/decor/diwali/diya.png', x: 36, y: 90, w: 9, layer: 'front', motion: 'float' },
+        // desktop only: on a phone the card stacks and this spot falls on the button
+        { src: '/decor/diwali/diya.png', x: 36, y: 90, w: 9, layer: 'front', motion: 'float', mobile: false },
         { src: '/decor/diwali/sparkles.png', x: 6, y: 24, w: 6, layer: 'front', motion: 'twinkle' },
       ]) },
     offer: { tag: 'Diwali offer', title: 'Festive pricing on {name}', body: 'Celebrate with better water. Limited-period pricing this Diwali.' },

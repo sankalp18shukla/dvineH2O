@@ -11,6 +11,7 @@ import {
 } from '@/lib/site-content';
 import { MediaField, uploadMedia } from './MediaField';
 import { DecorEditor } from './DecorEditor';
+import { CouponField } from './CouponField';
 import { Area, IconBtn, ItemCard, LinkField, Pill, Range, Schedule, Segmented, Text, ThemePicker, Toggle, moveItem, useSortable } from './fields';
 
 export type Set = (recipe: (d: SiteContent) => void) => void;
@@ -77,6 +78,7 @@ export function RibbonPanel({ doc, set }: PanelProps) {
             options={[{ value: 'drop', label: 'Drop' }, { value: 'star', label: 'Spark' }, { value: 'dot', label: 'Dot' }, { value: 'spark', label: 'Burst' }]} />
           <Range label="Speed" value={130 - r.speed} min={10} max={122} onChange={v => set(d => { d.ribbon.speed = 130 - v; })} left="Slow" right="Fast" format={() => (r.speed > 50 ? 'Slow' : r.speed > 26 ? 'Medium' : 'Fast')} />
           <LinkField label="Clicking the ribbon opens (optional)" value={{ label: 'Ribbon', href: r.href }} onChange={v => set(d => { d.ribbon.href = v.href; })} />
+          <CouponField value={r.code} onChange={v => set(d => { d.ribbon.code = v; })} schedule={r.schedule} hint="The last message; a tap applies it" />
           <div className="self-end"><Schedule value={r.schedule} onChange={v => set(d => { d.ribbon.schedule = v; })} /></div>
         </div>
 
@@ -227,6 +229,7 @@ export function SlidesPanel({ doc, set, siteImages }: PanelProps) {
                     <Area label="Text" value={p.body} max={320} rows={3} onChange={v => set(d => { d.slides[i].body = v; })} placeholder="One or two sentences about the offer." />
                     <LinkField label="Main button" value={p.primary} onChange={v => set(d => { d.slides[i].primary = v; })} />
                     <LinkField label="Second button (optional)" value={p.secondary} onChange={v => set(d => { d.slides[i].secondary = v; })} />
+                    <CouponField value={p.code} onChange={v => set(d => { d.slides[i].code = v; })} schedule={p.schedule} hint="Shown under the text, with an Apply button" />
                   </div>
                   <div className="grid content-start gap-4">
                     {p.fit !== 'lineup' && <MediaField label="Photo or video" value={p.media} onChange={m => set(d => { d.slides[i].media = m; })} siteImages={siteImages} hint="Videos play muted, on a loop" />}
@@ -284,6 +287,7 @@ export function CardsPanel({ doc, set, siteImages }: PanelProps) {
                     <Text label="Title" value={c.title} max={90} onChange={v => set(d => { d.promo.cards[i].title = v; })} />
                     <Area label="Text" value={c.body} max={280} onChange={v => set(d => { d.promo.cards[i].body = v; })} />
                     <LinkField label="Link" value={c.cta} onChange={v => set(d => { d.promo.cards[i].cta = v; })} />
+                    <CouponField value={c.code} onChange={v => set(d => { d.promo.cards[i].code = v; })} schedule={c.schedule} />
                   </div>
                   <div className="grid content-start gap-4">
                     <MediaField label="Photo or video" value={c.media} onChange={m => set(d => { d.promo.cards[i].media = m; })} siteImages={siteImages} compact />

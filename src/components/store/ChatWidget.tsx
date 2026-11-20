@@ -6,10 +6,15 @@ import { Icon } from '../ui/Icon';
 import { CHAT_OPEN, CHAT_STATE } from './events';
 import styles from './ChatWidget.module.css';
 
-type Msg = { from: 'user' | 'bot' | 'agent'; text: string; at: string; links?: { href: string; label: string }[] };
-const KEY = 'dvine_chat';
-const hello: Msg = { from: 'bot', text: 'Hey. Ask me anything.', at: '' };
-const QUICK = ['Track my order', 'Book a water test', 'Installation', 'Talk to a person'];
+type ChatLink = { href: string; label: string };
+type Msg = { from: 'user' | 'bot' | 'agent'; text: string; at: string; links?: ChatLink[]; chips?: string[]; handoff?: boolean };
+type Ctx = { topic?: 'crystal' | 'hyper' | 'titan'; misses: number; awaiting?: 'pincode' };
+/** The conversation is kept for the browser tab (sessionStorage), so a page reload doesn't lose it. */
+const KEY = 'dvine_chat_v2';
+const hello: Msg = { from: 'bot', text: 'Hi, I’m the DVINE assistant. Ask me about prices and offers, delivery, installation, water testing or an order.', at: '' };
+const QUICK = ['Current offers', 'Which one is right for me?', 'Track my order', 'Talk to a person'];
+const reduced = () => typeof window !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 // 4-point sparkle star, concave sides
 const star = (cx: number, cy: number, r: number) => {
@@ -17,18 +22,50 @@ const star = (cx: number, cy: number, r: number) => {
   return `M${cx} ${cy - r}Q${cx + k} ${cy - k} ${cx + r} ${cy}Q${cx + k} ${cy + k} ${cx} ${cy + r}Q${cx - k} ${cy + k} ${cx - r} ${cy}Q${cx - k} ${cy - k} ${cx} ${cy - r}Z`;
 };
 
+/** The newest answer types itself out, about as fast as a person reads; then its links and buttons appear. */
+function Typed({ text, onDone }: { text: string; onDone: () => void }) {
+  const [n, setN] = useState(() => (reduced() ? text.length : 0));
+  const done = useRef(onDone); done.current = onDone;
+  useEffect(() => {
+    if (n >= text.length) { done.current(); return; }
+    const step = Math.max(2, Math.ceil(text.length / 55));
+    const t = window.setTimeout(() => setN(x => Math.min(text.length, x + step)), 16);
+    return () => window.clearTimeout(t);
+  }, [n, text]);
+  // the rest is laid out but invisible, so the bubble doesn't grow as it types; screen readers get the whole answer once
+  return <><span aria-hidden="true">{text.slice(0, n)}<span className="opacity-0">{text.slice(n)}</span></span><span className="sr-only">{text}</span></>;
+}
+
+/** The visitor's questions so far, to send with them to WhatsApp so nobody has to repeat themselves. */
+function whatsappText(msgs: Msg[], path: string) {
+  const asked = msgs.filter(m => m.from === 'user' && !/^(talk to a person|current offers|track my order|which one is right for me\?)$/i.test(m.text)).slice(-3).map(m => m.text);
+  return ['Hi DVINE H2O, I was chatting with the assistant on your website' + (path !== '/' ? ` (${path})` : '') + '.', asked.length ? `My question: ${asked.join(' / ')}` : 'I have a question.'].join('\n');
+}
+
+/**
+ * Chat assistant in the bottom corner (answers from src/lib/chatbot.ts through /api/chat). It answers from a fixed
+ * set of topics, with suggestions to tap next; when it can't help, or the visitor asks for a person, it hands over to
+ * WhatsApp with their question already written.
+ */
 export function ChatWidget({ whatsapp }: { whatsapp: string | null }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState<Msg[]>([hello]);
+  const [ctx, setCtx] = useState<Ctx>({ misses: 0 });
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
-  const [handover, setHandover] = useState(false);
-  const [live, setLive] = useState<{ ref: string; token: string } | null>(null);
-  const [form, setForm] = useState({ name: '', phone: '', error: '' });
+  /** index of the answer still typing itself out */
+  const [typing, setTyping] = useState<number | null>(null);
   const list = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { try { const s = JSON.parse(localStorage.getItem(KEY) ?? 'null'); if (s?.ref) { setLive({ ref: s.ref, token: s.token }); } } catch {} }, []);
+  useEffect(() => {
+    try {
+      localStorage.removeItem('dvine_chat'); // the old leave-your-number chat
+      const s = JSON.parse(sessionStorage.getItem(KEY) ?? 'null');
+      if (Array.isArray(s?.msgs) && s.msgs.length) { setMsgs(s.msgs); setCtx(s.ctx ?? { misses: 0 }); }
+    } catch {}
+  }, []);
+  useEffect(() => { try { if (msgs.length > 1) sessionStorage.setItem(KEY, JSON.stringify({ msgs: msgs.slice(-40), ctx })); } catch {} }, [msgs, ctx]);
   // the phone dock carries its own chat button; it opens this panel and steps aside while it is open
   useEffect(() => {
     const show = () => setOpen(true);
@@ -42,47 +79,43 @@ export function ChatWidget({ whatsapp }: { whatsapp: string | null }) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [open]);
-  useEffect(() => { list.current?.scrollTo({ top: list.current.scrollHeight, behavior: 'smooth' }); }, [msgs, open, handover]);
-  // live mode: poll for agent replies while open
-  useEffect(() => {
-    if (!live || !open) return;
-    let stop = false;
-    const pull = async () => {
-      const r = await fetch(`/api/chat?ref=${live.ref}&token=${live.token}`).catch(() => null);
-      if (!r || stop) return;
-      if (r.status === 404) { try { localStorage.removeItem(KEY); } catch {} setLive(null); return; }
-      const j = await r.json(); if (j.transcript) setMsgs(j.transcript);
-    };
-    pull(); const t = setInterval(pull, 5000);
-    return () => { stop = true; clearInterval(t); };
-  }, [live, open]);
+  useEffect(() => { list.current?.scrollTo({ top: list.current.scrollHeight, behavior: reduced() ? 'auto' : 'smooth' }); }, [msgs, open, busy, typing]);
 
   if (path.startsWith('/checkout/pay')) return null;
 
+  const wa = whatsapp ? `https://wa.me/${whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(whatsappText(msgs, path))}` : null;
+  const last = msgs[msgs.length - 1];
+  const chips = busy || typing !== null ? [] : last.from === 'bot' && last.chips?.length ? last.chips : msgs.length === 1 ? QUICK : [];
+
   const send = async (raw: string) => {
     const q = raw.trim(); if (!q || busy) return;
-    if (q === 'Talk to a person' && !live) { setMsgs(m => [...m, { from: 'user', text: q, at: new Date().toISOString() }]); setHandover(true); return; }
-    setText(''); setBusy(true);
-    const mine: Msg = { from: 'user', text: q, at: new Date().toISOString() };
-    setMsgs(m => [...m, mine]);
+    setText(''); setBusy(true); setTyping(null);
+    setMsgs(m => [...m, { from: 'user', text: q, at: new Date().toISOString() }]);
+    const started = Date.now();
+    let reply: Msg; let next = ctx;
     try {
-      if (live) {
-        const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'send', ...live, text: q }) });
-        const j = await r.json(); if (j.transcript) setMsgs(j.transcript);
-      } else {
-        const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'ask', text: q }) });
-        const j = await r.json(); setMsgs(m => [...m, j.reply]);
-      }
-    } finally { setBusy(false); }
+      const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: q, ctx }) });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error);
+      reply = j.reply; next = j.ctx ?? ctx;
+    } catch (e) {
+      reply = { from: 'bot', text: e instanceof Error && e.message ? e.message : 'I couldn’t connect just now. Please try again, or message our team on WhatsApp.', at: new Date().toISOString(), handoff: true };
+    }
+    // a short, natural pause while "typing", longer for longer answers
+    if (!reduced()) await wait(Math.max(0, Math.min(1300, 450 + reply.text.length * 4) - (Date.now() - started)));
+    setCtx(next);
+    setTyping(msgs.length + 1); // after the question just added
+    setMsgs(m => [...m, reply]);
+    setBusy(false);
   };
 
-  const startLive = async (e: React.FormEvent) => {
-    e.preventDefault(); setBusy(true);
-    const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'handover', name: form.name, phone: form.phone, transcript: msgs.filter(m => m.at).slice(-40), page: path }) });
-    const j = await r.json(); setBusy(false);
-    if (!r.ok) { setForm(f => ({ ...f, error: j.error ?? 'Please check your details.' })); return; }
-    setLive({ ref: j.ref, token: j.token }); setMsgs(j.transcript); setHandover(false);
-    try { localStorage.setItem(KEY, JSON.stringify({ ref: j.ref, token: j.token })); } catch {}
+  const linkPill = (l: ChatLink) => {
+    const cls = `${styles.glass} ${styles.pill}`;
+    const body = <>{l.label}<Icon name="arrow" className="size-3.5" strokeWidth={2} /></>;
+    // offer links apply a code (a route, not a page) and phone links leave the site: plain links
+    return l.href.startsWith('/offer/') || !l.href.startsWith('/')
+      ? <a key={l.href} href={l.href} className={cls}>{body}</a>
+      : <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className={cls}>{body}</Link>;
   };
 
   return (
@@ -91,48 +124,38 @@ export function ChatWidget({ whatsapp }: { whatsapp: string | null }) {
           <div className={styles.orbs} aria-hidden="true"><i /><i /><i /></div>
           <div className="flex items-center gap-2.5 px-4 pt-4 pb-2">
             <span className={styles.avatar}><Icon name="drop" className="size-[18px]" strokeWidth={2} /></span>
-            <p className="flex-1 text-[14px] font-semibold tracking-tight">DVINE H2O{live && <span className="ml-2 font-normal text-white/60">#{live.ref}</span>}</p>
+            <p className="flex-1 text-[14px] font-semibold tracking-tight">DVINE H2O<span className="block text-[11.5px] font-normal text-white/60">Instant answers · our team on WhatsApp</span></p>
             <button className={`${styles.glass} ${styles.round}`} aria-label="Close chat" onClick={() => setOpen(false)}><Icon name="close" className="size-4" strokeWidth={2} /></button>
           </div>
           <div ref={list} className={`${styles.list} flex-1 overflow-y-auto px-4 py-3`} aria-live="polite">
             {msgs.map((m, i) => {
               const mine = m.from === 'user';
               const first = i === 0 || msgs[i - 1].from !== m.from;
+              const shown = typing !== i;
               return (
                 <div key={i} className={`${styles.msg} flex ${mine ? 'justify-end' : 'justify-start'} ${first ? 'mt-3 first:mt-0' : 'mt-1'}`}>
                   <div className={`${styles.bubble} ${mine ? styles.mine : m.from === 'agent' ? styles.agent : styles.bot}`}>
-                    {m.from === 'agent' && first && <p className="mb-0.5 text-[11px] font-semibold text-glacier">DVINE team</p>}
-                    <p className="whitespace-pre-line">{m.text}</p>
-                    {m.links && <div className="mt-2.5 flex flex-wrap gap-1.5">{m.links.map(l => <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className={`${styles.glass} ${styles.pill}`}>{l.label}<Icon name="arrow" className="size-3.5" strokeWidth={2} /></Link>)}</div>}
+                    <p className="whitespace-pre-line">{typing === i ? <Typed text={m.text} onDone={() => setTyping(null)} /> : m.text}</p>
+                    {shown && m.links && m.links.length > 0 && <div className={`${styles.after} mt-2.5 flex flex-wrap gap-1.5`}>{m.links.map(linkPill)}</div>}
+                    {shown && m.handoff && wa && (
+                      <a href={wa} target="_blank" rel="noopener noreferrer" className={`${styles.after} ${styles.cta} ${styles.handoff} mt-3`}>
+                        <Icon name="whatsapp" className="size-[18px]" />Chat with us on WhatsApp
+                      </a>
+                    )}
                   </div>
                 </div>
               );
             })}
-            {busy && !live && !handover && <div className={`${styles.msg} mt-3 flex`} aria-label="Assistant is typing"><div className={`${styles.bubble} ${styles.bot} ${styles.typing}`}><i /><i /><i /></div></div>}
-            {handover && (
-              <form onSubmit={startLive} className={`${styles.msg} ${styles.glass} ${styles.card} mt-4 space-y-2`}>
-                <p className="pb-1 text-[14px] font-semibold">Leave your number, we’ll reply here.</p>
-                <label className="sr-only" htmlFor="chat-name">Name</label>
-                <input id="chat-name" className={styles.field} placeholder="Name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value, error: '' }))} required minLength={2} />
-                <label className="sr-only" htmlFor="chat-phone">Mobile number</label>
-                <input id="chat-phone" className={styles.field} placeholder="Mobile" inputMode="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value, error: '' }))} required />
-                {form.error && <p className="text-[13px] font-medium text-flash">{form.error}</p>}
-                <p className="text-[11.5px] text-white/55">Agreeing to our <Link href="/policies/privacy" className="underline">privacy policy</Link>.</p>
-                <div className="flex gap-2 pt-1">
-                  <button className={`${styles.cta} flex-1`} disabled={busy}>Connect</button>
-                  <button type="button" className={`${styles.glass} ${styles.pill} justify-center px-4`} onClick={() => setHandover(false)}>Cancel</button>
-                </div>
-              </form>
-            )}
+            {busy && <div className={`${styles.msg} mt-3 flex`} aria-label="Assistant is typing"><div className={`${styles.bubble} ${styles.bot} ${styles.typing}`}><i /><i /><i /></div></div>}
           </div>
-          {!live && !handover && <div className={`${styles.chips} flex gap-1.5 overflow-x-auto px-4 pb-2.5`}>{QUICK.map((q, i) => <button key={q} onClick={() => send(q)} className={`${styles.glass} ${styles.pill}`} style={{ '--i': i } as React.CSSProperties}>{q}</button>)}</div>}
+          {chips.length > 0 && <div key={msgs.length} className={`${styles.chips} -mt-1 flex gap-1.5 overflow-x-auto px-4 pt-1 pb-2.5`} aria-label="Suggestions">{chips.map((q, i) => <button key={q} onClick={() => send(q)} className={`${styles.glass} ${styles.pill}`} style={{ '--i': i } as React.CSSProperties}>{q}</button>)}</div>}
           <div className="flex items-center gap-2 px-3 pb-3">
             <form onSubmit={e => { e.preventDefault(); send(text); }} className={`${styles.glass} ${styles.composer}`}>
               <label htmlFor="chat-input" className="sr-only">Message</label>
               <input id="chat-input" value={text} onChange={e => setText(e.target.value)} placeholder="Ask anything" className="min-h-11 min-w-0 flex-1 bg-transparent pl-4 text-[15px] text-white placeholder:text-white/55 focus:outline-none" maxLength={600} autoComplete="off" />
               <button className={styles.send} data-ready={!!text.trim() && !busy} disabled={busy || !text.trim()} aria-label="Send"><Icon name="arrow" className="size-[18px]" strokeWidth={2.2} /></button>
             </form>
-            {whatsapp && <a href={`https://wa.me/${whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent('Hi DVINE H2O, I have a question.')}`} target="_blank" rel="noopener noreferrer" aria-label="Continue on WhatsApp" className={`${styles.glass} ${styles.round} ${styles.wa}`}><Icon name="whatsapp" className="size-[18px]" /></a>}
+            {wa && <a href={wa} target="_blank" rel="noopener noreferrer" aria-label="Chat with our team on WhatsApp" title="Chat with our team on WhatsApp" className={`${styles.glass} ${styles.round} ${styles.wa}`}><Icon name="whatsapp" className="size-[18px]" /></a>}
           </div>
         </div>
       <button onClick={() => setOpen(true)} className={styles.launcher} aria-label="Chat with us" aria-expanded={open} tabIndex={open ? -1 : 0}>

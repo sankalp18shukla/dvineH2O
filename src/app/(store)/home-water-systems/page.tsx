@@ -131,13 +131,18 @@ export default async function CrystalPage({ searchParams }: { searchParams: Prom
             <GrowVideo id="demo" src={p.videoUrl} poster="/videos/inside-poster.jpg" alt="Inside Crystal: filter cartridges and ionisation chamber" label="Watch Crystal Demo" pending="The demonstration film is on its way. Request a live demo in the meantime." />
             <div className="relative mt-16" role="group" aria-label="How water moves through Crystal">
               <span className="absolute top-6 right-[12%] left-[12%] hidden h-[2px] bg-ink lg:block" data-draw="x" aria-hidden="true" />
-              <ol className="relative grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4" data-rise>
+              <ol className="relative grid grid-cols-1 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4" data-rise>
                 {FLOW.map((s, i) => (
-                  <li key={s.label} className="flex flex-col items-start lg:items-center lg:text-center">
-                    <span className="grid size-12 place-items-center rounded-full bg-glacier text-ink ring-8 ring-paper"><Icon name={s.icon} className="size-6" strokeWidth={1.4} /></span>
-                    <p className="mt-5 font-serif text-[18px] italic text-deep-current">0{i + 1}</p>
-                    <h3 className="font-sans text-[19px] font-bold tracking-tight">{s.label}</h3>
-                    <p className="mt-1 text-muted">{s.body}</p>
+                  <li key={s.label} className="relative grid grid-cols-[48px_minmax(0,1fr)] gap-x-6 pb-12 last:pb-0 sm:flex sm:flex-col sm:items-start sm:pb-0 lg:items-center lg:text-center">
+                    {/* phones: one column with the text beside each icon, and the path runs down from each step to the
+                        next, drawn as you scroll (as Hyper's "Follow the guide"); wider screens have the line across the top */}
+                    {i < FLOW.length - 1 && <span className="absolute top-12 bottom-0 left-[23px] w-[2px] bg-ink/15 sm:hidden" aria-hidden="true"><span className="block size-full bg-ink" data-draw /></span>}
+                    <span className="relative grid size-12 place-items-center rounded-full bg-glacier text-ink ring-8 ring-paper"><Icon name={s.icon} className="size-6" strokeWidth={1.4} /></span>
+                    <div>
+                      <p className="font-serif text-[18px] italic text-deep-current sm:mt-5">0{i + 1}</p>
+                      <h3 className="font-sans text-[19px] font-bold tracking-tight">{s.label}</h3>
+                      <p className="mt-1 text-muted">{s.body}</p>
+                    </div>
                   </li>
                 ))}
               </ol>

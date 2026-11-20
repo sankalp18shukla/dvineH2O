@@ -130,7 +130,7 @@ export default async function PartnerPage({ searchParams }: { searchParams: Prom
             <div className="container-x">
               <SectionHead id="pfaq-title" tone="flash" title="*Partner* questions." />
               <div data-reveal><Faq items={p.faqs.map(f => ({ q: f.q, a: f.a }))} /></div>
-              <div className="cta-row mt-12" data-rise><Cta href="#apply" kind="ink">Apply to Partner</Cta><Cta href="/support#contact" kind="glass">Ask Us a Question</Cta></div>
+              <div className="cta-row mt-12" data-rise><Cta href="#apply" kind="ink">Apply to Partner</Cta><Cta href="/support#ask" kind="glass">Ask Us a Question</Cta></div>
             </div>
           </section>
         )}

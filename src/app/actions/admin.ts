@@ -21,7 +21,8 @@ import { saveUpload, UploadError } from '@/lib/uploads';
 import { notify, templates, links } from '@/lib/notify';
 import { formatINR } from '@/lib/money';
 import { formToObject, zodErrors, type FormState } from '@/lib/validators';
-import type { ChatMsg } from '@/lib/chatbot';
+import { queueSheetSync } from '@/lib/sheet-queue';
+import { editPincodes } from '@/lib/sheet-sync';
 
 type Act = (prev: FormState, fd: FormData) => Promise<FormState>;
 /** Wraps an admin mutation: permission check, error → message, audit by the caller. */
@@ -222,6 +223,8 @@ export const updateEnquiry = guarded('enquiries', async (s, fd): Promise<FormSta
     status, assignedTo: num(fd, 'assignedTo') || null, quoteValue: qv ? toPaise(qv) : null, quoteStatus: (str(fd, 'quoteStatus') || 'none') as 'none',
     outcomeProduct: str(fd, 'outcomeProduct') || null, outcomeRef: str(fd, 'outcomeRef') || null, productInterest: (str(fd, 'productInterest') || 'not_sure') as 'not_sure',
   }).where(eq(enquiries.id, id));
+  const kind = await db.query.enquiries.findFirst({ where: eq(enquiries.id, id), columns: { type: true } });
+  if (kind) queueSheetSync(`form:${kind.type}`);
   const note = str(fd, 'note');
   if (note) await db.insert(enquiryNotes).values({ enquiryId: id, staffId: s.id, note });
   await audit(s.id, 'enquiry.update', 'enquiry', id, { status });
@@ -262,18 +265,6 @@ export const createPaymentLink = guarded('enquiries', async (s, fd): Promise<For
   return { ok: true, message: `Payment link created for order ${order.number}${fd.get('send') === 'on' ? ' and sent to the customer' : ''}.` };
 });
 
-export const replyToChat = guarded('enquiries', async (s, fd): Promise<FormState | void> => {
-  const id = num(fd, 'id'); const text = str(fd, 'text');
-  if (!text) return { errors: { text: 'Type a reply' } };
-  const e = await db.query.enquiries.findFirst({ where: eq(enquiries.id, id) });
-  const d = e?.data as { transcript: ChatMsg[] } & Record<string, unknown> | undefined;
-  if (!e || e.type !== 'chat' || !d) throw new Error('Not a chat');
-  await db.update(enquiries).set({ data: { ...d, transcript: [...d.transcript, { from: 'agent', text, at: new Date().toISOString() }] }, status: e.status === 'new' ? 'contacted' : e.status, assignedTo: e.assignedTo ?? s.id }).where(eq(enquiries.id, id));
-  await audit(s.id, 'chat.reply', 'enquiry', id);
-  revalidatePath(`/admin/enquiries/${id}`);
-  return { ok: true, message: 'Reply sent. The customer sees it in the chat window.' };
-});
-
 /* ─────────────── Water tests ─────────────── */
 export const updateWaterTest = guarded('enquiries', async (s, fd): Promise<FormState | void> => {
   const id = num(fd, 'id');
@@ -293,6 +284,7 @@ export const updateWaterTest = guarded('enquiries', async (s, fd): Promise<FormS
   await db.update(waterTests).set({ status, reportPath, recommendedProduct: str(fd, 'recommendedProduct') || null, paymentStatus: (str(fd, 'paymentStatus') || w.paymentStatus) as typeof w.paymentStatus, convertedOrderId: convOrder?.id ?? w.convertedOrderId, slot: str(fd, 'slot') || w.slot, preferredDate: str(fd, 'preferredDate') || w.preferredDate }).where(eq(waterTests.id, id));
   if (w.enquiryId) await db.update(enquiries).set({ status: convOrder ? 'converted' : status === 'completed' ? 'qualified' : 'contacted', outcomeRef: convOrder?.number ?? null }).where(eq(enquiries.id, w.enquiryId));
   if (status === 'report_ready' && w.status !== 'report_ready') await notify({ email: w.email, phone: w.phone }, { template: 'water_report_ready', subject: `Your water test report ${w.ref} is ready`, text: `Hi ${w.name.split(' ')[0]},\n\nYour water test report is ready. View it here: ${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/api/admin/files/wt-${w.ref}?t=${w.accessToken}\n\nDVINE H2O` });
+  queueSheetSync('form:water_test');
   await audit(s.id, 'watertest.update', 'water_test', id, { status });
   revalidatePath(`/admin/water-tests/${id}`);
 });
@@ -310,6 +302,7 @@ export const saveTestOption = guarded('settings', async (s, fd): Promise<FormSta
 export const updateTicket = guarded('service', async (s, fd): Promise<FormState | void> => {
   const id = num(fd, 'id'); const status = str(fd, 'status') as 'open';
   await db.update(serviceTickets).set({ status, priority: str(fd, 'priority') as 'normal', assignedTo: num(fd, 'assignedTo') || null, actionTaken: str(fd, 'actionTaken') || null, partsUsed: str(fd, 'partsUsed') || null, resolvedAt: ['resolved', 'closed'].includes(status) ? new Date() : null }).where(eq(serviceTickets.id, id));
+  queueSheetSync('tickets');
   await audit(s.id, 'ticket.update', 'service_ticket', id, { status });
   revalidatePath('/admin/service');
 });
@@ -326,6 +319,7 @@ export const createAdminTicket = guarded('service', async (s, fd): Promise<FormS
 export const moderateReview = guarded('marketing', async (s, fd): Promise<FormState | void> => {
   const id = num(fd, 'id'); const status = str(fd, 'status') as 'approved' | 'rejected';
   await db.update(reviews).set({ status }).where(eq(reviews.id, id));
+  queueSheetSync('reviews');
   await audit(s.id, 'review.moderate', 'review', id, { status });
   revalidatePath('/admin/reviews'); revalidatePath('/', 'layout');
 });
@@ -338,16 +332,17 @@ export const saveCoupon = guarded('marketing', async (s, fd): Promise<FormState 
   const type = str(fd, 'type') as 'percent' | 'flat';
   const raw = Number(str(fd, 'value'));
   if (!(raw > 0) || (type === 'percent' && raw > 90)) return { errors: { value: type === 'percent' ? 'Enter 1–90' : 'Enter an amount' } };
+  if (str(fd, 'startsAt') && str(fd, 'endsAt') && str(fd, 'endsAt') < str(fd, 'startsAt')) return { errors: { code: 'The end date is before the start date' } };
   const v = {
     code, type, value: type === 'percent' ? Math.round(raw) : toPaise(raw), minOrder: toPaise(str(fd, 'minOrder') || '0'), maxDiscount: str(fd, 'maxDiscount') ? toPaise(str(fd, 'maxDiscount')) : null,
-    appliesTo: fd.getAll('appliesTo').map(String).filter(Boolean), startsAt: str(fd, 'startsAt') ? new Date(str(fd, 'startsAt')) : null, endsAt: str(fd, 'endsAt') ? new Date(str(fd, 'endsAt') + 'T23:59:59') : null,
-    usageLimit: str(fd, 'usageLimit') ? Number(str(fd, 'usageLimit')) : null, active: fd.get('active') === 'on', note: str(fd, 'note') || null,
+    appliesTo: fd.getAll('appliesTo').map(String).filter(Boolean), startsAt: str(fd, 'startsAt') ? new Date(`${str(fd, 'startsAt')}T00:00:00+05:30`) : null, endsAt: str(fd, 'endsAt') ? new Date(`${str(fd, 'endsAt')}T23:59:59.999+05:30`) : null,
+    usageLimit: Number(str(fd, 'usageLimit')) > 0 ? Math.floor(Number(str(fd, 'usageLimit'))) : null, active: fd.get('active') === 'on', note: str(fd, 'note').slice(0, 200) || null,
   };
   if (!v.appliesTo.length) v.appliesTo = null as unknown as string[];
   try { if (id) await db.update(coupons).set(v).where(eq(coupons.id, id)); else await db.insert(coupons).values(v); }
   catch { return { errors: { code: 'This code already exists' } }; }
   await audit(s.id, id ? 'coupon.update' : 'coupon.create', 'coupon', id || code);
-  revalidatePath('/admin/marketing');
+  revalidatePath('/admin/marketing'); revalidatePath('/', 'layout');
   return { ok: true, message: 'Coupon saved.' };
 });
 
@@ -363,21 +358,27 @@ export const savePincodes = guarded('settings', async (s, fd): Promise<FormState
   // one per line: pincode,city,state,deliveryDays,installation(y/n),waterTesting(y/n)
   const rows = str(fd, 'rows').split('\n').map(l => l.trim()).filter(Boolean);
   let n = 0; const bad: string[] = [];
-  for (const line of rows) {
-    const [pin, city, state, days, inst, wt] = line.split(',').map(x => x?.trim());
-    if (!/^[1-9]\d{5}$/.test(pin ?? '') || !city || !state) { bad.push(line); continue; }
-    const v = { pincode: pin, city, state, serviceable: true, deliveryDays: Number(days) || 5, installation: !/^n/i.test(inst ?? 'y'), waterTesting: /^y/i.test(wt ?? 'n') };
-    await db.insert(pincodes).values(v).onConflictDoUpdate({ target: pincodes.pincode, set: v }); n++;
-  }
+  // with a pincode sheet linked: read the sheet first, apply these rows, then write the result back to it
+  await editPincodes(async () => {
+    for (const line of rows) {
+      const [pin, city, state, days, inst, wt] = line.split(',').map(x => x?.trim());
+      if (!/^[1-9]\d{5}$/.test(pin ?? '') || !city || !state) { bad.push(line); continue; }
+      const v = { pincode: pin, city, state, serviceable: true, deliveryDays: Number(days) || 5, installation: !/^n/i.test(inst ?? 'y'), waterTesting: /^y/i.test(wt ?? 'n') };
+      await db.insert(pincodes).values(v).onConflictDoUpdate({ target: pincodes.pincode, set: v }); n++;
+    }
+  });
   await audit(s.id, 'pincodes.import', 'pincode', undefined, { n, bad: bad.length });
   revalidatePath('/admin/settings/pincodes');
   return { ok: !bad.length, message: `${n} pincode${n === 1 ? '' : 's'} saved.${bad.length ? ` ${bad.length} line(s) skipped: ${bad.slice(0, 3).join(' | ')}` : ''}` };
 });
 export const togglePincode = guarded('settings', async (s, fd): Promise<FormState | void> => {
   const pin = str(fd, 'pincode'); const field = str(fd, 'field') as 'serviceable' | 'installation' | 'waterTesting';
-  const row = await db.query.pincodes.findFirst({ where: eq(pincodes.pincode, pin) });
-  if (!row) throw new Error('Not found');
-  await db.update(pincodes).set({ [field]: !row[field] }).where(eq(pincodes.pincode, pin));
+  if (!['serviceable', 'installation', 'waterTesting'].includes(field)) throw new Error('Unknown setting');
+  await editPincodes(async () => {
+    const row = await db.query.pincodes.findFirst({ where: eq(pincodes.pincode, pin) });
+    if (!row) throw new Error('That pincode is no longer in the list (it was removed from the pincode sheet).');
+    await db.update(pincodes).set({ [field]: !row[field] }).where(eq(pincodes.pincode, pin));
+  });
   await audit(s.id, 'pincode.toggle', 'pincode', pin, { field });
   revalidatePath('/admin/settings/pincodes');
 });

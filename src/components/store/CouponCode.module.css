@@ -1,0 +1,28 @@
+/* Promotion code with an Apply button (CouponCode.tsx). Card: on the theme block (--p-fg/--p-bg). Hero: on the dark hero card (--accent). */
+.wrap { position: relative; z-index: 3; display: grid; gap: 6px; justify-items: start; font-family: var(--font-sans); }
+.chip { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; padding: 4px 4px 4px 14px; border: 1.5px dashed currentColor; border-radius: 999px;
+  transition: border-color .3s, background-color .3s; }
+.code { display: inline-flex; align-items: center; gap: 8px; min-width: 0; font-size: 15px; font-weight: 800; letter-spacing: .06em; }
+.txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 16px; margin-left: 6px; border-radius: 999px; font-size: 13.5px; font-weight: 700;
+  transition: transform .2s, background-color .3s, color .3s; flex: none; }
+.btn:active:not(:disabled) { transform: scale(.95); }
+.btn:disabled { cursor: default; }
+.msg { min-height: 1.2em; font-size: 12.5px; font-weight: 600; line-height: 1.3; opacity: .82; }
+.msg:empty { display: none; }
+
+.card { color: var(--p-fg); }
+.card .btn { background: var(--p-fg); color: var(--p-bg); }
+.card .chip[data-done] { border-style: solid; background: color-mix(in srgb, var(--p-fg) 10%, transparent); }
+.card .msg[data-error] { opacity: 1; }
+
+.hero { color: #fff; }
+.hero .chip { border-color: rgb(255 255 255 / .55); background: rgb(255 255 255 / .06); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.hero .btn { background: var(--accent, #25FFE8); color: #04164A; }
+.hero .chip[data-done] { border-style: solid; border-color: var(--accent, #25FFE8); }
+.hero .msg { color: rgb(240 242 247 / .84); }
+.hero .msg[data-error] { color: #FFB3D6; }
+
+@media (hover: hover) { .btn:hover:not(:disabled) { filter: brightness(1.08); } }
+@media (max-width: 899px) { .hero .code { font-size: 13.5px; } .hero .btn { min-height: 32px; padding: 0 13px; font-size: 12.5px; } }
+@media (prefers-reduced-motion: reduce) { .chip, .btn { transition: none; } }

@@ -73,7 +73,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
               ) : (
                 <>
                   <p className="font-sans text-[22px] leading-tight font-bold tracking-[-0.03em]">Curious about your own water?</p>
-                  <div className="cta-row mt-6"><Cta href="/water-testing#book">Book a Water Test</Cta><Cta href="/support#contact" kind="glass">Ask Us a Question</Cta></div>
+                  <div className="cta-row mt-6"><Cta href="/water-testing#book">Book a Water Test</Cta><Cta href="/support#ask" kind="glass">Ask Us a Question</Cta></div>
                 </>
               )}
             </div>

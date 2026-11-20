@@ -5,6 +5,7 @@ import { LabelBox, Lockup, Squiggle } from '@/components/ui/Brand';
 import { Icon } from '@/components/ui/Icon';
 import { AutoVideo } from './AutoVideo';
 import { DecorLayer } from './DecorLayer';
+import { CouponChip } from './CouponCode';
 import s from './PromoCards.module.css';
 
 function Media({ c }: { c: PromoCard }) {
@@ -19,19 +20,27 @@ function Media({ c }: { c: PromoCard }) {
 
 function Card({ c, wide, i }: { c: PromoCard; wide: boolean; i: number }) {
   const t = THEMES[c.theme] ?? THEMES.volt;
+  const cta = c.cta.label && c.cta.href ? c.cta : null;
+  // with a code the card holds a button, which cannot sit inside a link: the card becomes an article, and its
+  // call to action and photo are the links
+  const split = !!c.code && !!c.cta.href;
   const body = (
     <div className={s.copy}>
       <Squiggle className={s.squiggle} />
       {c.tag && <LabelBox tone={t.dark ? 'volt' : 'blue'} className={s.tag}>{c.tag}</LabelBox>}
       {c.title && <h3 className={s.title}>{c.title}</h3>}
       {c.body && <p className={s.body}>{c.body}</p>}
-      {c.cta.label && c.cta.href && <span className={s.cta}>{c.cta.label}<Icon name="arrow" className="size-4" /></span>}
+      {c.code && <CouponChip code={c.code} className={s.coupon} />}
+      {cta && (split
+        ? <Link href={cta.href} className={`${s.cta} ${s.ctaLink}`}>{cta.label}<Icon name="arrow" className="size-4" /></Link>
+        : <span className={s.cta}>{cta.label}<Icon name="arrow" className="size-4" /></span>)}
     </div>
   );
-  const inner = <><DecorLayer items={c.decor} layer="back" />{body}<Media c={c} /><DecorLayer items={c.decor} layer="front" /></>;
+  const media = split ? <Link href={c.cta.href} tabIndex={-1} aria-hidden="true" className="contents"><Media c={c} /></Link> : <Media c={c} />;
+  const inner = <><DecorLayer items={c.decor} layer="back" />{body}{media}<DecorLayer items={c.decor} layer="front" /></>;
   const cls = `pin-frame ${s.card} ${wide ? s.wide : ''} ${t.dark ? 'on-dark' : ''}`;
   const style = { ...themeVars(c.theme), ['--pin' as string]: t.dark ? t.bg : t.em, transitionDelay: `${i * 90}ms` };
-  return c.cta.href
+  return c.cta.href && !split
     ? <Link href={c.cta.href} className={cls} style={style} data-reveal aria-label={c.cta.label ? `${c.title || c.tag}: ${c.cta.label}` : undefined}>{inner}</Link>
     : <article className={cls} style={style} data-reveal>{inner}</article>;
 }

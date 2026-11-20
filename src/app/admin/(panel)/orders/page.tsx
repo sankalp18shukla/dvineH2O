@@ -4,6 +4,9 @@ import { likeTerm } from '@/lib/validators';
 import { db } from '@/lib/db';
 import { orders, returns, orderExceptions, ORDER_STATUSES, PAYMENT_STATUSES } from '@/lib/db/schema';
 import { requireStaff } from '@/lib/auth';
+import { can } from '@/lib/session';
+import { getLink } from '@/lib/sheet-sync';
+import { SheetButton } from '@/components/admin/SheetButton';
 import { formatINR } from '@/lib/money';
 import { STATUS_LABEL } from '@/lib/orders';
 import { PageHead, Panel, TableWrap, Filters, Empty, dt } from '@/components/admin/ui';
@@ -13,7 +16,9 @@ export const metadata = { title: 'Orders' };
 const PAGE = 50;
 
 export default async function Orders({ searchParams }: { searchParams: Promise<{ status?: string; payment?: string; q?: string; page?: string; returns?: string; exceptions?: string }> }) {
-  await requireStaff('orders');
+  const me = await requireStaff('orders');
+  const sheet = await getLink('orders').catch(() => null);
+  const canLink = can(me.role, 'settings');
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page) || 1);
   const conds = [
@@ -31,7 +36,7 @@ export default async function Orders({ searchParams }: { searchParams: Promise<{
   const qs = (p: number) => `?${new URLSearchParams({ ...(sp as Record<string, string>), page: String(p) })}`;
   return (
     <>
-      <PageHead title="Orders" sub={`${total} order${total === 1 ? '' : 's'}`} actions={<a href="/api/admin/export?type=orders&range=30d" className="btn btn-outline btn-sm">Export CSV</a>} />
+      <PageHead title="Orders" sub={`${total} order${total === 1 ? '' : 's'}`} actions={<><SheetButton feed="orders" link={sheet} canLink={canLink} /><a href="/api/admin/export?type=orders&range=30d" className="btn btn-outline btn-sm">Export CSV</a></>} />
       <Filters>
         <div className="field"><label className="label" htmlFor="q">Search</label><input id="q" name="q" defaultValue={sp.q} placeholder="Order no., name, email, phone" className="input w-64" /></div>
         <div className="field"><label className="label" htmlFor="st">Status</label><select id="st" name="status" defaultValue={sp.status ?? ''} className="input w-44"><option value="">All</option>{ORDER_STATUSES.map(s => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}</select></div>

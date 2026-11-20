@@ -64,7 +64,7 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
               <p className="mt-3 text-[13.5px] text-muted">{titan?.quoteNote ?? 'Priced on quotation after a site discussion.'}</p>
               {blog.price && <PriceStory slug={blog.price.slug} label="How quotations work" className="mt-4" />}
             </div>
-            {promo.offer && <OfferTicket offer={promo.offer} codeHint="Quote it when you enquire" />}
+            {promo.offer && <OfferTicket offer={promo.offer} copyHint="Quote it when you enquire" />}
             <div className="cta-row">
               <Cta href="#enquiry" tone="volt">Request a Quote</Cta>
               <Cta href="/book-demo?product=titan" kind="glass">Book a Demo</Cta>

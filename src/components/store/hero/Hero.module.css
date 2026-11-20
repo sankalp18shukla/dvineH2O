@@ -153,6 +153,24 @@
 @media (max-width: 899px) {
   .hero { margin: 4px 8px 8px; height: var(--mh, calc(100svh - 68px - 12px - var(--ribbon-h, 0px))); border-radius: 24px; }
 }
+/* Phones: tighter copy and smaller buttons, side by side, so the product stands whole on the first screen
+   under them (stage.ts sizes the card and the product to what the copy leaves) */
+@media (max-width: 639px) {
+  .hero { min-height: 0; }
+  .copy { top: 26px; }
+  .head { gap: 12px; }
+  .name { font-size: min(calc(98cqi / var(--em)), 19vw); }
+  .slide .desc { font-size: 15.5px; }
+  .lede { margin-top: 10px; font-size: 14.5px; line-height: 1.42; }
+  .ctas { margin-top: 14px; gap: 8px; }
+  .cta { min-height: 44px; font-size: 14px; }
+  .primary { padding: 4px 16px 4px 47px; }
+  .primary:hover { padding: 4px 47px 4px 16px; }
+  .chip { left: 5px; width: 34px; height: 34px; }
+  .primary:hover .chip { left: calc(100% - 39px); }
+  .chip svg { width: 15px; height: 15px; }
+  .ghost { padding: 4px 18px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .active .f { animation: none; opacity: 1; }
   .active .ic * { animation: none !important; }
