@@ -38,7 +38,7 @@ Ionisation does not remove anything, so the water has to be cleaned before it re
 | HydroCore plates | Five platinum-coated titanium plates that carry out electrolysis |
 | PureCore filtration | Sediment, nano and post-carbon stages, fitted before the first use |
 | SmartFlow touchscreen | Live pH, ORP and filter status at the machine |
-| Four water modes | Hot, Neutral, Alkaline and High-Alkaline from one tap |
+| Four water modes | Hot, Ambient, Alkaline and High-Alkaline from one tap |
 | Installation | Fitted in your kitchen by a DVINE-trained technician |
 | Warranty | Five years of DVINE Assured Care |
 | Service | A certified service network across India |
@@ -201,7 +201,7 @@ Minerals already in your water, such as calcium and magnesium, are drawn towards
 
 ## The two numbers on the display
 
-**pH** tells you how acidic or alkaline water is. Seven is neutral. Most tap water sits close to that. Crystal's Alkaline and High-Alkaline modes raise it; Neutral leaves it as filtered water.
+**pH** tells you how acidic or alkaline water is. Seven is neutral. Most tap water sits close to that. Crystal's Alkaline and High-Alkaline modes raise it; Ambient leaves it as filtered water.
 
 **ORP** (oxidation-reduction potential) is measured in millivolts. Tap water usually reads positive. Ionised alkaline water reads lower, often negative, mainly because of the dissolved hydrogen.
 
@@ -212,7 +212,7 @@ Crystal shows both while the water runs. Your readings depend on your source wat
 | Mode | What comes out |
 | --- | --- |
 | Hot | Heated filtered water |
-| Neutral | Filtered water at about neutral pH |
+| Ambient | Filtered water at about neutral pH |
 | Alkaline | Ionised water for everyday drinking, as set out in the manual |
 | High-Alkaline | A stronger setting for the designated uses in the manual |
 

@@ -243,8 +243,8 @@ const TOPICS: Topic[] = [
   { id: 'battery', keys: ['battery', 'charge', 'charging', 'charger', 'usb', 'mah'],
     answer: () => ({ text: `Hyper has a 2000 mAh battery (3.7 V, 7.4 Wh) in its control base and recharges over USB-C. Recharge when the indicator shows low battery.`, links: [{ href: '/hydrogen-bottles', label: 'Hyper specifications' }], chips: ['How does Hyper work?', 'Price of Hyper'] }) },
 
-  { id: 'modes', keys: ['mode', 'modes', 'hot', 'neutral', 'ph', 'orp', 'touchscreen', 'display'],
-    answer: () => ({ text: `Crystal has four water modes: Hot, Neutral, Alkaline and High-Alkaline. The touchscreen shows pH, ORP and filter status. ${CRYSTAL.modes.note}`, links: [{ href: '/home-water-systems', label: 'See Crystal' }], chips: ['Crystal filter care', 'Price of Crystal'] }) },
+  { id: 'modes', keys: ['mode', 'modes', 'hot', 'neutral', 'ambient', 'ph', 'orp', 'touchscreen', 'display'],
+    answer: () => ({ text: `Crystal has four water modes: Hot, Ambient, Alkaline and High-Alkaline. The touchscreen shows pH, ORP and filter status. ${CRYSTAL.modes.note}`, links: [{ href: '/home-water-systems', label: 'See Crystal' }], chips: ['Crystal filter care', 'Price of Crystal'] }) },
 
   { id: 'filter', keys: ['filter', 'filters', 'cartridge', 'maintenance', 'maintain', 'clean', 'cleaning', 'care'], strong: ['filter replacement', 'replace the filter', 'change the filter', 'filter change'],
     answer: ({ p }) => p === 'hyper'

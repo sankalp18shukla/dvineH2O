@@ -41,7 +41,7 @@ export const SEED_PRODUCTS: (typeof schema.products.$inferInsert)[] = [
     description: 'A home water system with five platinum-coated titanium plates, PureCore multi-stage filtration and four water modes.',
     specs: [
       { label: 'Engine', value: 'HydroCore 5-plate ionisation, platinum titanium' },
-      { label: 'Water modes', value: 'Hot, Neutral, Alkaline, High-Alkaline' },
+      { label: 'Water modes', value: 'Hot, Ambient, Alkaline, High-Alkaline' },
       { label: 'Filtration', value: 'PureCore Multi-Stage Filtration™ (sediment, nano, post carbon)' },
       { label: 'Interface', value: 'SmartFlow Touchscreen Display™ — pH, ORP and filter status' },
       { label: 'Installation', value: 'By DVINE-trained technician' },

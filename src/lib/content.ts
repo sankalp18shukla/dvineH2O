@@ -74,7 +74,7 @@ export const HERO_SLIDES = [
     ctas: [{ href: '/home-water-systems', label: 'Shop Crystal', primary: true }, { href: '/book-demo?product=crystal', label: 'Book a Demo' }],
     feats: [
       { icon: 'plates5', title: 'Five-plate ionisation', sub: 'Platinum-coated titanium' },
-      { icon: 'modes', title: 'Four water modes', sub: 'Hot, Neutral, Alkaline, High-Alkaline' },
+      { icon: 'modes', title: 'Four water modes', sub: 'Hot, Ambient, Alkaline, High-Alkaline' },
       { icon: 'screen', title: 'Touchscreen controls', sub: 'pH, ORP and filter status' },
     ],
   },
@@ -108,7 +108,7 @@ export const HOME = {
         body: 'Made for the home where every object earns its place: water for drinking, for cooking and for infant feeds, from one system.',
         feats: [
           { title: 'Drinking water', sub: 'Alkaline, pH 8.5–9.5' },
-          { title: 'Kitchen and nursery', sub: 'Neutral water for cooking and infants' },
+          { title: 'Kitchen and nursery', sub: 'Ambient water for cooking and infants' },
           { title: '1-year comprehensive warranty', sub: 'Installed by factory-trained technicians' },
         ],
         cta: 'Shop Crystal', cutout: '/images/crystal/ivory.webp', image: '/images/crystal/duo.webp' },
@@ -141,7 +141,7 @@ export const HOME = {
         refs: [{ text: 'PureCore multi-stage filtration', href: '/research/filtration-study.pdf', label: 'Filtration performance study (PDF)' }] },
       { title: 'Ionisation', body: 'In the ionisation chamber, five platinum-coated titanium plates carry out electrolysis on the filtered water.', fact: '5 plates', note: 'platinum-coated titanium',
         refs: [{ text: 'carry out electrolysis', href: '/research/electrolysis-study.pdf', label: 'Electrolysis study (PDF)' }] },
-      { title: 'Touchscreen', body: 'Choose hot, neutral or alkaline water with a tap. pH, ORP and filter status are shown at the machine.', fact: 'pH · ORP', note: 'and filter status on screen' },
+      { title: 'Touchscreen', body: 'Choose hot, ambient or alkaline water with a tap. pH, ORP and filter status are shown at the machine.', fact: 'pH · ORP', note: 'and filter status on screen' },
     ],
   },
   helpChoosing: {
@@ -188,7 +188,7 @@ export const CRYSTAL = {
         refs: [{ text: 'carry out electrolysis', href: '/research/electrolysis-study.pdf', label: 'Electrolysis study (PDF)' }] },
       { icon: 'filter', title: 'Multi-stage filtration', body: 'PureCore prepares incoming water before ionisation.',
         refs: [{ text: 'PureCore prepares incoming water', href: '/research/filtration-study.pdf', label: 'Filtration performance study (PDF)' }] },
-      { icon: 'modes', title: 'Four water modes', body: 'Choose from Hot, Neutral, Alkaline and High-Alkaline settings.' },
+      { icon: 'modes', title: 'Four water modes', body: 'Choose from Hot, Ambient, Alkaline and High-Alkaline settings.' },
       { icon: 'screen', title: 'Touchscreen controls', body: 'View pH, ORP and filter status at the machine.' },
     ],
   },
@@ -196,7 +196,7 @@ export const CRYSTAL = {
     title: '*Choose a mode.* Understand its use.',
     items: [
       { key: 'hot', title: 'Hot', body: 'Explore the hot-water option.', color: '#FF0401' },
-      { key: 'neutral', title: 'Neutral', body: 'View the neutral-water setting.', color: '#F0F2F7' },
+      { key: 'neutral', title: 'Ambient', body: 'View the ambient-water setting.', color: '#F0F2F7' },
       { key: 'alkaline', title: 'Alkaline', body: 'Explore the alkaline-water setting.', color: '#25FFE8' },
       { key: 'high', title: 'High-Alkaline', body: 'An output for designated applications.', color: '#5B00FF' },
     ],
