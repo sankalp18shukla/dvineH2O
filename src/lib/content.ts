@@ -141,7 +141,7 @@ export const HOME = {
         refs: [{ text: 'PureCore multi-stage filtration', href: '/research/filtration-study.pdf', label: 'Filtration performance study (PDF)' }] },
       { title: 'Ionisation', body: 'In the ionisation chamber, five platinum-coated titanium plates carry out electrolysis on the filtered water.', fact: '5 plates', note: 'platinum-coated titanium',
         refs: [{ text: 'carry out electrolysis', href: '/research/electrolysis-study.pdf', label: 'Electrolysis study (PDF)' }] },
-      { title: 'Touchscreen', body: 'Choose hot, ambient or alkaline water with a tap. pH, ORP and filter status are shown at the machine.', fact: 'pH · ORP', note: 'and filter status on screen' },
+      { title: 'Touchscreen', body: 'Choose hot, neutral or alkaline water with a tap. pH, ORP and filter status are shown at the machine.', fact: 'pH · ORP', note: 'and filter status on screen' },
     ],
   },
   helpChoosing: {
