@@ -48,12 +48,17 @@ export default function AboutPage() {
         {/* 02 · The founder's note: the question that started DVINE, in her words */}
         <section id="founder" className="section" aria-labelledby="founder-title">
           <div className="container-x grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] lg:gap-20">
-            <div className="lg:sticky lg:top-36 lg:self-start">
+            <div>
               <Lockup id="founder-title" title={f.title} tone="glacier" size="md" />
-              <div className="mt-10 border-t-2 border-ink pt-6" data-rise>
-                <p className="font-sans text-[26px] font-bold tracking-[-0.03em]">{f.name}</p>
-                <p className="mt-1 font-serif text-[20px] italic text-muted">{f.role}</p>
-              </div>
+              <figure className="mt-10 max-w-[380px]" data-rise>
+                <div className="relative aspect-[2/3] overflow-hidden bg-mist">
+                  <Image src={f.portrait.src} alt={f.portrait.alt} fill sizes="(min-width:420px) 380px, 100vw" className="object-cover" />
+                </div>
+                <figcaption className="border-t-2 border-ink pt-6 mt-6">
+                  <p className="font-sans text-[26px] font-bold tracking-[-0.03em]">{f.name}</p>
+                  <p className="mt-1 font-serif text-[20px] italic text-muted">{f.role}</p>
+                </figcaption>
+              </figure>
             </div>
             <blockquote className="relative">
               <span className="pointer-events-none absolute -top-16 -left-2 font-serif text-[160px] leading-none text-deep-current/15 select-none sm:-left-8" aria-hidden="true">“</span>
@@ -62,6 +67,17 @@ export default function AboutPage() {
               <p className="mt-10 max-w-2xl border-t-2 border-ink pt-6 font-sans text-[21px] font-bold leading-snug tracking-[-0.02em]" data-reveal>{f.close}</p>
               <footer className="mt-6 font-serif text-[20px] italic text-muted">— {f.name}</footer>
             </blockquote>
+          </div>
+          {/* Nandini at work: the stall, a meeting, a café desk, a Hyper in every one */}
+          <div className="container-x mt-16 grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-5 lg:mt-24">
+            {f.moments.map((m, i) => (
+              <figure key={m.src} data-reveal style={{ transitionDelay: `${i * 90}ms` }}>
+                <div className="relative aspect-[4/5] overflow-hidden bg-mist sm:aspect-[3/4]">
+                  <Image src={m.src} alt={m.alt} fill sizes="(min-width:640px) 33vw, 100vw" className="object-cover" />
+                </div>
+                <figcaption className="mt-3 border-t-2 border-ink pt-3 font-serif text-[18px] italic text-muted">{m.caption}</figcaption>
+              </figure>
+            ))}
           </div>
         </section>
 
