@@ -245,8 +245,8 @@ export const HOME = {
 /**
  * About Us (/about). The founder's note is Nandini Lakhotia's own (old site and the master catalogue's "Founder's
  * Note"); the company facts come from DVINE's certificates (incorporation, DPIIT, Legal Metrology). Her photos
- * (supplied 2026-11-28) live in public/images/founder: the portrait is cropped clear of the campaign's handwritten
- * captions.
+ * (supplied 2026-11-28) live in public/images/founder: the 3:4 portrait is cropped from the campaign shot, its handwritten
+ * captions cut out and the arrow painted out.
  */
 export const ABOUT = {
   title: '*Water should* do more.',
@@ -255,7 +255,7 @@ export const ABOUT = {
     title: '*The question that* started it.',
     name: 'Nandini Lakhotia',
     role: 'Founder, DVINE H2O',
-    portrait: { src: '/images/founder/nandini-portrait.webp', alt: 'Nandini Lakhotia smiling, holding a Rose Hyper bottle', width: 480, height: 720 },
+    portrait: { src: '/images/founder/nandini-portrait-34.webp', alt: 'Nandini Lakhotia smiling, holding a Rose Hyper bottle', width: 540, height: 720 },
     moments: [
       { src: '/images/founder/nandini-expo.webp', alt: 'Nandini Lakhotia showing a Hyper bottle to visitors at the DVINE H2O stall', caption: 'Showing Hyper at the DVINE stall' },
       { src: '/images/founder/nandini-meeting.webp', alt: 'Nandini Lakhotia at a meeting with a Gravity Grey Hyper on the table', caption: 'A Gravity Grey Hyper at the table' },

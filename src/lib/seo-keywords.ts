@@ -97,7 +97,7 @@ export function siteSchema() {
     '@graph': [
       {
         '@type': 'Organization', '@id': `${url}/#org`, name: SITE.name, alternateName: BRAND_NAMES.filter(n => n !== SITE.name),
-        legalName: SITE.legalName, taxID: SITE.gstin, foundingDate: '2024-02-23', founder: { '@type': 'Person', name: 'Nandini Lakhotia', jobTitle: 'Founder', image: `${url}/images/founder/nandini-portrait.webp` }, url, logo: `${url}/brand/logo.svg`, description: SITE_DESCRIPTION, slogan: SITE.tagline, email: SITE.email,
+        legalName: SITE.legalName, taxID: SITE.gstin, foundingDate: '2024-02-23', founder: { '@type': 'Person', name: 'Nandini Lakhotia', jobTitle: 'Founder', image: `${url}/images/founder/nandini-portrait-34.webp` }, url, logo: `${url}/brand/logo.svg`, description: SITE_DESCRIPTION, slogan: SITE.tagline, email: SITE.email,
         sameAs: SOCIAL.map(s => s.href),
         contactPoint: [{ '@type': 'ContactPoint', telephone: SITE.phone, email: SITE.careEmail, contactType: 'customer service', areaServed: 'IN', availableLanguage: ['en', 'hi', 'or'] }],
         knowsAbout: ['Hydrogen water', 'Alkaline water', 'Water ionizers', 'Drinking water quality', 'Water testing', 'Hydration'],

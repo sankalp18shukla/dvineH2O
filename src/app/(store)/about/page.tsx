@@ -50,9 +50,9 @@ export default function AboutPage() {
           <div className="container-x grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] lg:gap-20">
             <div>
               <Lockup id="founder-title" title={f.title} tone="glacier" size="md" />
-              <figure className="mt-10 max-w-[380px]" data-rise>
-                <div className="relative aspect-[2/3] overflow-hidden bg-mist">
-                  <Image src={f.portrait.src} alt={f.portrait.alt} fill sizes="(min-width:420px) 380px, 100vw" className="object-cover" />
+              <figure className="mt-10 max-w-[440px]" data-rise>
+                <div className="relative aspect-[3/4] overflow-hidden bg-mist">
+                  <Image src={f.portrait.src} alt={f.portrait.alt} fill sizes="(min-width:480px) 440px, 100vw" className="object-cover" />
                 </div>
                 <figcaption className="border-t-2 border-ink pt-6 mt-6">
                   <p className="font-sans text-[26px] font-bold tracking-[-0.03em]">{f.name}</p>
