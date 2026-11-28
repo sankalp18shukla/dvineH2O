@@ -1,7 +1,7 @@
 'use server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { eq } from 'drizzle-orm';
+import { and, eq, ne } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { posts } from '@/lib/db/schema';
 import { requireStaff } from '@/lib/auth';
@@ -28,6 +28,7 @@ const PostInput = z.object({
   author: str(80),
   seoDescription: str(200),
   featured: z.boolean(),
+  featureOrder: z.number().int().min(0).max(4),
   publishedAt: z.string().max(40),
   status: z.enum(['draft', 'published']),
 });
@@ -65,15 +66,19 @@ export async function savePost(json: string): Promise<PostResult> {
     coverImage: d.coverImage || null, coverAlt: d.coverAlt || null,
     body: d.external ? '' : d.body.replace(/\r\n?/g, '\n'),
     externalUrl: d.external ? d.externalUrl : null, source: d.external ? d.source || new URL(d.externalUrl).hostname.replace(/^www\./, '') : null,
-    author: d.author || 'DVINE H2O editorial team', seoDescription: d.seoDescription || null, featured: d.featured && !d.external, status: d.status,
+    author: d.author || 'DVINE H2O editorial team', seoDescription: d.seoDescription || null, featured: d.featureOrder > 0 && !d.external, status: d.status,
     publishedAt: d.status === 'published' ? (when ?? before?.publishedAt ?? new Date()) : when,
   };
   try {
     let id = d.id;
     if (id) await db.update(posts).set(values).where(eq(posts.id, id));
     else [{ id }] = await db.insert(posts).values({ ...values, createdBy: s.id }).returning({ id: posts.id });
-    // one featured post at a time: it leads the blog page
-    if (values.featured) for (const o of await db.query.posts.findMany({ where: eq(posts.featured, true), columns: { id: true } })) if (o.id !== id) await db.update(posts).set({ featured: false }).where(eq(posts.id, o.id));
+    // homepage tiles: four slots at most. Taking a slot frees it from whichever post held it; slot 1 also leads the blog.
+    const slot = d.external ? 0 : d.featureOrder;
+    try {
+      if (slot) await db.update(posts).set({ featureOrder: 0, featured: false }).where(and(eq(posts.featureOrder, slot), ne(posts.id, id!)));
+      await db.update(posts).set({ featureOrder: slot }).where(eq(posts.id, id!));
+    } catch (e) { if (slot) throw e; /* feature_order column not migrated yet: nothing to order */ }
     const went = before?.status !== d.status ? (d.status === 'published' ? 'publish' : before ? 'unpublish' : 'create') : before ? 'update' : 'create';
     await audit(s.id, `post.${went}`, 'post', id!, { slug, title: d.title });
     revalidatePath('/blog', 'layout');

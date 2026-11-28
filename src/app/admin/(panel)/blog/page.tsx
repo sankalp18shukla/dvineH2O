@@ -24,7 +24,7 @@ function Row({ p }: { p: Post }) {
             <span>{categoryLabel(p.category)}</span>
             {product && <><span aria-hidden="true">·</span><span>{product.label} page</span></>}
             {p.externalUrl && <><span aria-hidden="true">·</span><span>on {p.source}</span></>}
-            {p.featured && <span className="rounded-full bg-voltage px-2 py-0.5 text-[11px] font-bold text-ink">Featured</span>}
+            {p.featureOrder > 0 && <span className="rounded-full bg-voltage px-2 py-0.5 text-[11px] font-bold text-ink">Homepage {p.featureOrder}</span>}
             {p.category === 'value' && p.product && !p.externalUrl && p.status === 'published' && <span className="rounded-full bg-[#E9F8EE] px-2 py-0.5 text-[11px] font-semibold text-[#14532D]">Price button</span>}
           </span>
         </span>

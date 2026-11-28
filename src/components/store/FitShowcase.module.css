@@ -103,6 +103,9 @@
   .facts > div:first-child { border-top: 2px solid var(--color-ink); }
 }
 .cta { margin-top: 34px; }
+/* small print under the facts: real text, kept short enough for the pinned panel on a laptop */
+.note { width: 100%; max-width: 36rem; margin: 14px 0 0; font-family: var(--font-sans); font-size: 12.5px; line-height: 1.45; color: var(--color-muted); }
+.note + div .cta { margin-top: 22px; }
 
 /* shop button: a pill in the product's colour with the ink arrow chip on the left. On hover the chip rides
    across to the right (the label slides over to make room) and the colours swap: ink pill, coloured label

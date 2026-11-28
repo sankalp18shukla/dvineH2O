@@ -4,7 +4,7 @@ import { seo } from '@/lib/seo-keywords';
 import { Header } from '@/components/store/Header';
 import { SmoothScroll } from '@/components/store/SmoothScroll';
 import { ActionBar } from '@/components/store/ActionBar';
-import { GrowVideo } from '@/components/store/GrowVideo';
+import { TestCompare } from '@/components/store/TestCompare';
 import { ReportScan } from '@/components/store/ReportScan';
 import { WaterTestForm } from '@/components/forms/WaterTestForm';
 import { ReportUploadForm } from '@/components/forms/ReportUploadForm';
@@ -60,25 +60,8 @@ export default async function WaterTestingPage({ searchParams }: { searchParams:
         {/* 02 · Availability and test scope */}
         <section id="tests" className="section" aria-labelledby="scope-title">
           <div className="container-x">
-            <SectionHead id="scope-title" tone="blue" title={WATER_TESTING.scope.title} body={WATER_TESTING.scope.body} />
-            <div className="grid grid-cols-1 gap-x-10 gap-y-14 md:grid-cols-2 lg:grid-cols-3" data-rise>
-              {options.map((o, i) => (
-                <article key={o.id} className={`${css.tile} ${css.callout} group flex flex-col`}>
-                  <div className="flex items-center justify-between">
-                    <span className={`${css.chip} ${css.chipTone}`} style={{ ['--d' as string]: `${i * -1.6}s` }}><Icon name="drop" className="size-6" strokeWidth={1.4} /></span>
-                    <span className={`${css.tileN} font-serif text-[26px] text-deep-current italic`}>Test 0{i + 1}</span>
-                  </div>
-                  <h3 className="mt-5 font-sans text-2xl font-bold tracking-tight">{o.name}</h3>
-                  {o.summary && <p className="mt-2 text-muted">{o.summary}</p>}
-                  <dl className="mt-5 grid gap-3 border-t border-line pt-5 font-sans text-[14px]">
-                    <div><dt className="text-muted">Parameters measured</dt><dd className="mt-1.5 flex flex-wrap gap-1.5">{o.parameters.map(x => <span key={x} className="pill py-0.5 text-[12.5px]">{x}</span>)}</dd></div>
-                    <div className="flex justify-between gap-4"><dt className="text-muted">Collection method</dt><dd className="text-right font-medium">{o.collectionMethod}</dd></div>
-                    <div className="flex justify-between gap-4"><dt className="text-muted">Report turnaround</dt><dd className="text-right font-medium">{o.turnaround}</dd></div>
-                    <div className="flex items-center justify-between gap-4 border-t border-line pt-3"><dt className="font-semibold text-ink">Total fee</dt><dd className="bg-voltage px-2.5 py-0.5 text-xl font-bold">{o.price ? formatINR(o.price) : 'Free'}</dd></div>
-                  </dl>
-                </article>
-              ))}
-            </div>
+            <SectionHead id="scope-title" tone="blue" title={WATER_TESTING.compare.title} body={WATER_TESTING.compare.body} />
+            <TestCompare options={options.map(o => ({ id: o.id, name: o.name, summary: o.summary, parameters: o.parameters, collectionMethod: o.collectionMethod, turnaround: o.turnaround, price: o.price }))} />
             <p className="mt-10 max-w-2xl font-sans text-sm text-muted">Each test covers only the parameters it lists. A basic panel does not check for every possible contaminant.</p>
             <div className="mt-8" data-rise><Cta href="#book" kind="ink">Check Availability</Cta></div>
           </div>
@@ -90,7 +73,8 @@ export default async function WaterTestingPage({ searchParams }: { searchParams:
           <WaveBand tone="glacier" interactive knot />
           <div className="container-x relative grid grid-cols-1 gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-20">
             <div className="lg:sticky lg:top-32 lg:self-start">
-              <GrowVideo id="wt-video" poster="/images/water-rings.webp" alt="Rings spreading across still water" label="Watch how testing works" pending="The explainer film is on its way." />
+              {/* a photo until the explainer film exists (brief: no "on its way" promises) */}
+              <div className="pin-frame relative aspect-video" style={{ ['--pin' as string]: 'var(--color-flash)' }}><div className="absolute inset-0 overflow-hidden"><img src="/images/water-rings.webp" alt="Rings spreading across still water" className="size-full object-cover" /></div></div>
             </div>
             <div>
               <Lockup id="how-title" title={WATER_TESTING.how.title} tone="blue" size="md" />

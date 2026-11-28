@@ -14,16 +14,17 @@ import { AddToCart } from '@/components/store/AddToCart';
 import { ActionBar } from '@/components/store/ActionBar';
 import { EnquiryForm } from '@/components/forms/EnquiryForm';
 import { SectionHead } from '@/components/ui/Section';
-import { Faq } from '@/components/ui/Faq';
+import { Faq, FaqGroups } from '@/components/ui/Faq';
+import { Benefits } from '@/components/store/Benefits';
+import { docIfThere } from '@/lib/research';
 import { Icon } from '@/components/ui/Icon';
-import { Cited } from '@/components/ui/Cited';
 import { Cta, Words } from '@/components/ui/Cta';
-import { CRYSTAL } from '@/lib/content';
+import { CRYSTAL, HOME, TEST_NOTE } from '@/lib/content';
 import { getProduct } from '@/lib/catalog';
 import { getProductPromos } from '@/lib/site-content.server';
 import { PromoCards } from '@/components/store/PromoCards';
 import { formatINR } from '@/lib/money';
-import { jsonLd, productJsonLd } from '@/lib/seo';
+import { faqJsonLd, jsonLd, productJsonLd } from '@/lib/seo';
 import { Facts, Lockup, Squiggle } from '@/components/ui/Brand';
 import { TuckedSquiggle } from '@/components/store/TuckedSquiggle';
 import { WaveBand } from '@/components/store/WaveBand';
@@ -41,18 +42,27 @@ export const metadata: Metadata = seo('/home-water-systems', { title: 'Crystal h
 /** Labelled path through Crystal, drawn under the demo film (section 04, "labelled filtration and plate illustration"). */
 const FLOW = [
   { icon: 'drop', label: 'Incoming water', body: 'From your kitchen supply' },
-  { icon: 'filter', label: 'PureCore filtration', body: 'Multi-stage filtration' },
-  { icon: 'plates5', label: 'Five-plate ionisation', body: 'Platinum-coated titanium plates' },
-  { icon: 'screen', label: 'Touchscreen', body: 'Mode, pH, ORP and filter status' },
+  { icon: 'filter', label: 'PureCore Filtration™', body: 'Sediment, carbon, nano and UV' },
+  { icon: 'plates5', label: 'HydroCore Ionisation Engine™', body: 'Five platinum-coated titanium plates' },
+  { icon: 'screen', label: 'SmartFlow Interface', body: 'Intelligent display' },
 ];
 
-/** One feature callout on the Crystal diagram: an animated icon chip, title and line. `n` is its turn to light up. */
-function Callout({ c, n, side, cite }: { c: (typeof CRYSTAL.features.cards)[number]; n: number; side: 'l' | 'r'; cite?: number }) {
+/** Homepage benefit cards 1–5 word for word, then Crystal's own sixth. */
+const BENEFITS = [...HOME.benefits.cards.slice(0, 5), CRYSTAL.benefits.own];
+const FAQS = CRYSTAL.faq.groups.flatMap(g => g.items);
+
+/** One step of "How Crystal works" on the diagram: an animated icon chip, its number and name, and the line under it.
+ *  The name links to its PDF once the file is in public/. `n` is its turn to light up. */
+function Callout({ c, n, side, step, className = '' }: { c: (typeof CRYSTAL.features.cards)[number]; n: number; side: 'l' | 'r'; step: number; className?: string }) {
+  const doc = docIfThere(c.doc);
   return (
-    <div className={`${css.callout} relative flex flex-col ${side === 'l' ? 'lg:items-end lg:text-right' : 'lg:items-start'}`} data-light={n} data-rise>
+    <div className={`${css.callout} relative flex flex-col ${side === 'l' ? 'lg:items-end lg:text-right' : 'lg:items-start'} ${className}`} data-light={n} data-rise>
       <span className={css.chip} style={{ ['--d' as string]: `${n * -1.2}s` }}><Icon name={c.icon} className="size-6" strokeWidth={1.4} /></span>
-      <h3 className="mt-5 font-sans text-[22px] font-bold tracking-[-0.03em] sm:text-[26px]">{c.title}</h3>
-      <p className="mt-2 max-w-[19rem] text-[17px] leading-snug text-ink/75">{'refs' in c ? <Cited text={c.body} refs={c.refs} start={cite} /> : c.body}</p>
+      <p className="mt-5 font-serif text-[18px] italic text-deep-current">0{step}</p>
+      <h3 className="font-sans text-[22px] font-bold tracking-[-0.03em] text-balance sm:text-[24px]">
+        {doc ? <a href={doc.href} target="_blank" rel="noopener" className="underline decoration-dotted decoration-2 underline-offset-4" title={doc.label}>{c.title}</a> : c.title}
+      </h3>
+      <p className="mt-2 max-w-[21rem] text-[16.5px] leading-snug text-ink/75">{c.body}</p>
     </div>
   );
 }
@@ -77,25 +87,29 @@ export default async function CrystalPage({ searchParams }: { searchParams: Prom
           <ProductHero name="Crystal" title="Home water system" tone="glacier" sticker={'Soft Launching\n“My Water Era.”'} body={CRYSTAL.hero.body}
             cutout={CRYSTAL.finishes[0].cutout} images={p.images ?? CRYSTAL.hero.gallery} alt="Crystal home water system">
             <FinishPicker />
-            <BuyBox p={p} tone="glacier" offer={promo.offer} why={blog.price} secondary={{ href: '/book-demo?product=crystal', label: 'Book a Demo' }} />
+            <BuyBox p={p} tone="glacier" offer={promo.offer} whyHref="#why-price" secondary={{ href: '/book-demo?product=crystal', label: 'Book a Demo' }} />
           </ProductHero>
         </FinishProvider>
+
+        {/* 01b · Benefits, directly under the price and Book a Demo: the homepage's cards 1–5 and Crystal's own sixth */}
+        <Benefits id="benefits-title" title={CRYSTAL.benefits.title} cards={BENEFITS} note={<>{TEST_NOTE} <a href="/home-water-systems/test-results" className="link whitespace-nowrap">See the test results</a></>} tone="glacier" />
 
         {promo.banner?.placement === 'hero' && banner}
 
         {/* blog posts about Crystal: benefits and what the price covers (Admin › Blog), second, right under the purchase */}
         <WorthReading posts={blog.reads} tone="glacier" />
 
-        {/* 02 · Key features: Crystal in the middle, the four details around it, over the Glacier wave band (its edges
-            are wave lines that drift with the scroll and part around the pointer, as on the home page's Meet DVINE) */}
+        {/* 02 · How Crystal works: Crystal in the middle, its four steps around it in the homepage's order, over the Glacier
+            wave band (its edges are wave lines that drift with the scroll and part around the pointer) */}
         <section id="features" className={`on-glacier relative overflow-clip pt-32 pb-[clamp(200px,22vw,320px)] text-ink sm:pt-44`} aria-labelledby="feat-title">
           <WaveBand tone="glacier" interactive />
           <div className="container-x relative">
             <SectionHead id="feat-title" tone="blue" title={CRYSTAL.features.title} align="center" />
-            {/* the four light up one by one with the scroll, row by row: top left, top right, bottom left, bottom right */}
-            <LightUp armClass={css.armed} litClass={css.lit} className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1fr_minmax(260px,400px)_1fr] lg:gap-[clamp(64px,7vw,128px)]">
-              <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[0]} n={0} side="l" cite={1} /><Callout c={f[1]} n={2} side="l" cite={2} /></div>
-              <div className="relative order-first mx-auto aspect-[4/5] w-full max-w-[400px] lg:order-none" data-speed="-.4">
+            {/* read in rows, 01 | 02 over 03 | 04, so each row pairs the two long steps or the two short ones; they light up in
+                that order with the scroll. Below lg the column wrappers dissolve (contents) and the four follow the product in order. */}
+            <LightUp armClass={css.armed} litClass={css.lit} className="grid grid-cols-1 items-start gap-12 sm:grid-cols-2 lg:grid-cols-[1fr_minmax(260px,400px)_1fr] lg:items-center lg:gap-[clamp(64px,7vw,128px)]">
+              <div className="contents lg:grid lg:grid-cols-1 lg:gap-20"><Callout c={f[0]} n={0} side="l" step={1} className="order-1 lg:order-none" /><Callout c={f[2]} n={2} side="l" step={3} className="order-3 lg:order-none" /></div>
+              <div className="relative order-first mx-auto aspect-[4/5] w-full max-w-[400px] sm:col-span-2 lg:order-none lg:col-span-1" data-speed="-.4">
                 <span className={`${css.ring} absolute inset-x-[4%] top-[12%] aspect-square rounded-full`} aria-hidden="true" />
                 <span className={`${css.disc} absolute z-[1] inset-x-[4%] top-[12%] aspect-square rounded-full shadow-[inset_0_-30px_60px_-30px_rgb(4_22_74/.18)]`} aria-hidden="true" data-tuck-disc />
                 <TuckedSquiggle className="top-[6%] -right-6 w-36 text-deep-current" />
@@ -104,9 +118,9 @@ export default async function CrystalPage({ searchParams }: { searchParams: Prom
                   <Image src="/images/crystal/midnight-side-cut.webp" alt="Crystal in Midnight" fill sizes="320px" className="object-contain object-bottom drop-shadow-[0_30px_30px_rgb(4_22_74/.3)]" />
                 </span>
               </div>
-              <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[2]} n={1} side="r" /><Callout c={f[3]} n={3} side="r" /></div>
+              <div className="contents lg:grid lg:grid-cols-1 lg:gap-20"><Callout c={f[1]} n={1} side="r" step={2} className="order-2 lg:order-none" /><Callout c={f[3]} n={3} side="r" step={4} className="order-4 lg:order-none" /></div>
             </LightUp>
-            <div className="mt-16 flex justify-center" data-rise><Cta href="#specs" kind="ink">See Specifications</Cta></div>
+            <div className="mt-16 flex justify-center" data-rise><Cta href="/home-water-systems/specifications" kind="ink">See Full Specifications</Cta></div>
           </div>
         </section>
 
@@ -123,13 +137,14 @@ export default async function CrystalPage({ searchParams }: { searchParams: Prom
                 <Lockup id="demo-title" title={CRYSTAL.demo.title} tone="blue" size="md" />
                 <p className="lede mt-9 max-w-2xl" data-words><Words text={CRYSTAL.demo.body} /></p>
               </div>
+              {/* "Watch" shows only once the film exists (brief: no promise of a film that isn't there) */}
               <div className="cta-row" data-rise>
-                <Cta href="#demo" tone="glacier" icon="play">Watch Crystal Demo</Cta>
-                <Cta href="/book-demo?product=crystal" kind="glass">Request a Demo</Cta>
+                {p.videoUrl && <Cta href="#demo" tone="glacier" icon="play">Watch Crystal Demo</Cta>}
+                <Cta href="/book-demo?product=crystal" kind={p.videoUrl ? 'glass' : 'pill'} tone="glacier">Request a Demo</Cta>
               </div>
             </div>
-            <GrowVideo id="demo" src={p.videoUrl} poster="/videos/inside-poster.jpg" alt="Inside Crystal: filter cartridges and ionisation chamber" label="Watch Crystal Demo" pending="The demonstration film is on its way. Request a live demo in the meantime." />
-            <div className="relative mt-16" role="group" aria-label="How water moves through Crystal">
+            {p.videoUrl && <GrowVideo id="demo" src={p.videoUrl} poster="/videos/inside-poster.jpg" alt="Inside Crystal: filter cartridges and ionisation chamber" label="Watch Crystal Demo" pending="" />}
+            <div className={`relative ${p.videoUrl ? 'mt-16' : 'mt-4'}`} role="group" aria-label="How water moves through Crystal">
               <span className="absolute top-6 right-[12%] left-[12%] hidden h-[2px] bg-ink lg:block" data-draw="x" aria-hidden="true" />
               <ol className="relative grid grid-cols-1 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4" data-rise>
                 {FLOW.map((s, i) => (
@@ -153,16 +168,18 @@ export default async function CrystalPage({ searchParams }: { searchParams: Prom
         {/* 05 · Fit, specifications and box contents */}
         <section id="specs" className="section pt-0" aria-labelledby="spec-title">
           <div className="container-x">
-            <SectionHead id="spec-title" tone="glacier" title={CRYSTAL.fit.title} body={CRYSTAL.fit.body}>
-              <div className="cta-row" data-rise><Cta href="#setup" kind="ink">Check My Setup</Cta></div>
-            </SectionHead>
+            {/* one "Check My Setup", on the form below: the second button that sat right above it is gone */}
+            <SectionHead id="spec-title" tone="glacier" title={CRYSTAL.fit.title} body={CRYSTAL.fit.body} />
             <div className="grid grid-cols-1 gap-14 lg:grid-cols-[1fr_1.25fr]">
               <div data-reveal>
                 <h3 className="eyebrow mb-4">What your kitchen needs</h3>
                 <Facts cols={2} items={CRYSTAL.fit.needs.map(n => ({ title: n.title, body: n.body, icon: <Icon name={n.icon} className="fact-icon" strokeWidth={1.4} /> }))} />
                 <BoxContents p={p} className="mt-12" />
               </div>
-              <div data-reveal><h3 className="eyebrow mb-4">Specifications</h3><Specs p={p} initial={5} box={false} /></div>
+              <div data-reveal>
+                <h3 className="eyebrow mb-4">Specifications</h3><Specs p={p} initial={8} box={false} />
+                <p className="mt-5"><a href="/home-water-systems/specifications" className="link inline-flex items-center gap-2 font-sans font-semibold">See full specifications <Icon name="arrow" className="size-4" /></a></p>
+              </div>
             </div>
             <div id="setup" className="pin-frame relative mt-24 scroll-mt-32" style={{ ['--pin' as string]: 'var(--color-glacier)' }}>
               <div className="relative grid grid-cols-1 gap-10 bg-white p-6 sm:p-12 lg:grid-cols-[1fr_1.3fr]">
@@ -203,21 +220,22 @@ export default async function CrystalPage({ searchParams }: { searchParams: Prom
           </div>
         </section>
 
-        <Reviews productId={p.id} name="Crystal" />
-
         {promo.banner?.placement === 'faq' && banner}
 
-        {/* 07 · Questions and purchase reminder */}
+        {/* 07 · Questions, right after the warranty block: four groups, marked up as FAQPage for search */}
         <section id="faq" className="section" aria-labelledby="faq-title">
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faqJsonLd(FAQS)) }} />
           <div className="container-x">
             <SectionHead id="faq-title" tone="flash" title={CRYSTAL.faq.title} />
-            <div data-reveal><Faq items={CRYSTAL.faq.items} /></div>
+            <div data-reveal><FaqGroups groups={CRYSTAL.faq.groups} /></div>
             <div className="cta-row mt-12" data-rise>
               <AddToCart productId={p.id} max={Math.min(p.available, p.maxPerOrder)} compact buyNow={false} primary tone="glacier" />
               <Cta href="/support#contact" kind="glass">Talk to DVINE</Cta>
             </div>
           </div>
         </section>
+
+        <Reviews productId={p.id} name="Crystal" />
       </main>
       <ActionBar watch="buy" title="Crystal" badge={promo.offer?.tag ? { text: promo.offer.tag, theme: promo.offer.theme } : undefined} sub={`${formatINR(p.price)} · incl. GST`} action={p.available > 0 ? { label: 'Add to Cart', productId: p.id } : { label: 'Talk to DVINE', href: '/support#contact' }} />
     </>

@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import {
   orders, orderItems, orderEvents, products, shipments, installations, warranties, enquiries, enquiryNotes, waterTests, serviceTickets,
-  reviews, coupons, pincodes, staff, returns, orderExceptions, serialUnits, testOptions, ENQUIRY_STATUSES,
+  reviews, coupons, pincodes, staff, returns, orderExceptions, serialUnits, testOptions, referrals, ENQUIRY_STATUSES,
 } from '@/lib/db/schema';
 import { requireStaff } from '@/lib/auth';
 import type { Permission } from '@/lib/session';
@@ -15,13 +15,15 @@ import { setOrderStatus, cancelOrder, refundOrder, createQuoteOrder, CheckoutErr
 import { moveStock } from '@/lib/inventory';
 import { pushOrder, assignAwb, trackAwb, trackingUrl, shiprocketEnabled, mapStatus } from '@/lib/shiprocket';
 import { setSetting, DEFAULT_COMPANY, DEFAULT_COMMERCE } from '@/lib/settings';
-import { DEFAULT_REFERRAL } from '@/lib/referrals';
+import { releaseDueReferrals, saveReferralSettingsValue, voidReferral, type ReferralSettings } from '@/lib/referrals';
 import { toPaise } from '@/lib/money';
 import { saveUpload, UploadError } from '@/lib/uploads';
 import { notify, templates, links } from '@/lib/notify';
 import { formatINR } from '@/lib/money';
 import { formToObject, zodErrors, type FormState } from '@/lib/validators';
 import { queueSheetSync } from '@/lib/sheet-queue';
+import { reportReviewOf, type ReportReview } from '@/lib/enquiries';
+import { randomToken } from '@/lib/numbering';
 import { editPincodes } from '@/lib/sheet-sync';
 
 type Act = (prev: FormState, fd: FormData) => Promise<FormState>;
@@ -231,6 +233,34 @@ export const updateEnquiry = guarded('enquiries', async (s, fd): Promise<FormSta
   revalidatePath(`/admin/enquiries/${id}`);
 });
 
+/**
+ * B: a report the customer uploaded. The team writes what it shows; "Send" puts it on the customer's private
+ * review page and tells them on WhatsApp and email. Saving without sending keeps a draft.
+ */
+export const saveReportReview = guarded('enquiries', async (s, fd): Promise<FormState | void> => {
+  const id = num(fd, 'id');
+  const e = await db.query.enquiries.findFirst({ where: eq(enquiries.id, id) });
+  if (!e || e.type !== 'water_test') throw new Error('Not found');
+  const text = str(fd, 'review').replace(/\r\n/g, '\n');
+  if (text.length < 20) return { errors: { review: 'Write at least a couple of sentences for the customer.' } };
+  if (text.length > 6000) return { errors: { review: 'Keep the review under 6,000 characters.' } };
+  const send = fd.get('intent') === 'send';
+  const data = (e.data ?? {}) as Record<string, unknown>;
+  const prev = reportReviewOf(data);
+  const token = prev.token ?? randomToken();
+  const now = new Date().toISOString();
+  const review: ReportReview = { text, savedAt: now, sentAt: send ? now : prev.review?.sentAt ?? null, by: s.name };
+  await db.update(enquiries).set({ data: { ...data, review, reviewToken: token }, status: send && e.status === 'new' ? 'contacted' : e.status }).where(eq(enquiries.id, id));
+  if (send) {
+    await db.insert(enquiryNotes).values({ enquiryId: id, staffId: s.id, note: prev.review?.sentAt ? 'Updated report review sent to the customer.' : 'Report review sent to the customer.' });
+    await notify({ email: e.email, phone: e.phone }, templates.reportReviewReady({ ref: e.ref, name: e.name.split(' ')[0], link: links.reportReview(e.ref, token) }));
+  }
+  queueSheetSync('form:water_test');
+  await audit(s.id, send ? 'enquiry.review_sent' : 'enquiry.review_saved', 'enquiry', id);
+  revalidatePath(`/admin/enquiries/${id}`);
+  return { ok: true, message: send ? `Review sent to ${e.name.split(' ')[0]}${e.phone ? ' on WhatsApp' : ''}${e.email ? `${e.phone ? ' and' : ''} by email` : ''}.` : 'Draft saved. The customer can’t see it until you send it.' };
+});
+
 /** Accepted quote → pending-payment order + secure pay link (optionally sent to the customer). */
 export const createPaymentLink = guarded('enquiries', async (s, fd): Promise<FormState | void> => {
   const id = num(fd, 'id');
@@ -283,7 +313,7 @@ export const updateWaterTest = guarded('enquiries', async (s, fd): Promise<FormS
   if (conv && !convOrder) return { errors: { convertedOrder: 'No order with that number' } };
   await db.update(waterTests).set({ status, reportPath, recommendedProduct: str(fd, 'recommendedProduct') || null, paymentStatus: (str(fd, 'paymentStatus') || w.paymentStatus) as typeof w.paymentStatus, convertedOrderId: convOrder?.id ?? w.convertedOrderId, slot: str(fd, 'slot') || w.slot, preferredDate: str(fd, 'preferredDate') || w.preferredDate }).where(eq(waterTests.id, id));
   if (w.enquiryId) await db.update(enquiries).set({ status: convOrder ? 'converted' : status === 'completed' ? 'qualified' : 'contacted', outcomeRef: convOrder?.number ?? null }).where(eq(enquiries.id, w.enquiryId));
-  if (status === 'report_ready' && w.status !== 'report_ready') await notify({ email: w.email, phone: w.phone }, { template: 'water_report_ready', subject: `Your water test report ${w.ref} is ready`, text: `Hi ${w.name.split(' ')[0]},\n\nYour water test report is ready. View it here: ${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/api/admin/files/wt-${w.ref}?t=${w.accessToken}\n\nDVINE H2O` });
+  if (status === 'report_ready' && w.status !== 'report_ready') await notify({ email: w.email, phone: w.phone }, templates.waterReportReady({ ref: w.ref, name: w.name.split(' ')[0], link: links.waterTest(w.ref, w.accessToken) }));
   queueSheetSync('form:water_test');
   await audit(s.id, 'watertest.update', 'water_test', id, { status });
   revalidatePath(`/admin/water-tests/${id}`);
@@ -347,10 +377,43 @@ export const saveCoupon = guarded('marketing', async (s, fd): Promise<FormState 
 });
 
 export const saveReferralSettings = guarded('marketing', async (s, fd): Promise<FormState | void> => {
-  const v = { enabled: fd.get('enabled') === 'on', friendPercent: Math.min(50, Math.max(0, Number(str(fd, 'friendPercent')))), friendMax: toPaise(str(fd, 'friendMax') || '0'), rewardFlat: toPaise(str(fd, 'rewardFlat') || '0'), rewardMinOrder: toPaise(str(fd, 'rewardMinOrder') || '0'), rewardValidDays: Math.max(1, Number(str(fd, 'rewardValidDays')) || DEFAULT_REFERRAL.rewardValidDays) };
-  await setSetting('referral', v);
+  const n = (k: string) => Number(str(fd, k));
+  const errors: Record<string, string> = {};
+  if (!(n('friendPercent') >= 1 && n('friendPercent') <= 50)) errors.friendPercent = 'Enter 1–50';
+  if (!(n('rewardFlat') >= 1)) errors.rewardFlat = 'Enter the reward in ₹';
+  if (!(n('rewardValidDays') >= 7 && n('rewardValidDays') <= 730)) errors.rewardValidDays = 'Enter 7–730 days';
+  if (!(n('holdDays') >= 0 && n('holdDays') <= 60)) errors.holdDays = 'Enter 0–60 days';
+  if (Object.keys(errors).length) return { errors };
+  const v: ReferralSettings = {
+    enabled: fd.get('enabled') === 'on', friendPercent: Math.round(n('friendPercent')), friendMax: toPaise(str(fd, 'friendMax') || '0'),
+    rewardFlat: toPaise(str(fd, 'rewardFlat')), rewardMinOrder: toPaise(str(fd, 'rewardMinOrder') || '0'), rewardValidDays: Math.round(n('rewardValidDays')),
+    holdDays: Math.round(n('holdDays')), maxRewards: Math.max(0, Math.floor(n('maxRewards') || 0)),
+  };
+  await saveReferralSettingsValue(v);
   await audit(s.id, 'settings.referral', 'settings', 'referral', v);
-  revalidatePath('/admin/marketing');
+  revalidatePath('/admin/referrals'); revalidatePath('/account', 'layout');
+  return { ok: true, message: v.enabled ? 'Referral programme saved. It is live.' : 'Saved. The referral programme is paused.' };
+});
+
+/** Issue a referral's reward now, without waiting for delivery or the hold (e.g. a goodwill gesture). */
+export const issueReferralReward = guarded('marketing', async (s, fd): Promise<FormState | void> => {
+  const id = num(fd, 'id');
+  const [r] = await releaseDueReferrals({ referralId: id, force: true });
+  if (!r) return { ok: false, message: 'This referral can’t be rewarded: its order is unpaid, cancelled or returned, or the reward was already sent.' };
+  await audit(s.id, 'referral.reward', 'referral', id, { code: r.code });
+  revalidatePath('/admin/referrals');
+  return { ok: true, message: `Reward ${r.code} sent.` };
+});
+
+/** Cancel a referral (and its unused reward), e.g. a self-referral spotted by the team. */
+export const cancelReferral = guarded('marketing', async (s, fd): Promise<FormState | void> => {
+  const id = num(fd, 'id');
+  const r = await db.query.referrals.findFirst({ where: eq(referrals.id, id) });
+  if (!r?.orderId) throw new Error('Not found');
+  await db.transaction(tx => voidReferral(tx, r.orderId!));
+  await audit(s.id, 'referral.cancel', 'referral', id);
+  revalidatePath('/admin/referrals');
+  return { ok: true, message: 'Referral cancelled. An unused reward code was switched off.' };
 });
 
 /* ─────────────── Pincodes ─────────────── */

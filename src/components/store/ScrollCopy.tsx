@@ -37,7 +37,7 @@ export function ScrollCopy() {
           const own = top(e) - innerHeight * a, h = headlineOf(e);
           return h ? Math.max(own, top(h) - innerHeight * .62) : own;
         };
-        ScrollTrigger.create({ id: ENTER, animation: tl, trigger: e, start: from, end: () => from() + innerHeight * (a - b), scrub: .8, invalidateOnRefresh: true });
+        ScrollTrigger.create({ id: ENTER, animation: tl, trigger: e, start: from, end: () => from() + innerHeight * (a - b), scrub: .8, invalidateOnRefresh: true, refreshPriority: -1 });
       };
       /** start state set: lift the first-paint gate (globals.css) */
       const claim = (els: Element[]) => els.forEach(x => x.classList.add('m-on'));
@@ -74,7 +74,7 @@ export function ScrollCopy() {
 
       all('[data-speed]').forEach(e => {
         const n = parseFloat(e.dataset.speed || '0') * 12;
-        gsap.fromTo(e, { yPercent: n }, { yPercent: -n, ease: 'none', scrollTrigger: { trigger: e, start: 'top bottom', end: 'bottom top', scrub: .4 } });
+        gsap.fromTo(e, { yPercent: n }, { yPercent: -n, ease: 'none', scrollTrigger: { trigger: e, start: 'top bottom', end: 'bottom top', scrub: .4, refreshPriority: -1 } });
       });
 
       enter('[data-pop]').forEach(e => {

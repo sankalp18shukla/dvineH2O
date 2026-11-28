@@ -14,11 +14,11 @@ export async function siteImages() {
 
 export const BLANK: PostDraft = {
   title: '', slug: '', excerpt: '', category: 'benefits', product: null, coverImage: '', coverAlt: '', body: '', external: false,
-  externalUrl: '', source: '', author: 'DVINE H2O editorial team', seoDescription: '', featured: false, publishedAt: '', status: 'draft',
+  externalUrl: '', source: '', author: 'DVINE H2O editorial team', seoDescription: '', featured: false, featureOrder: 0, publishedAt: '', status: 'draft',
 };
 
 export const toDraft = (p: Post): PostDraft => ({
   id: p.id, title: p.title, slug: p.slug, excerpt: p.excerpt, category: p.category, product: p.product, coverImage: p.coverImage ?? '', coverAlt: p.coverAlt ?? '',
   body: p.body, external: !!p.externalUrl, externalUrl: p.externalUrl ?? '', source: p.source ?? '', author: p.author, seoDescription: p.seoDescription ?? '',
-  featured: p.featured, publishedAt: p.publishedAt?.toISOString() ?? '', status: p.status,
+  featured: p.featured, featureOrder: p.featureOrder, publishedAt: p.publishedAt?.toISOString() ?? '', status: p.status,
 });

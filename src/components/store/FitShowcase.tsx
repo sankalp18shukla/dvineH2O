@@ -16,6 +16,8 @@ export type FitItem = {
    *  Loaded eagerly: the panels sit off-screen, so lazy loading would start them mid-entrance */
   src: string; cutout: boolean;
   feats: { title: string; sub: string }[];
+  /** small print under the facts (Hyper's measured hydrogen figure) */
+  note?: string;
 };
 
 /** One brand colour per product: the disc, its lockup and its die-cut sticker (brand elements page). */
@@ -206,6 +208,7 @@ export function FitShowcase({ title, body, items }: { title: string; body: strin
                       <dl className={`fit-after ${s.facts}`}>
                         {p.feats.map(f => <div key={f.title}><dt>{f.title}</dt><dd>{f.sub}</dd></div>)}
                       </dl>
+                      {p.note && <p className={`fit-after ${s.note}`}>{p.note}</p>}
                       <div className="fit-after">
                         <Link href={p.href} className={s.cta}>
                           <span className={s.chip} aria-hidden="true"><Icon name="arrow" className="" /></span>

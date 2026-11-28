@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { desc, eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { customers, orders, enquiries, warranties, serviceTickets, waterTests, addresses } from '@/lib/db/schema';
+import { customers, orders, enquiries, warranties, serviceTickets, waterTests, addresses, referrals } from '@/lib/db/schema';
 import { requireStaff } from '@/lib/auth';
 import { formatINR } from '@/lib/money';
 import { ENQUIRY_LABEL } from '@/lib/enquiries';
@@ -17,20 +17,21 @@ export default async function Customer({ params }: { params: Promise<{ id: strin
   const id = Number((await params).id);
   const c = await db.query.customers.findFirst({ where: eq(customers.id, id) });
   if (!c) notFound();
-  const [os, es, ws, ts, wts, as] = await Promise.all([
+  const [os, es, ws, ts, wts, as, refs] = await Promise.all([
     db.query.orders.findMany({ where: eq(orders.customerId, id), orderBy: desc(orders.createdAt), with: { items: true } }),
     db.query.enquiries.findMany({ where: eq(enquiries.customerId, id), orderBy: desc(enquiries.createdAt) }),
     db.query.warranties.findMany({ where: eq(warranties.customerId, id), with: { product: true } }),
     db.query.serviceTickets.findMany({ where: eq(serviceTickets.customerId, id), orderBy: desc(serviceTickets.createdAt) }),
     db.query.waterTests.findMany({ where: eq(waterTests.customerId, id), orderBy: desc(waterTests.createdAt) }),
     db.query.addresses.findMany({ where: eq(addresses.customerId, id) }),
+    db.query.referrals.findMany({ where: eq(referrals.referrerId, id) }),
   ]);
   const paid = os.filter(o => ['paid', 'partially_refunded'].includes(o.paymentStatus));
   return (
     <>
       <PageHead back={{ href: '/admin/customers', label: 'Customers' }} title={c.name} sub={<>{c.email} · {c.phone} · {c.authUserId ? 'Registered account' : 'Guest'} · since {day(c.createdAt)}</>} />
-      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Kpi label="Orders" value={paid.length} /><Kpi label="Total spend" value={formatINR(paid.reduce((t, o) => t + o.total, 0))} /><Kpi label="Latest order" value={paid[0] ? day(paid[0].placedAt) : '—'} /><Kpi label="Enquiries" value={es.length} />
+      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-5">
+        <Kpi label="Orders" value={paid.length} /><Kpi label="Total spend" value={formatINR(paid.reduce((t, o) => t + o.total, 0))} /><Kpi label="Latest order" value={paid[0] ? day(paid[0].placedAt) : '—'} /><Kpi label="Enquiries" value={es.length} /><Kpi label="Friends referred" value={refs.filter(r => r.status !== 'void').length} sub={c.referralCode ?? 'No code yet'} href={refs.length ? '/admin/referrals' : undefined} />
       </div>
       <div className="grid gap-6 xl:grid-cols-2">
         <Panel title="Orders">{os.length === 0 ? <Empty>No orders.</Empty> : <TableWrap><thead><tr><th>Order</th><th>Date</th><th>Items</th><th>Status</th><th className="text-right">Total</th></tr></thead><tbody>{os.map(o => <tr key={o.id}><td><Link href={`/admin/orders/${o.id}`} className="link">{o.number}</Link></td><td>{day(o.createdAt)}</td><td>{o.items.map(i => `${i.name.split(' ')[0]} × ${i.qty}`).join(', ')}</td><td><Status value={o.status} /></td><td className="text-right">{formatINR(o.total)}</td></tr>)}</tbody></TableWrap>}</Panel>

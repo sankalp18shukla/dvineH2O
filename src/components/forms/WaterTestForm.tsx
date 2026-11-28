@@ -1,4 +1,5 @@
 'use client';
+import { Gloss } from '@/components/ui/Term';
 import { useActionState, useEffect, useState, useTransition } from 'react';
 import { bookWaterTest } from '@/app/actions/forms';
 import { checkPincode } from '@/app/actions/cart';
@@ -53,7 +54,7 @@ export function WaterTestForm({ options, slots, sources, initialPin = '' }: { op
               </span>
               <span className="mt-1 font-sans text-2xl font-bold">{o.price ? formatINR(o.price) : 'Free'}</span>
               {o.summary && <span className="mt-2 text-[15px] text-muted">{o.summary}</span>}
-              <span className="mt-3 font-sans text-[13px] text-muted"><b className="text-ink">Measures:</b> {o.parameters.join(', ')}</span>
+              <span className="mt-3 font-sans text-[13px] text-muted"><b className="text-ink">Measures:</b> <Gloss text={o.parameters.join(', ')} /></span>
               <span className="mt-1 font-sans text-[13px] text-muted"><b className="text-ink">Collection:</b> {o.collectionMethod}</span>
               <span className="mt-1 font-sans text-[13px] text-muted"><b className="text-ink">Report:</b> {o.turnaround}</span>
             </label>
@@ -76,7 +77,7 @@ export function WaterTestForm({ options, slots, sources, initialPin = '' }: { op
         <Select name="sampleType" label="What should we test?" options={[{ value: 'source', label: 'Source supply (before any purifier)' }, { value: 'treated', label: 'Water from my current purifier / system' }]} defaultValue={v('sampleType') || 'source'} />
         <Field name="preferredDate" label="Preferred date" type="date" min={minDate} required defaultValue={v('preferredDate')} error={e.preferredDate} />
         <Select name="slot" label="Time slot" options={slots} placeholder="Choose" required defaultValue={v('slot')} error={e.slot} />
-        <Select name="interest" label="Interested in a DVINE product?" options={[{ value: 'not_sure', label: 'Not sure yet' }, { value: 'crystal', label: 'Crystal' }, { value: 'hyper', label: 'Hyper' }, { value: 'titan', label: 'Titan 111' }]} defaultValue={v('interest') || 'not_sure'} className="sm:col-span-2" />
+        <Select name="interest" label="Interested in a DVINE product?" options={[{ value: 'not_sure', label: 'Not sure yet' }, { value: 'crystal', label: 'Crystal' }, { value: 'hyper', label: 'Hyper' }, { value: 'titan', label: 'TitanForce 111' }]} defaultValue={v('interest') || 'not_sure'} className="sm:col-span-2" />
       </fieldset>
 
       <div className="flex flex-col gap-4 rounded-[var(--radius-card)] bg-white p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">

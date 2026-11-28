@@ -18,10 +18,18 @@ export function ProductHero({ name, title, tone, sticker, body, cutout, images, 
   axis?: number;
 }) {
   return (
-    // pt-11 on phones: the die-cut sticker rides 26px above the frame and must clear the header at the top of the page
-    <section className="pt-11 pb-20 sm:pt-10 sm:pb-28" aria-labelledby="p-title">
+    // pt-16: the die-cut sticker stands on the frame's top edge and must clear the header at the top of the page
+    <section className="pt-16 pb-20 sm:pb-28" aria-labelledby="p-title">
       <div className="container-x grid grid-cols-1 gap-12 lg:grid-cols-[1.2fr_1fr] lg:gap-16 [&>*]:min-w-0">
-        <ProductStage name={name} tone={tone} cutout={cutout} images={images} alt={alt} sticker={sticker} stickerTone={STICKER[tone]} axis={axis} />
+        {/* From lg the gallery stays put under the sticky header (76px + 68px: room for the sticker standing on the frame) while the purchase column scrolls past,
+            and lets go only when the hero ends, so no empty space opens under the thumbnails. Its width is capped by
+            the viewport's height (stage 0.96:1 plus ~110px of thumbnails, 24px clear below, 144px above) so the whole gallery,
+            thumbnails included, stays in view on short laptop screens. */}
+        <div className="lg:sticky lg:top-[144px] lg:self-start">
+          <div className="lg:mx-auto lg:max-w-[max(420px,calc((100svh_-_278px)/0.96))]">
+            <ProductStage name={name} tone={tone} cutout={cutout} images={images} alt={alt} sticker={sticker} stickerTone={STICKER[tone]} axis={axis} />
+          </div>
+        </div>
         {/* data-still: the product's name and intro are simply there, with no scroll entrance (landing.ts) */}
         <div className="flex flex-col gap-8 lg:pt-4" data-still>
           <Lockup id="p-title" as="h1" title={`*${title}* ${name}.`} tone={tone} className="ph-lk" />

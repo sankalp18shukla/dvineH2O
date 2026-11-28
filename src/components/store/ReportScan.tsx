@@ -3,12 +3,13 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Squiggle } from '@/components/ui/Brand';
+import { Gloss } from '@/components/ui/Term';
 
 gsap.registerPlugin(ScrollTrigger);
 
-type Sample = { meta: string[][]; cols: string[]; rows: string[][] };
+type Sample = { meta: string[][]; cols: string[]; rows: string[][]; note?: string };
 /** What to read on a report, in reading order: the sample details, then each column. */
-const STOPS = ['Sample details and test date', 'Parameter tested', 'Unit of measurement', 'Measured result', 'Reference range used'];
+const STOPS = ['Sample details and test date', 'Parameter tested', 'Unit of measurement', 'Measured result', 'Reference range used, from IS 10500'];
 
 /**
  * Water testing 06 · Report explanation. An anonymised report (W05) that reads itself as you scroll: a Glacier
@@ -65,7 +66,7 @@ export function ReportScan({ sample, children }: { sample: Sample; children: Rea
         <ol className="mt-10 grid font-sans" aria-label="What to read on your report">
           {STOPS.map((t, i) => (
             <li key={t} className={`flex items-center gap-4 border-t border-white/15 py-3 text-[15.5px] transition duration-500 ${k === i ? 'text-white' : k > i || k >= STOPS.length ? 'text-white/70' : 'text-white/40'}`}>
-              <span className={`grid size-8 shrink-0 place-items-center text-[13px] font-bold transition duration-500 ${k === i ? 'scale-110 bg-glacier text-ink shadow-[0_0_24px_rgb(37_255_232/.6)]' : 'bg-white/10'}`}>{String(i + 1).padStart(2, '0')}</span>{t}
+              <span className={`grid size-8 shrink-0 place-items-center text-[13px] font-bold transition duration-500 ${k === i ? 'scale-110 bg-glacier text-ink shadow-[0_0_24px_rgb(37_255_232/.6)]' : 'bg-white/10'}`}>{String(i + 1).padStart(2, '0')}</span><span><Gloss text={t} dark /></span>
             </li>
           ))}
         </ol>
@@ -83,11 +84,12 @@ export function ReportScan({ sample, children }: { sample: Sample; children: Rea
           </dl>
           <div className="relative overflow-x-auto">
             <table className="table text-[13px] max-sm:text-[12.5px] max-sm:[&_th]:whitespace-normal max-sm:[&_th]:px-2 max-sm:[&_th]:tracking-normal max-sm:[&_td]:px-2">
-              <thead><tr>{sample.cols.map(c => <th key={c} scope="col">{c}</th>)}</tr></thead>
-              <tbody>{sample.rows.map(r => <tr key={r[0]} className="hover:[&>td]:bg-transparent">{r.map((c, i) => <td key={i} className={i === 2 ? 'font-semibold tracking-widest text-muted' : i === 3 ? 'text-muted' : ''}>{c}</td>)}</tr>)}</tbody>
+              {/* every parameter, unit and column name opens its definition (Term.tsx) */}
+              <thead><tr>{sample.cols.map(c => <th key={c} scope="col"><Gloss text={c} /></th>)}</tr></thead>
+              <tbody>{sample.rows.map(r => <tr key={r[0]} className="hover:[&>td]:bg-transparent">{r.map((c, i) => <td key={i} className={i === 2 ? 'font-semibold tracking-widest text-muted' : i === 3 ? 'text-muted' : ''}>{i === 2 ? c : <Gloss text={c} />}</td>)}</tr>)}</tbody>
             </table>
           </div>
-          <figcaption className="relative mt-4 font-sans text-[12.5px] text-muted">Read each result with its unit and the reference range printed on your own report.</figcaption>
+          <figcaption className="relative mt-4 font-sans text-[12.5px] text-muted">Read each result with its unit and the reference range printed on your own report.{sample.note && <> <Gloss text={sample.note} /></>}</figcaption>
         </figure>
       </div>
     </div>

@@ -12,14 +12,15 @@ import { AddToCart } from '@/components/store/AddToCart';
 import { ActionBar } from '@/components/store/ActionBar';
 import { GrowVideo } from '@/components/store/GrowVideo';
 import { SectionHead } from '@/components/ui/Section';
-import { Faq } from '@/components/ui/Faq';
+import { FaqGroups } from '@/components/ui/Faq';
 import { Cta, Words } from '@/components/ui/Cta';
-import { HYPER } from '@/lib/content';
+import { HYPER, STORIES } from '@/lib/content';
+import { VideoStories } from '@/components/store/VideoStories';
 import { getProduct } from '@/lib/catalog';
 import { getProductPromos } from '@/lib/site-content.server';
 import { PromoCards } from '@/components/store/PromoCards';
 import { formatINR } from '@/lib/money';
-import { jsonLd, productJsonLd } from '@/lib/seo';
+import { faqJsonLd, jsonLd, productJsonLd } from '@/lib/seo';
 import { Lockup } from '@/components/ui/Brand';
 import { FrameTuckSquiggle } from '@/components/store/FrameTuckSquiggle';
 import { HyperAssembly } from '@/components/store/HyperAssembly';
@@ -90,7 +91,10 @@ export default async function HyperPage({ searchParams }: { searchParams: Promis
           <WaveBand tone="glacier" interactive knot />
           <div className="container-x relative grid grid-cols-1 gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-20">
             <div className="lg:sticky lg:top-32 lg:self-start">
-              <GrowVideo id="hyper-video" src={p.videoUrl} poster="/images/hyper/duo.webp" alt="Hyper in Rose and Gravity Grey" label="Watch How to Use Hyper" pending="The demonstration film is on its way." />
+              {/* the film and its "Watch" links show only once it exists; until then, a photo of the two colours */}
+              {p.videoUrl
+                ? <GrowVideo id="hyper-video" src={p.videoUrl} poster="/images/hyper/duo.webp" alt="Hyper in Rose and Gravity Grey" label="Watch How to Use Hyper" pending="" />
+                : <div className="pin-frame relative aspect-video" style={{ ['--pin' as string]: 'var(--color-flash)' }}><div className="absolute inset-0 overflow-hidden"><Image src="/images/hyper/duo.webp" alt="Hyper in Rose and Gravity Grey" fill sizes="(min-width:1024px) 52vw, 100vw" className="object-cover" /></div></div>}
             </div>
             <div>
               <Lockup id="how-title" title={HYPER.how.title} tone="blue" size="md" />
@@ -103,20 +107,36 @@ export default async function HyperPage({ searchParams }: { searchParams: Promis
                   </li>
                 ))}
               </ol>
-              <div className="mt-10" data-rise><Cta href="#hyper-video" kind="ink" icon="play">Watch How to Use Hyper</Cta></div>
+              {p.videoUrl && <div className="mt-10" data-rise><Cta href="#hyper-video" kind="ink" icon="play">Watch How to Use Hyper</Cta></div>}
             </div>
           </div>
         </section>
 
         {/* 04 · Product technology: Hyper builds itself from its parts as you scroll */}
         <section id="technology" className="relative" aria-labelledby="tech-title">
-          <HyperAssembly steps={HYPER.tech.parts} after={<div className="mt-10" data-rise><Cta href="#specs" tone="flash">View Specifications</Cta></div>}>
+          <HyperAssembly parts={HYPER.tech.parts} after={<div className="mt-10" data-rise><Cta href="#specs" tone="flash">View Specifications</Cta></div>}>
             <Lockup id="tech-title" title={HYPER.tech.title} tone="flash" size="md" />
             <p className="lede mt-9" data-words><Words text={HYPER.tech.body} /></p>
           </HyperAssembly>
+          {/* three benefit lines under the parts, set as the care steps: a numbered rule that thickens as you reach for it */}
+          <div className="container-x pt-16 lg:pt-20">
+            <ol className="grid grid-cols-1 gap-10 md:grid-cols-3" data-rise>
+              {HYPER.tech.benefits.map((b, i) => (
+                <li key={b.title} className={css.care}>
+                  <span className={`${css.careN} font-serif text-[40px] leading-none text-deep-current italic`}>{i + 1}</span>
+                  <h3 className="mt-3 font-sans text-[22px] font-bold tracking-[-0.03em]">{b.title}</h3>
+                  <p className="mt-1.5 max-w-xs text-[17px] leading-snug text-ink/75">{b.body}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
         </section>
         <section id="specs" className="section" aria-labelledby="spec-title">
-          <div className="container-x"><SectionHead id="spec-title" tone="volt" title="*Built to these* specifications." /><div data-reveal><Specs p={p} box={false} /></div></div>
+          <div className="container-x">
+            <SectionHead id="spec-title" tone="volt" title="*Built to these* specifications." />
+            <div data-reveal><Specs p={p} box={false} /></div>
+            <p className="mt-6 max-w-3xl border-l-4 border-flash pl-4 font-sans text-[15px] leading-relaxed text-ink/80">{HYPER.smallPrint}</p>
+          </div>
         </section>
 
         {/* 05 · Care and box contents, on a second Glacier wave band with its own knot */}
@@ -150,15 +170,24 @@ export default async function HyperPage({ searchParams }: { searchParams: Promis
           </div>
         </section>
 
+        {/* 05b · Customer video stories, just before the written reviews */}
+        <section id="stories" className="section" aria-labelledby="stories-title">
+          <div className="container-x">
+            <SectionHead id="stories-title" tone="flash" title={STORIES.title} />
+            <VideoStories />
+          </div>
+        </section>
+
         <Reviews productId={p.id} name="Hyper" flow />
 
         {promo.banner?.placement === 'faq' && banner}
 
         {/* 06 · Questions and purchase reminder */}
         <section id="faq" className="section" aria-labelledby="faq-title">
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faqJsonLd(HYPER.faq.groups.flatMap(g => g.items))) }} />
           <div className="container-x">
             <SectionHead id="faq-title" tone="glacier" title={HYPER.faq.title} />
-            <div data-reveal><Faq items={HYPER.faq.items} /></div>
+            <div data-reveal><FaqGroups groups={HYPER.faq.groups} /></div>
             <div className="cta-row mt-12" data-rise>
               <AddToCart productId={p.id} max={Math.min(p.available, p.maxPerOrder)} compact buyNow={false} primary tone="flash" />
               <Cta href="/support#contact" kind="glass">Ask a Question</Cta>

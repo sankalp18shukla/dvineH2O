@@ -34,18 +34,19 @@ export async function Header({ overlay = false, framed = false, home = false, sh
       <MobileMenu signedIn={!!customer} />
     </div>
   );
-  const links = NAV.main.map(l => <Link key={l.href} href={l.href} className="relative py-2 after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-current after:transition hover:after:scale-x-100">{l.label}</Link>);
+  const links = NAV.main.map(l => <Link key={l.href} href={l.href} className={`${l.wide ? 'hidden min-[1440px]:block ' : ''}relative py-2 after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-current after:transition hover:after:scale-x-100`}>{l.label}</Link>);
   const logo = <Link href="/" className="shrink-0 justify-self-start" aria-label="DVINE H2O home"><Logo className="h-[17px] w-auto sm:h-5" /></Link>;
 
   if (framed) return (
     <>
       {band}
       <HeaderShell overlay={false} framed glass={home}>
-        {/* The text nav needs ~1300px beside the logo and actions. Below 1280 the curtain menu takes over; 1280–1439 lets
-            the nav fill the gap between logo and actions; from 1440 it sits centred on the bar as designed. */}
-        <div className="frame-x flex h-[68px] items-center lg:h-[76px] min-[1440px]:grid min-[1440px]:grid-cols-[1fr_auto_1fr]">
+        {/* Text nav from 1280: five links up to 1439 (Blog and Become a Partner wait in the menu, whose button stays
+            until 1440), all seven from 1440. Between logo and actions it sits centred in the free space with even gaps
+            that grow with the screen; from 1600 there is room to centre it on the bar itself, as designed. */}
+        <div className="frame-x flex h-[68px] items-center lg:h-[76px] min-[1600px]:grid min-[1600px]:grid-cols-[1fr_auto_1fr]">
           {logo}
-          <nav aria-label="Primary" className="mx-6 hidden flex-1 justify-center gap-[18px] font-sans text-[13px] font-medium xl:flex min-[1440px]:mx-0 min-[1440px]:flex-none min-[1440px]:gap-6 min-[1440px]:text-[13.5px]">{links}</nav>
+          <nav aria-label="Primary" className="mx-6 hidden flex-1 justify-center gap-[clamp(20px,1.9vw,34px)] font-sans text-[13px] font-medium tracking-[0.005em] whitespace-nowrap xl:flex min-[1440px]:gap-[clamp(20px,1.6vw,32px)] min-[1600px]:mx-0 min-[1600px]:flex-none min-[1600px]:text-[13.5px]">{links}</nav>
           {actions}
         </div>
       </HeaderShell>

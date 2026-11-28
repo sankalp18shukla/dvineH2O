@@ -1,0 +1,39 @@
+/* Phones: a sideways row the reader swipes through (no snapping), with room above and below for the drift and the
+   frame's corner squares. Tablets two across, desktop three with the middle column dropped (Hyper's everyday). */
+.section { overflow-x: clip; }
+.grid { display: flex; gap: 28px; margin: 0 -16px; padding: 22px 26px 26px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.grid::-webkit-scrollbar { display: none; }
+.item { flex: 0 0 76%; max-width: 330px; }
+@media (min-width: 640px) {
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 64px 40px; margin: 0; padding: 0; overflow: visible; }
+  .item { max-width: none; }
+  .item:nth-child(2n) { margin-top: 64px; }
+}
+@media (min-width: 1024px) {
+  .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 88px clamp(32px, 3vw, 48px); }
+  .item:nth-child(2n) { margin-top: 0; }
+  .item:nth-child(3n + 2) { margin-top: 96px; }
+  .item:nth-child(3n) { margin-top: 40px; }
+}
+
+.photo { object-fit: cover; transition: scale 1.2s var(--ease-out-soft); }
+@media (hover: hover) { .card:hover .photo { scale: 1.05; } }
+
+/* the title tag tucks over the photo's bottom edge and leans a touch as you reach for the card */
+.tag { position: relative; z-index: 3; display: inline-block; margin: -26px 0 0 18px; max-width: calc(100% - 36px);
+  transition: rotate .5s var(--ease-out-soft), translate .5s var(--ease-out-soft); }
+.tag :global(.tag-box) { font-size: 25px; line-height: 1.05; }
+@media (min-width: 640px) { .tag :global(.tag-box) { font-size: 30px; } }
+@media (hover: hover) { .card:hover .tag { rotate: -2deg; translate: 4px -3px; } }
+
+/* how we know: number, a square in Voltage, the tag */
+.how { display: flex; align-items: center; gap: 10px; margin-top: 22px; font-family: var(--font-sans); font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--color-muted); }
+.n { font-family: var(--font-serif); font-size: 20px; font-style: italic; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--color-deep-current); }
+.sq { flex: none; width: 8px; height: 8px; background: var(--color-voltage); box-shadow: 0 0 0 1px rgb(4 22 74 / .25); }
+.body { margin-top: 10px; max-width: 24rem; font-size: 17px; line-height: 1.45; color: rgb(4 22 74 / .75); }
+
+.note { display: flex; align-items: flex-start; gap: 10px; margin-top: 56px; padding-top: 16px; max-width: 48rem; border-top: 1px solid var(--color-line);
+  font-family: var(--font-sans); font-size: 13px; line-height: 1.5; color: var(--color-muted); }
+.note .sq { margin-top: 6px; }
+@media (min-width: 1024px) { .note { margin-top: 120px; } }
+@media (prefers-reduced-motion: reduce) { .photo, .tag { transition: none; } }

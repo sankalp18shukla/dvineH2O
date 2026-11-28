@@ -90,7 +90,9 @@ export function Preloader({ model }: { model: string }) {
         tl = gsap.timeline({ onComplete: finish })
           // top the water out and land the count on 100
           .to(level, { v: 1, duration: 0.6, ease: 'power2.out', onUpdate: paint })
-          .to(el.querySelector(`.${s.inner}`), { y: -40, opacity: 0, duration: 0.55, ease: 'power3.in' }, '+=0.15')
+          // the master line rises in under "Water as intended." once the fill is done (its height is held from the start)
+          .to(el.querySelector(`.${s.sub}`), { opacity: 1, y: -12, duration: 0.5, ease: 'power2.out' })
+          .to(el.querySelector(`.${s.inner}`), { y: -40, opacity: 0, duration: 0.55, ease: 'power3.in' }, '+=0.55')
           // the curtain lifts away, its bottom edge bowing as it goes
           .to(el, { yPercent: -100, duration: 1.05, ease: 'power4.inOut' }, '-=0.2')
           .fromTo(el.querySelector(`.${s.edge}`), { scaleY: 0 }, { scaleY: 1, duration: 0.5, ease: 'power2.out' }, '<')
@@ -114,6 +116,7 @@ export function Preloader({ model }: { model: string }) {
           <span className={s.tagline}>Water <em>as intended.</em></span>
           <span className={s.count}>000</span>
         </div>
+        <span className={s.sub}>Water should do more.</span>
       </div>
       <span className={s.edge} aria-hidden="true" />
     </div>

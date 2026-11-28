@@ -1,5 +1,5 @@
 import {
-  ArrowLeft, ArrowRight, BadgePercent, Download, BarChart3, Bell, Boxes, Building2, CalendarDays, Check, ChevronDown, ChevronRight,
+  ArrowLeft, ArrowRight, BadgePercent, Gift, Download, BarChart3, Bell, Boxes, Building2, CalendarDays, Check, ChevronDown, ChevronRight,
   CircleAlert, Copy, CreditCard, Droplet, ExternalLink, Eye, FileSpreadsheet, FileText, Link2, Unlink, GripVertical, Handshake, History, Home, Image, Inbox,
   Info, LayoutDashboard, LayoutTemplate, LifeBuoy, LogOut, Mail, MapPin, Menu, MessageCircle, MessagesSquare, Minus, Monitor,
   Package, PanelTop, Phone, Play, Plus, Printer, RefreshCw, Search, Send, Settings, ShieldCheck, ShoppingBag, ShoppingCart,
@@ -13,7 +13,7 @@ import {
 const icons: Record<string, LucideIcon> = {
   dashboard: LayoutDashboard, box: Package, card: CreditCard, tag: Tag, inbox: Boxes, users: Users, user: User,
   chat: MessageCircle, responses: MessagesSquare, drop: Droplet, wrench: Wrench, star: Star, sparkle: Sparkles, layout: LayoutTemplate,
-  ribbon: PanelTop, doc: FileText, gift: BadgePercent, coupon: BadgePercent, chart: BarChart3, send: Send, history: History,
+  ribbon: PanelTop, doc: FileText, gift: BadgePercent, coupon: BadgePercent, referral: Gift, chart: BarChart3, send: Send, history: History,
   settings: Settings, bell: Bell, logout: LogOut, external: ExternalLink, menu: Menu, close: X, arrow: ArrowRight,
   arrowLeft: ArrowLeft, chevron: ChevronRight, down: ChevronDown, plus: Plus, minus: Minus, check: Check, trash: Trash2,
   copy: Copy, image: Image, video: Video, upload: Upload, grip: GripVertical, eye: Eye, play: Play, refresh: RefreshCw,

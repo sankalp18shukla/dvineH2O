@@ -530,6 +530,7 @@ export const posts = table('posts', {
   author: text('author').notNull().default('DVINE H2O editorial team'),
   seoDescription: text('seo_description'),
   featured: bool('featured').notNull().default(false),
+  featureOrder: integer('feature_order').notNull().default(0),          // 1–4: its tile on the homepage; 0 = not featured
   status: text('status', { enum: ['draft', 'published'] }).notNull().default('draft'),
   publishedAt: ts('published_at'),
   createdBy: integer('created_by').references(() => staff.id),

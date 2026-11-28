@@ -17,8 +17,8 @@ const OPEN = 1, COPY = 1.6, BTNS = .5, BTN_STAGGER = .08;
 
 /**
  * 06 · About: "Meet [water as intended] DVINE." centred over the Glacier wave band (its top and bottom borders are
- * wave lines, which follow the scroll and the pointer), the copy below between two squiggles, then the hero's two
- * buttons. Scrubbed with the scroll: the band's pins slide apart and the sticker slaps on once it is open (as
+ * wave lines, which follow the scroll and the pointer), the copy below between two squiggles, then two buttons
+ * (About Us, Ask Us a Question). Scrubbed with the scroll: the band's pins slide apart and the sticker slaps on once it is open (as
  * TagReveal does elsewhere), the copy lights up word by word with a soft glow while both squiggles draw themselves,
  * and the buttons rise in as the copy finishes. Reduced motion, or no JS, shows it all.
  */
@@ -73,10 +73,10 @@ export function AboutBand({ lead, tail, body }: { lead: string; tail: string; bo
           </div>
           <div className="mt-10 flex justify-center">
             <div className={`${hero.ctas} ${s.btns} justify-center`} style={{ marginTop: 0 }}>
-              <a href="#collection" className={`${hero.cta} ${hero.primary} ${s.solid}`}>
+              <Link href="/about" className={`${hero.cta} ${hero.primary} ${s.solid}`}>
                 <span className={hero.chip} aria-hidden="true"><Icon name="arrow" /></span>
-                <span>Meet the Products</span>
-              </a>
+                <span>About Us</span>
+              </Link>
               <Link href="/support#ask" className={`${hero.cta} ${hero.ghost} ${s.glass} glare`}>Ask Us a Question</Link>
             </div>
           </div>

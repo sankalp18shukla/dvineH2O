@@ -1,0 +1,39 @@
+/* the ruled row: a 2px rule over each cell (drawn Voltage when chosen), hairlines between, as the fact rows */
+.row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 640px) { .row { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .row { grid-template-columns: repeat(var(--n, 5), minmax(0, 1fr)); } }
+.cell { position: relative; border-top: 1px solid rgb(255 255 255 / .22); }
+@media (max-width: 639px) { .cell:nth-child(2n) { border-left: 1px solid rgb(255 255 255 / .14); } .cell:last-child:nth-child(odd) { grid-column: span 2; } }
+@media (min-width: 640px) and (max-width: 1023px) { .cell:not(:nth-child(3n + 1)) { border-left: 1px solid rgb(255 255 255 / .14); } }
+@media (min-width: 1024px) { .cell + .cell { border-left: 1px solid rgb(255 255 255 / .14); } }
+
+.mark { position: relative; display: flex; flex-direction: column; align-items: flex-start; width: 100%; height: 100%; padding: 26px 16px 24px; text-align: left; cursor: pointer; }
+@media (min-width: 1024px) { .mark { padding: 30px 22px 28px; } }
+.mark::before { content: ""; position: absolute; inset: -1px 0 auto; height: 2px; background: var(--color-voltage); transform-origin: left; scale: 0 1; transition: scale .5s var(--ease-out-soft); }
+.on::before { scale: 1 1; }
+@media (hover: hover) { .mark:hover::before { scale: .35 1; } .on:hover::before { scale: 1 1; } }
+
+/* the logo files are one colour, so each mark is a mask over a fill: pale on the band, Glacier when reached */
+.logo { display: block; height: calc(36px * var(--s, 1)); max-width: 100%; background: rgb(240 242 247 / .62); -webkit-mask: var(--src) left center / contain no-repeat; mask: var(--src) left center / contain no-repeat;
+  transition: background-color .35s, translate .45s var(--ease-out-soft); }
+@media (min-width: 640px) { .logo { height: calc(42px * var(--s, 1)); } }
+.mark:focus-visible .logo, .on .logo { background: var(--color-glacier); }
+@media (hover: hover) { .mark:hover .logo { background: var(--color-glacier); translate: 0 -3px; } }
+.name { margin-top: auto; padding-top: 22px; font-family: var(--font-sans); font-size: 15px; font-weight: 700; letter-spacing: -.01em; color: #fff; }
+.short { margin-top: 2px; font-family: var(--font-serif); font-size: 16px; font-style: italic; line-height: 1.25; color: rgb(240 242 247 / .65); }
+.plus { position: absolute; top: 22px; right: 14px; display: grid; place-items: center; width: 24px; height: 24px; background: rgb(255 255 255 / .1); color: #fff; transition: background-color .3s, color .3s, rotate .45s var(--ease-out-soft); }
+.on .plus { rotate: 45deg; background: var(--color-voltage); color: var(--color-ink); }
+.mark:active { background: rgb(255 255 255 / .04); }
+
+/* the panel is there on the same frame as the click (no height tween, which made it feel slow); the card only
+   lifts in over a blink, and switching between marks swaps the details in place */
+.panel > div { padding-inline: clamp(11px, 1.6vw, 18px); margin-inline: calc(-1 * clamp(11px, 1.6vw, 18px)); padding-bottom: clamp(11px, 1.6vw, 18px); }
+.panel:not(.shown) > div { padding-bottom: 0; }
+.shown :global(.pin-frame) { animation: cert-in .14s ease-out both; }
+@keyframes cert-in { from { opacity: 0; translate: 0 6px; } }
+/* the panel is a white card inside the dark band: its fact rows take the light-page colours, not .on-dark's */
+.card.card :global(.facts) dd { color: var(--color-muted); }
+.card.card :global(.facts) > div + div { border-left-color: var(--color-line); }
+.big { display: block; height: 72px; background: var(--color-deep-current); -webkit-mask: var(--src) left center / contain no-repeat; mask: var(--src) left center / contain no-repeat; }
+.close { display: grid; place-items: center; flex: none; width: 36px; height: 36px; background: var(--color-voltage); color: var(--color-ink); }
+@media (prefers-reduced-motion: reduce) { .logo, .mark::before, .plus { transition: none; } .shown :global(.pin-frame) { animation: none; } }

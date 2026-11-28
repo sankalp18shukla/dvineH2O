@@ -432,6 +432,10 @@ html:has(.site-ribbon) { --ribbon-h: 34px; }
 .page-card { position: relative; background: var(--color-paper); border-radius: 0 0 var(--card-r) var(--card-r); overflow-x: clip; }
 .site-footer { position: relative; z-index: -1; margin-top: calc(-1 * var(--card-r)); padding-top: var(--card-r);
   padding-bottom: env(safe-area-inset-bottom, 0px); }  /* the phone dock (ActionBar) steps aside over the footer */
+/* z-index: -1 puts the footer under <body>'s own box unless body is a stacking context. When the footer is static
+   (taller than the screen: every phone, short desktop windows) body's box covers it, so every footer link was
+   unclickable there. isolate makes body the stacking context, whose own box always sits beneath its -1 children. */
+body { isolation: isolate; }
 .footer-reveal .page-card { margin-bottom: var(--footer-h, 0px); }
 /* keeps padding-top so the fixed footer still reaches up under the card's corners once fully scrolled */
 .footer-reveal .site-footer { position: fixed; inset: auto 0 0; margin-top: 0; }
@@ -479,4 +483,15 @@ html:has(.site-ribbon) { --ribbon-h: 34px; }
   .no-print { display: none !important; }
   .page-card { margin-bottom: 0 !important; border-radius: 0; }
   body { background: #fff; font-size: 12px; }
+}
+
+/* NavProgress.tsx: a page change in flight. Runs quickly to ~70%, creeps toward 90% while the server renders,
+   then snaps full and fades when the new page lands. Above the header and curtain menu, below the preloader. */
+.nav-progress { position: fixed; inset: 0 0 auto; z-index: 90; height: 3px; pointer-events: none;
+  background: var(--color-flash); transform-origin: 0 50%; transform: scaleX(0); opacity: 0; }
+.nav-progress[data-on] { opacity: 1; animation: nav-run 9s cubic-bezier(.08, .7, .2, 1) forwards; }
+.nav-progress[data-done] { opacity: 0; transform: scaleX(1); transition: transform .18s ease-out, opacity .3s ease .15s; }
+@keyframes nav-run { 0% { transform: scaleX(0); } 12% { transform: scaleX(.7); } 100% { transform: scaleX(.92); } }
+@media (prefers-reduced-motion: reduce) {
+  .nav-progress[data-on] { animation: none; transform: scaleX(1); opacity: .6; }
 }

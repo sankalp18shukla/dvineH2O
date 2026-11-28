@@ -1,7 +1,6 @@
 import { and, asc, eq, isNull } from 'drizzle-orm';
 import { db, type Tx } from './db';
 import { customers, staff } from './db/schema';
-import { ensureReferralCode } from './referrals';
 import { queueSheetSync } from './sheet-queue';
 
 type Input = { name: string; email?: string | null; phone?: string | null; city?: string | null; state?: string | null; pincode?: string | null; consent?: boolean; marketing?: boolean };
@@ -78,7 +77,6 @@ export async function linkCustomerAccount(user: AuthUser) {
       const [c] = await db.insert(customers).values({ authUserId: user.id, name, email, phone, consentTermsAt: consentAt, consentPrivacyAt: consentAt, consentMarketing: marketing }).returning();
       id = c.id;
     }
-    await ensureReferralCode(id);
     queueSheetSync('customers');
   } catch (e) {
     // a concurrent request linked it first (unique auth_user_id) — fall through and read it back

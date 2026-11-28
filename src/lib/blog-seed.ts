@@ -8,7 +8,7 @@
  */
 import type { Post } from './blog';
 
-type Seed = Omit<Post, 'id' | 'updatedAt' | 'status' | 'author' | 'seoDescription' | 'publishedAt' | 'coverAlt' | 'featured' | 'source' | 'externalUrl' | 'product' | 'coverImage' | 'body'>
+type Seed = Omit<Post, 'id' | 'updatedAt' | 'status' | 'author' | 'seoDescription' | 'publishedAt' | 'coverAlt' | 'featured' | 'featureOrder' | 'source' | 'externalUrl' | 'product' | 'coverImage' | 'body'>
   & { published: string; body?: string; product?: Post['product']; coverImage?: string; coverAlt?: string; featured?: boolean; source?: string; externalUrl?: string };
 
 const OURS: Seed[] = [
@@ -40,8 +40,8 @@ Ionisation does not remove anything, so the water has to be cleaned before it re
 | SmartFlow touchscreen | Live pH, ORP and filter status at the machine |
 | Four water modes | Hot, Ambient, Alkaline and High-Alkaline from one tap |
 | Installation | Fitted in your kitchen by a DVINE-trained technician |
-| Warranty | Five years of DVINE Assured Care |
-| Service | A certified service network across India |
+| Warranty | One year on the machine, five years on the electrolysis chamber |
+| Service | Certified DVINE engineers, throughout Odisha |
 
 ## You can see it working
 
@@ -130,7 +130,7 @@ Titan has eleven platinum-coated titanium plates, against five in Crystal. It is
 
 ## What a quotation contains
 
-Your quotation sets out the system, any pre-filtration for your water, installation, the warranty (five years of DVINE Assured Care) and the service arrangement, with GST shown separately. Nothing is added later that was not written there.
+Your quotation sets out the system, any pre-filtration for your water, installation, the warranty and the service arrangement, with GST shown separately. Nothing is added later that was not written there.
 
 ## How to get one
 
@@ -140,7 +140,7 @@ Your quotation sets out the system, any pre-filtration for your water, installat
     slug: 'hydrogen-water-what-early-research-says', category: 'benefits', product: 'hyper', published: '2026-11-13',
     title: 'Hydrogen water: what early research says, and what it does not',
     excerpt: 'Molecular hydrogen is one of the more studied ideas in wellness, but the studies are still small. A plain summary of where things stand.',
-    coverImage: '/images/rising-bubbles.webp', coverAlt: 'Fine bubbles rising through water',
+    coverImage: '/images/blog/rising-bubbles-light.webp', coverAlt: 'Bubbles rising through sunlit water',
     body: `Hydrogen water is ordinary drinking water with hydrogen gas (H2) dissolved in it. It tastes like water. The interest is in the gas, which researchers have been studying for its possible effect on oxidative stress.
 
 We sell a hydrogen bottle, so you should read anything we say on this subject with care. We have tried to write this the way we would want it written if we were buying.
@@ -183,7 +183,7 @@ Treat it as a habit, not a remedy. [See Hyper](/hydrogen-bottles), read how a cy
     slug: 'what-ionisation-changes-in-your-water', category: 'benefits', product: 'crystal', published: '2026-11-14',
     title: 'What ionisation actually changes in your water',
     excerpt: 'pH, ORP and filtration, explained without jargon: what a home ioniser does to water, what you can measure, and where the health evidence stands.',
-    coverImage: '/images/water-rings.webp', coverAlt: 'Rings spreading across still water',
+    coverImage: '/images/blog/ripple-rings.webp', coverAlt: 'Rings spreading across teal water',
     body: `An ioniser such as Crystal does two separate jobs. It filters your water, then it passes that water over charged plates. Each job changes something you can measure.
 
 ## Step one: filtration
@@ -237,6 +237,6 @@ export const SEED_POSTS: Post[] = [
   ...OURS.map((p, i): Post => ({
     id: i + 1, slug: p.slug, title: p.title, excerpt: p.excerpt, category: p.category, product: p.product ?? null,
     coverImage: p.coverImage ?? null, coverAlt: p.coverAlt ?? null, body: p.body ?? '', externalUrl: null, source: null,
-    author: 'DVINE H2O editorial team', seoDescription: null, featured: !!p.featured, status: 'published', publishedAt: at(p.published), updatedAt: at(p.published),
+    author: 'DVINE H2O editorial team', seoDescription: null, featured: !!p.featured, featureOrder: p.featured ? 1 : 0, status: 'published', publishedAt: at(p.published), updatedAt: at(p.published),
   })),
 ];

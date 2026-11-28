@@ -1,15 +1,16 @@
 'use server';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { and, eq, or } from 'drizzle-orm';
+import { and, eq, inArray, or, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { orders, pincodes, reportUploads, enquiries, INTERESTS } from '@/lib/db/schema';
+import { orders, reportUploads, enquiries, warranties, INTERESTS } from '@/lib/db/schema';
 import { createEnquiry, createWaterTest, createTicket } from '@/lib/enquiries';
 import { getCustomer } from '@/lib/auth';
 import { email, formToObject, name, optional, phone, pincode, zodErrors, type FormState } from '@/lib/validators';
 import { saveUpload, UploadError } from '@/lib/uploads';
 import { limitRequest, TOO_MANY } from '@/lib/security';
 import { queuePincodeRefresh } from '@/lib/sheet-queue';
+import { findPincode } from '@/lib/pincodes';
 
 const consent = z.literal('on', { errorMap: () => ({ message: 'Please agree so we can contact you about this request.' }) });
 const interest = z.enum(INTERESTS).default('not_sure');
@@ -69,7 +70,7 @@ export async function bookWaterTest(_: FormState, fd: FormData): Promise<FormSta
   const today = new Date(); today.setHours(0, 0, 0, 0);
   if (day < new Date(today.getTime() + 86400_000)) return { errors: { preferredDate: 'Choose a date from tomorrow onwards' }, data: o };
   queuePincodeRefresh();
-  const pin = await db.query.pincodes.findFirst({ where: eq(pincodes.pincode, d.pincode) });
+  const pin = await findPincode(d.pincode);
   if (!pin || !pin.waterTesting) return { errors: { pincode: 'Water testing is not available at this pincode yet. Upload an existing report, or send us an enquiry.' }, data: o };
   const customer = await getCustomer();
   const wt = await createWaterTest({ ...d, consent: true, customerId: customer?.id });
@@ -135,4 +136,44 @@ export async function trackOrder(_: FormState, fd: FormData): Promise<FormState>
 
 export async function enquiryExists(ref: string) {
   return !!(await db.query.enquiries.findFirst({ where: eq(enquiries.ref, ref) }));
+}
+
+/* Public warranty check: shows only how long each unit's warranty has left */
+export type WarrantyCheck = {
+  errors?: Record<string, string>; message?: string; data?: Record<string, string>;
+  results?: { product: string; state: 'active' | 'ended' | 'void'; months: number; days: number }[];
+};
+export async function checkWarranty(_: WarrantyCheck | undefined, fd: FormData): Promise<WarrantyCheck> {
+  const o = formToObject(fd) as Record<string, string>;
+  const query = String(o.query ?? '').trim().toUpperCase();
+  const contact = String(o.contact ?? '').trim().toLowerCase();
+  const errors: Record<string, string> = {};
+  if (query.length < 4 || query.length > 40) errors.query = 'Enter your order number or the serial number on the product';
+  if (contact.length < 5) errors.contact = 'Enter the phone number or email used for the purchase';
+  if (Object.keys(errors).length) return { errors, data: o };
+  if (!(await limitRequest('track', 'warranty'))) return { message: TOO_MANY, data: o };
+
+  const ph = phone.safeParse(contact);
+  const last10 = (p?: string | null) => (p ?? '').replace(/\D/g, '').slice(-10);
+  const isOrder = /^DV-\d{2}-\d{4,}$/.test(query);
+  const list = await db.query.warranties.findMany({
+    where: isOrder ? inArray(warranties.orderId, db.select({ id: orders.id }).from(orders).where(eq(orders.number, query))) : eq(sql`upper(${warranties.serial})`, query),
+    with: { product: true, order: true, customer: true },
+  });
+  // the buyer's own phone or email must match, on the order or their customer record
+  const mine = list.filter(w => [w.order.contactEmail, w.customer.email].some(e => e && e.toLowerCase() === contact)
+    || (ph.success && [w.order.contactPhone, w.customer.phone].some(p => p && last10(p) === last10(ph.data))));
+  if (!mine.length) return { message: 'We couldn’t find a warranty with those details. Check the order or serial number, and use the phone or email from the purchase. Bought before our website opened? Contact us and we’ll look it up.', data: o };
+
+  const now = new Date();
+  const results = mine.map(w => {
+    if (w.status === 'void') return { product: w.product.shortName, state: 'void' as const, months: 0, days: 0 };
+    if (w.expiresAt <= now) return { product: w.product.shortName, state: 'ended' as const, months: 0, days: 0 };
+    let months = (w.expiresAt.getFullYear() - now.getFullYear()) * 12 + (w.expiresAt.getMonth() - now.getMonth());
+    const anchor = new Date(now); anchor.setMonth(anchor.getMonth() + months);
+    if (anchor > w.expiresAt) { months--; anchor.setMonth(anchor.getMonth() - 1); }
+    const days = Math.max(0, Math.floor((w.expiresAt.getTime() - anchor.getTime()) / 86_400_000));
+    return { product: w.product.shortName, state: 'active' as const, months, days };
+  });
+  return { results, data: o };
 }

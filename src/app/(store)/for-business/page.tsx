@@ -10,6 +10,10 @@ import { WaveBand } from '@/components/store/WaveBand';
 import { LightUp } from '@/components/store/LightUp';
 import { EnquiryForm } from '@/components/forms/EnquiryForm';
 import { SectionHead } from '@/components/ui/Section';
+import { Faq } from '@/components/ui/Faq';
+import { Benefits } from '@/components/store/Benefits';
+import { ModeDial } from '@/components/store/ModeDial';
+import { GrowVideo } from '@/components/store/GrowVideo';
 import { Icon } from '@/components/ui/Icon';
 import { Cta, Words } from '@/components/ui/Cta';
 import { Lockup } from '@/components/ui/Brand';
@@ -20,7 +24,7 @@ import { getProduct } from '@/lib/catalog';
 import { getProductPromos } from '@/lib/site-content.server';
 import { PromoCards } from '@/components/store/PromoCards';
 import { OfferTicket } from '@/components/store/OfferTicket';
-import { jsonLd, productJsonLd } from '@/lib/seo';
+import { faqJsonLd, jsonLd, productJsonLd } from '@/lib/seo';
 import { WorthReading, PriceStory } from '@/components/store/WorthReading';
 import { getProductReads } from '@/lib/blog.server';
 import css from '@/components/store/Bands.module.css';
@@ -28,7 +32,7 @@ import css from '@/components/store/Bands.module.css';
 /** Rendered per request: reads the catalog, which needs a live database. */
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = seo('/for-business', { title: 'Titan 111 for business', description: BUSINESS.hero.body });
+export const metadata: Metadata = seo('/for-business', { title: 'TitanForce 111 for business', description: BUSINESS.hero.body });
 
 /** One detail on the Titan diagram, as Crystal's key features: an animated icon chip, title and line. `n` is its turn to light up. */
 function Callout({ c, n, side }: { c: (typeof BUSINESS.titan.features)[number]; n: number; side: 'l' | 'r' }) {
@@ -47,7 +51,6 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
   const banner = promo.banner && <PromoCards promo={promo.banner} cards={promo.banner.cards} id="offers-title" tone="volt" wrap="container-x" />;
   const f = BUSINESS.titan.features;
   const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
-  const years = titan && titan.warrantyMonths >= 12 ? `${titan.warrantyMonths / 12}-year` : '5-year';
   return (
     <>
       <Header framed shop page="business" ribbon={promo.ribbon} />
@@ -57,11 +60,12 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
 
         {/* 01 · Hero: Titan on its Voltage disc left, the quotation panel right, as the product pages */}
         <ProductHero name="Titan" title="Water for shared spaces" tone="volt" sticker={'Main Character\nHydration.'} body={BUSINESS.hero.body}
-          cutout="/images/titan_product.png" images={titan?.images ?? BUSINESS.titan.views.map(v => v.image)} alt="TitanForce 111 floor-standing water system">
+          cutout="/images/titan/force-111-cut.webp" images={titan?.images ?? BUSINESS.titan.views.map(v => v.image)} alt="TitanForce 111 floor-standing water system">
           <div id="hero-actions" className="flex scroll-mt-32 flex-col gap-6" data-rise>
             <div className="border-t-2 border-ink pt-5 font-sans">
               <p className="text-[44px] leading-none font-bold tracking-[-0.04em]">Priced on quotation</p>
               <p className="mt-3 text-[13.5px] text-muted">{titan?.quoteNote ?? 'Priced on quotation after a site discussion.'}</p>
+              <p className="mt-1.5 text-[13.5px] text-muted">{BUSINESS.quote}</p>
               {blog.price && <PriceStory slug={blog.price.slug} label="How quotations work" className="mt-4" />}
             </div>
             {promo.offer && <OfferTicket offer={promo.offer} copyHint="Quote it when you enquire" />}
@@ -70,12 +74,15 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
               <Cta href="/book-demo?product=titan" kind="glass">Book a Demo</Cta>
             </div>
             <ul className="grid grid-cols-1 gap-2 border-t border-line pt-5 font-sans text-[14px] text-muted sm:grid-cols-3 sm:gap-4">
-              <li className="flex items-center gap-2"><Icon name="shield" className="size-4 shrink-0 text-deep-current" /> {years} warranty</li>
+              <li className="flex items-center gap-2"><Icon name="pin" className="size-4 shrink-0 text-deep-current" /> Service across Odisha</li>
               <li className="flex items-center gap-2"><Icon name="wrench" className="size-4 shrink-0 text-deep-current" /> Installed by DVINE</li>
               <li className="flex items-center gap-2"><Icon name="doc" className="size-4 shrink-0 text-deep-current" /> GST invoice</li>
             </ul>
           </div>
         </ProductHero>
+
+        {/* 01b · Benefits, directly under the hero. Tags say "Specification": there is no Titan test data yet */}
+        <Benefits id="benefits-title" title={BUSINESS.benefits.title} cards={BUSINESS.benefits.cards} tone="volt" />
 
         {promo.banner?.placement === 'hero' && banner}
 
@@ -91,7 +98,7 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
                 <span className={`${css.ring} absolute inset-x-[2%] top-[22%] aspect-square rounded-full`} aria-hidden="true" />
                 <span className={`${css.disc} absolute z-[1] inset-x-[2%] top-[22%] aspect-square rounded-full shadow-[inset_0_-30px_60px_-30px_rgb(4_22_74/.18)]`} aria-hidden="true" data-tuck-disc />
                 <TuckedSquiggle className="top-[20%] -right-12 w-36 text-deep-current" />
-                <Image src="/images/titan_product.png" alt="TitanForce 111, front view" fill sizes="360px" data-tuck-product className="z-[3] object-contain object-bottom drop-shadow-[0_30px_30px_rgb(4_22_74/.3)]" />
+                <Image src="/images/titan/force-111-cut.webp" alt="TitanForce 111" fill sizes="360px" data-tuck-product className="z-[3] object-contain object-bottom drop-shadow-[0_30px_30px_rgb(4_22_74/.3)]" />
               </div>
               <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-1 lg:gap-20"><Callout c={f[1]} n={1} side="r" /><Callout c={f[3]} n={3} side="r" /></div>
             </LightUp>
@@ -101,6 +108,21 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
             </div>
           </div>
         </section>
+
+        {/* 02b · Water options, laid out as Crystal's modes */}
+        <ModeDial overlap title={BUSINESS.modes.title} items={BUSINESS.modes.items} note={BUSINESS.modes.note}>
+          <Cta href="#enquiry" tone="volt">Request a Quote</Cta>
+        </ModeDial>
+
+        {/* 02c · Demo film: shown only once Titan has a video (Admin › Products); no "Watch" link before then */}
+        {titan?.videoUrl && (
+          <section id="demo" className="section" aria-labelledby="demo-title">
+            <div className="container-x">
+              <SectionHead id="demo-title" tone="volt" title={BUSINESS.demo.title} />
+              <GrowVideo id="titan-video" src={titan.videoUrl} poster="/images/titan/setup.webp" alt="TitanForce 111 in use" label="See Titan in use" pending="" />
+            </div>
+          </section>
+        )}
 
         {/* 03 · Business settings: three tall photos, staggered, drifting at their own pace, as Hyper's everyday use */}
         <section className="section overflow-hidden" aria-labelledby="s-title">
@@ -156,8 +178,30 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
           </div>
         </section>
 
-        {/* 05 · Business enquiry: the deep wave band laps over the Glacier one above, its lines knot and follow the pointer */}
-        <section id="enquiry" className={`on-dark relative overflow-clip text-white ${css.overlap} ${css.bandUnder}`} aria-labelledby="enq-title">
+        {/* 05 · Specifications, then the questions, before the enquiry form */}
+        {titan && (
+          <section id="specifications" className="section" aria-labelledby="spec-title">
+            <div className="container-x">
+              <SectionHead id="spec-title" tone="glacier" title="*Built to these* specifications." body={titan.quoteNote ?? undefined} />
+              <div data-reveal><Specs p={titan} box={false} /></div>
+              <div className="cta-row mt-12" data-rise>
+                <Cta href="#enquiry" kind="ink">Request a Quote</Cta>
+                {titan.brochureUrl && <Cta href={titan.brochureUrl} kind="glass">Download Brochure</Cta>}
+              </div>
+            </div>
+          </section>
+        )}
+
+        <section id="faq" className="section pt-0" aria-labelledby="faq-title">
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faqJsonLd(BUSINESS.faq.items)) }} />
+          <div className="container-x">
+            <SectionHead id="faq-title" tone="flash" title={BUSINESS.faq.title} />
+            <div data-reveal><Faq items={BUSINESS.faq.items} /></div>
+          </div>
+        </section>
+
+        {/* 06 · Business enquiry: the deep wave band (no longer lapping up: the questions sit above it now), lines following the pointer */}
+        <section id="enquiry" className={`on-dark relative overflow-clip text-white ${css.bandUnder}`} aria-labelledby="enq-title">
           <WaveBand interactive knot />
           <span className={css.scrim} aria-hidden="true" />
           <div className="container-x relative grid grid-cols-1 gap-14 lg:grid-cols-[1fr_1.4fr] lg:gap-20">
@@ -176,20 +220,6 @@ export default async function BusinessPage({ searchParams }: { searchParams: Pro
             <EnquiryForm variant="consultation" source="/for-business#enquiry" submitLabel="Request My Quote" dark settings={BUSINESS.enquiry.settings} timelines={BUSINESS.enquiry.timelines} photos />
           </div>
         </section>
-
-        {/* 06 · Specifications */}
-        {titan && (
-          <section id="specifications" className="section" aria-labelledby="spec-title">
-            <div className="container-x">
-              <SectionHead id="spec-title" tone="glacier" title="*Built to these* specifications." body={titan.quoteNote ?? undefined} />
-              <div data-reveal><Specs p={titan} box={false} /></div>
-              <div className="cta-row mt-12" data-rise>
-                <Cta href="#enquiry" kind="ink">Request a Quote</Cta>
-                {titan.brochureUrl && <Cta href={titan.brochureUrl} kind="glass">Download Brochure</Cta>}
-              </div>
-            </div>
-          </section>
-        )}
 
         {/* 07 · Bulk and gifting, on a Glacier wave band with its own knot: the copy and photo left, the form right */}
         <section id="bulk" className={`on-glacier relative overflow-clip text-ink ${css.bandPad} ${css.glacierCopy}`} aria-labelledby="bulk-title">

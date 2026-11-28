@@ -35,9 +35,18 @@ export function LockupFit() {
       const l = e.target as HTMLElement;
       if (widths.get(l) !== l.clientWidth) fit(l); // height changes from our own re-fit are ignored
     }));
-    document.querySelectorAll<HTMLElement>(SEL).forEach(l => { fit(l); ro.observe(l); });
+    const watch = (l: HTMLElement) => { fit(l); ro.observe(l); };
+    document.querySelectorAll<HTMLElement>(SEL).forEach(watch);
     document.fonts?.ready.then(all);
-    return () => ro.disconnect();
+    // headlines that arrive after this ran (a section streamed in late, or swapped in by a hot reload) were never
+    // fitted, so they sat at full size over whatever was beside them
+    const mo = new MutationObserver(records => records.forEach(r => r.addedNodes.forEach(n => {
+      if (!(n instanceof HTMLElement)) return;
+      if (n.matches(SEL)) watch(n);
+      n.querySelectorAll<HTMLElement>(SEL).forEach(watch);
+    })));
+    mo.observe(document.body, { childList: true, subtree: true });
+    return () => { ro.disconnect(); mo.disconnect(); };
   }, [path]);
   return null;
 }

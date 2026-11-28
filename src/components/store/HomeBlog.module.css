@@ -1,0 +1,44 @@
+.grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 56px; }
+.more { margin-top: 32px; }
+/* wide screens: the rows list is exactly as tall as the lead photo. The grid is a size container, so the lead
+   column's width (and from it the 16:9 photo's height) is known in cqw; the rows share that height evenly and
+   "All Articles" sits under them, level with the lead's words */
+@media (min-width: 1024px) {
+  .grid { --gap: clamp(48px, 5vw, 80px); container-type: inline-size; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: var(--gap); align-items: start; }
+  .rows { height: calc((100cqw - var(--gap)) * 1.3 / 2.3 * 9 / 16); display: grid; grid-auto-rows: minmax(0, 1fr); }
+  .rows > li { display: grid; }
+}
+
+.photo { object-fit: cover; transition: scale 1.2s var(--ease-out-soft); }
+@media (hover: hover) { :global(.group):hover .photo { scale: 1.05; } }
+
+.lead { display: flex; flex-direction: column; align-items: flex-start; }
+.leadText { display: flex; flex-direction: column; align-items: flex-start; }
+.tag { position: relative; z-index: 3; margin: -24px 0 0 18px; transition: rotate .5s var(--ease-out-soft), translate .5s var(--ease-out-soft); }
+.tag :global(.tag-box) { font-size: 24px; }
+@media (min-width: 640px) { .tag :global(.tag-box) { font-size: 28px; } }
+@media (hover: hover) { .lead:hover .tag { rotate: -2deg; translate: 4px -3px; } }
+.lead .meta { margin-top: 22px; }
+.leadTitle { margin-top: 8px; font-family: var(--font-sans); font-size: clamp(26px, 3vw, 38px); font-weight: 800; line-height: 1.05; letter-spacing: -.035em; text-wrap: balance; }
+.excerpt { margin-top: 12px; max-width: 36rem; font-size: 18px; line-height: 1.45; color: rgb(4 22 74 / .72); }
+
+.meta { display: block; font-family: var(--font-sans); font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--color-muted); }
+
+/* ruled rows beside the lead: photo, words, an arrow chip that fills on hover */
+.rows { border-top: 2px solid var(--color-ink); }
+.row { display: grid; grid-template-columns: 36% minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 22px 0; border-bottom: 1px solid var(--color-line); }
+@media (min-width: 640px) { .row { grid-template-columns: 200px minmax(0, 1fr) auto; gap: 24px; } }
+.thumb { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; background: var(--color-mist); }
+.rowTitle { display: block; margin-top: 6px; font-family: var(--font-sans); font-size: 18px; font-weight: 700; line-height: 1.15; letter-spacing: -.02em; text-wrap: balance; }
+@media (min-width: 640px) { .rowTitle { font-size: 22px; } }
+/* beside the lead: each row is a third of the photo's height, so the thumb and type size to the column */
+@media (min-width: 1024px) {
+  .row { grid-template-columns: clamp(100px, 10vw, 152px) minmax(0, 1fr) auto; gap: clamp(16px, 1.6vw, 24px); padding: 10px 0; }
+  .rowTitle { font-size: clamp(17px, 1.45vw, 21px); }
+  .go { width: 36px; height: 36px; }
+}
+.go { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--color-ink); color: #fff; transition: background-color .3s, color .3s, translate .4s var(--ease-out-soft); }
+@media (hover: hover) { .row:hover .go { background: var(--color-flash); translate: 4px 0; } }
+.row:active .go { background: var(--color-flash); }
+@media (max-width: 420px) { .go { display: none; } .row { grid-template-columns: 38% minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { .photo, .tag, .go { transition: none; } }

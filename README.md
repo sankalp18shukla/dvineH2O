@@ -132,18 +132,20 @@ Then configure:
 - Shiprocket › Settings › Webhooks → `https://<domain>/api/webhooks/shiprocket?token=<SHIPROCKET_WEBHOOK_TOKEN>`.
 - A staging copy is the same app with its own database and Razorpay test keys.
 
-## Before go-live (placeholders to replace)
-1. **Prices** for Hyper and Crystal are placeholders (₹14,999 / ₹1,49,000). Confirm them in Admin › Products and tick "Price confirmed".
-2. **Company details** (legal name, address, state, GSTIN, PAN) in Admin › Settings. Invoices show a placeholder banner until confirmed.
-3. **Opening stock**, reorder levels and **water-test options/prices** are placeholders.
-4. **Pincode list** is a sample of metro pincodes. Paste the real serviceability list in Admin › Settings › Pincodes.
-5. **Warranty for Hyper** is seeded as 12 months (Crystal/Titan 5 years per the catalog). Confirm.
-6. **Policies** (`/policies/*`) are drafts for legal review: what to send and check is in [docs/legal-review.md](docs/legal-review.md). The pages no longer carry a draft banner, so don't launch before that review is done. HSN codes are suggestions. Confirm with your CA.
-7. Upload brochures, manuals and demo videos (Admin › Products) and replace the stand-in fonts.
-8. Set `APP_SECRET` and `CRON_SECRET`, remove `SEED_ADMIN_PASSWORD`, set `ALLOW_TEST_PAYMENTS=false`, finish the Supabase dashboard settings (email confirmation, TOTP, SMTP, email templates, Data API off) and get all ✓ from `npm run db:check`.
-9. **Demo reviews**: the Crystal page shows 8 made-up reviews while there are no real ones (dev only, or wherever `DEMO_REVIEWS=1` is set). Leave `DEMO_REVIEWS` unset in production and delete the `DEMO` list in `src/components/store/Reviews.tsx` before launch.
-11. **Blog**: the five starter articles are drafts for DVINE to check, especially any health wording (same review as item 6). Add the performance report and case studies in Admin › Blog once the client sends them; the two PDFs in `public/research/` are still placeholders.
-10. PhonePe: test end to end with sandbox keys (`PHONEPE_ENV=sandbox`), then switch to live keys and `PHONEPE_ENV=production`. PhonePe must whitelist the live domain before production payments work.
+## Before go-live
+1. **Database update**: push the code and run `npm run catalog:update -- --apply` together (new prices, specs, water tests, articles, warranty 12 months, manual links, Odisha pincodes, the `feature_order` migration). Dry run without `--apply`; use the :6543 pooler. Then tick "Price confirmed" in Admin › Products. Migration `20261120000001_pincode_sheet.sql` still needs `npm run db:migrate`.
+2. **Company details** are in `DEFAULT_COMPANY` (src/lib/settings.ts). Check them once in Admin › Settings. HSN codes are suggestions: confirm with the CA.
+3. **Opening stock** and reorder levels in Admin › Inventory.
+4. **Policies** (`/policies/*`) need DVINE's legal sign-off, including a named **Grievance Officer**. See [docs/legal-review.md](docs/legal-review.md).
+5. **Payments**: PhonePe (or Razorpay) keys. Test end to end with sandbox keys (`PHONEPE_ENV=sandbox`), then live keys and `PHONEPE_ENV=production`. PhonePe must whitelist the live domain. Then set `ALLOW_TEST_PAYMENTS=false`: this also lets search engines in (robots.txt and the noindex tag follow it).
+6. **Email**: `SMTP_*` (Google Workspace App Password for reachout@), and the same SMTP in Supabase › Auth › SMTP, or customers get no sign-up or reset emails.
+7. **Shiprocket**, **WhatsApp Cloud API** (`npm run whatsapp:templates`) and **Google Sheets** (`GOOGLE_SERVICE_ACCOUNT_JSON`) keys.
+8. **Analytics and search**: `NEXT_PUBLIC_GA_ID`, `NEXT_PUBLIC_META_PIXEL_ID`, `GOOGLE_SITE_VERIFICATION` (all optional; nothing loads until set). Submit `/sitemap.xml` in Search Console.
+9. **Domain**: point dvineh2o.com at Vercel and set `NEXT_PUBLIC_SITE_URL` to it. The old site is one page with #anchors, so no redirects are needed.
+10. **Security**: rotate the Supabase secret key and DB password, remove `SEED_ADMIN_PASSWORD`, finish the Supabase dashboard settings (email confirmation, TOTP, email templates, Data API off) and get all ✓ from `npm run db:check`.
+11. **Fonts**: replace the stand-in fonts with the licensed Apple Garamond and DX Figgle files when DVINE sends them.
+12. **Demo reviews** show only in dev (or with `DEMO_REVIEWS=1`). Leave it unset in production.
+13. **Research PDFs**: the PureCore and HydroCore phrases link only once `public/docs/research/purecore-filtration.pdf` and `hydrocore-ionisation-engine.pdf` exist.
 
 ## Testing
 ```

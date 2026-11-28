@@ -42,7 +42,8 @@ export function BoxContents({ p, className = '' }: { p: Product; className?: str
       <ul className="mt-4 grid gap-2.5">
         {p.boxContents.map(b => <li key={b} className="flex items-start gap-3 font-sans text-[15px]"><Icon name="check" className="mt-0.5 size-4 shrink-0 text-deep-current" />{b}</li>)}
       </ul>
-      <p className="mt-5 font-sans text-[13px] text-muted">SKU {p.sku}{p.hsn ? ` · HSN ${p.hsn}` : ''}</p>
+      {/* the model number from the spec table where there is one (Crystal DC-5114), not the internal SKU */}
+      <p className="mt-5 font-sans text-[13px] text-muted">Model {p.specs?.find(x => x.label === 'Model')?.value ?? p.sku}{p.hsn ? ` · HSN ${p.hsn}` : ''}</p>
     </div>
   );
 }

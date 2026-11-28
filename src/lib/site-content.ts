@@ -262,7 +262,7 @@ export const DEFAULT_PARTNER: SiteContent['partner'] = {
   media: { type: 'image', src: '/images/collection.webp', poster: '', alt: 'Crystal, Titan and Hyper together' },
   benefitsTitle: '*Why partner* with us.',
   benefits: [
-    { id: 'b1', title: 'A complete range', body: 'Crystal for homes, Hyper for the day and Titan 111 for shared spaces: one partner, three ways to sell.' },
+    { id: 'b1', title: 'A complete range', body: 'Crystal for homes, Hyper for the day and TitanForce 111 for shared spaces: one partner, three ways to sell.' },
     { id: 'b2', title: 'Training and demos', body: 'Product training for your team, demo units and help running in-store and at-home demonstrations.' },
     { id: 'b3', title: 'Installation and service', body: 'Installation, warranty and service arrangements, so your customers are looked after after the sale.' },
     { id: 'b4', title: 'Marketing support', body: 'Brand assets, launch material and promotions for festive seasons and local events.' },
@@ -367,7 +367,7 @@ export const TEMPLATES: Template[] = [
   },
   {
     key: 'summer', label: 'Summer', theme: 'glacier', emoji: '☀️',
-    ribbon: ['Stay hydrated this summer', 'Summer offers on Hyper', 'Free delivery across India'],
+    ribbon: ['Stay hydrated this summer', 'Summer offers on Hyper', 'Free delivery across Odisha'],
     slide: { tag: 'Summer Hydration Season', title: 'Keep your\ncool.', body: 'Summer is the season to drink more water. Take Hyper along, wherever the day goes.', primary: { label: 'Shop Hyper', href: '/hydrogen-bottles' }, media: '/images/hyper-water.webp', fit: 'cover' },
     card: { tag: 'Summer', title: 'Hydration on the go', body: 'Hyper is rechargeable over USB-C and fits in your bag.', cta: { label: 'Shop Hyper', href: '/hydrogen-bottles' }, media: '/images/pool.webp' },
     offer: { tag: 'Summer offer', title: 'Summer pricing on {name}', body: 'Stay hydrated this summer. Limited-period pricing.' },

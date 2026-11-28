@@ -39,7 +39,9 @@
 .photo.held { z-index: 5; opacity: 1; scale: 1; transition: none; }
 .photo img { object-fit: cover; }
 
-.sticker { position: absolute; z-index: 7; right: 4px; top: -26px; font-size: clamp(20px, 2.2vw, 28px); --dc-rot: 7deg; }
+/* the sticker sits on the frame's top edge like a label: its bottom only 10px into the frame, so it never covers the
+   product (which starts further in), however many lines it has. The hero leaves room above it under the header. */
+.sticker { position: absolute; z-index: 7; right: 4px; bottom: calc(100% - 10px); font-size: clamp(18px, 2vw, 26px); --dc-rot: 7deg; }
 .flash .sticker { --dc-fg: var(--color-ink); --dc-edge: var(--color-flash); }
 .volt .sticker { --dc-fg: var(--color-deep-current); --dc-edge: var(--color-voltage); }
 

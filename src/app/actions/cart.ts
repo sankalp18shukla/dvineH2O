@@ -1,14 +1,12 @@
 'use server';
 import { revalidatePath } from 'next/cache';
-import { eq } from 'drizzle-orm';
-import { db } from '@/lib/db';
-import { pincodes } from '@/lib/db/schema';
 import { setItem, setCoupon, loadCart } from '@/lib/cart';
 import { pincode as pincodeSchema } from '@/lib/validators';
 import { limitRequest, TOO_MANY } from '@/lib/security';
 import { queuePincodeRefresh } from '@/lib/sheet-queue';
 import { liveCoupon } from '@/lib/promo-codes';
 import { CODE_RE, describeCoupon, normaliseCode } from '@/lib/coupon-info';
+import { findPincode } from '@/lib/pincodes';
 
 export async function addToCart(productId: number, qty = 1) {
   const r = await setItem(productId, qty, 'add');
@@ -51,7 +49,7 @@ export async function checkPincode(pin: string): Promise<PincodeResult> {
   if (!p.success) return { ok: false, message: 'Enter a valid 6-digit pincode.' };
   if (!(await limitRequest('pincode'))) return { ok: false, message: TOO_MANY };
   queuePincodeRefresh();
-  const row = await db.query.pincodes.findFirst({ where: eq(pincodes.pincode, p.data) });
+  const row = await findPincode(p.data);
   if (!row || !row.serviceable) return { ok: false, message: `We don't deliver to ${p.data} yet. Send us an enquiry and we'll check for you.` };
   const by = new Date(Date.now() + row.deliveryDays * 86400_000).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
   return { ok: true, city: row.city, days: row.deliveryDays, installation: row.installation, waterTesting: row.waterTesting, message: `Delivers to ${row.city} by ${by}.` };

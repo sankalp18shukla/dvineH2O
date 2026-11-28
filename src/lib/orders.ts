@@ -15,7 +15,7 @@ import { formatINR } from './money';
 import { createRzpOrder, createRzpRefund, verifyPaymentSignature } from './razorpay';
 import { createPhonePePayment, createPhonePeRefund, fetchPhonePeRefund, fetchPhonePeStatus, merchantOrderId, phonepeEnabled, summarise } from './phonepe';
 import { activeGateway } from './payments-mode';
-import { qualifyReferral, voidReferral } from './referrals';
+import { ensureReferralCode, findReferrer, markReferralDelivered, qualifyReferral, voidReferral, getReferralSettings } from './referrals';
 import { priceCart } from './cart-pricing';
 import { splitInclusive } from './gst';
 import { queueSheetSync } from './sheet-queue';
@@ -59,8 +59,10 @@ export async function createOrderFromCart(input: CheckoutInput) {
     if (!items.length) throw new CheckoutError('Your cart is empty.');
 
     const lines: PriceLine[] = items.map(i => ({ productId: i.productId, slug: i.product.slug, sku: i.product.sku, name: i.product.name, hsn: i.product.hsn, qty: i.qty, unitPrice: i.product.price, gstRate: i.product.gstRate }));
-    const totals = await priceCart(lines, cart.couponCode, input.customerId ?? null, tx);
-    const isReferral = 'isReferral' in totals && !!totals.isReferral;
+    // the shopper's email and phone are known now, so a referral code is checked against them too
+    const totals = await priceCart(lines, cart.couponCode, { customerId: input.customerId ?? null, email: input.contact.email, phone: input.contact.phone }, tx);
+    const isReferral = !!totals.isReferral;
+    if (cart.couponCode && totals.couponError && (await findReferrer(cart.couponCode, tx))) throw new CheckoutError(`${totals.couponError} Remove the code ${cart.couponCode} from your cart to continue.`);
 
     const customer = input.customerId
       ? (await tx.query.customers.findFirst({ where: (c, { eq }) => eq(c.id, input.customerId!) }))!
@@ -202,12 +204,19 @@ export async function applyPaymentSuccess(gatewayOrderId: string, gatewayPayment
     if (!p) throw new Error('Unknown payment');
     if (p.status === 'success') return { payment: p, fresh: false };
     await tx.update(payments).set({ status: 'success', gatewayPaymentId, method: method ?? p.method }).where(eq(payments.id, p.id));
-    if (p.purpose === 'order' && p.orderId) await markOrderPaid(tx, p.orderId);
+    const referral = p.purpose === 'order' && p.orderId ? await markOrderPaid(tx, p.orderId) : null;
     if (p.purpose === 'water_test' && p.waterTestId) await tx.update(waterTests).set({ paymentStatus: 'paid', status: 'confirmed' }).where(eq(waterTests.id, p.waterTestId));
-    return { payment: p, fresh: true };
+    return { payment: p, fresh: true, referral };
   });
+  if (result.fresh && result.referral) {
+    const { referrer, friend } = result.referral;
+    const s = await getReferralSettings();
+    await notify({ email: referrer.email, phone: referrer.phone }, templates.referralPending({ name: referrer.name.split(' ')[0], friend, reward: formatINR(s.rewardFlat), link: links.referrals() }));
+  }
   if (result.fresh && result.payment.orderId) {
     const o = await db.query.orders.findFirst({ where: eq(orders.id, result.payment.orderId) });
+    // the buyer's own referral code is created with their first paid order (client, Nov 2026)
+    if (o) await ensureReferralCode(o.customerId).catch(e => console.error('referral code', e));
     if (o) await notify({ email: o.contactEmail, phone: o.contactPhone }, templates.orderConfirmed({ number: o.number, name: o.contactName.split(' ')[0], total: formatINR(o.total), link: links.order(o.number, o.accessToken) }));
   }
   return result.payment;
@@ -228,7 +237,7 @@ export async function applyPaymentFailure(gatewayOrderId: string, info: { gatewa
 async function markOrderPaid(tx: Tx, orderId: number) {
   const order = await tx.query.orders.findFirst({ where: eq(orders.id, orderId), with: { items: true } });
   if (!order) throw new Error('Order not found');
-  if (order.paymentStatus === 'paid') return;
+  if (order.paymentStatus === 'paid') return null;
   // If the reservation already expired and was released, re-reserve before committing.
   if (order.status === 'cancelled') {
     for (const i of order.items) await reserve(tx, i.productId, i.qty, order.number);
@@ -248,10 +257,11 @@ async function markOrderPaid(tx: Tx, orderId: number) {
     }
   }
   if (order.couponCode) await consumeCoupon(tx, order.couponCode);
-  if (order.referralCode) await qualifyReferral(tx, orderId);
+  const referral = order.referralCode ? await qualifyReferral(tx, orderId) : null;
   if (order.cartId) await tx.update(carts).set({ status: 'converted', convertedOrderId: orderId }).where(eq(carts.id, order.cartId));
   await tx.update(enquiries).set({ status: 'converted' }).where(eq(enquiries.outcomeRef, order.number));
   await issueInvoice(tx, orderId);
+  return referral;
 }
 
 /* ─────────────────────────── Fulfilment ─────────────────────────── */
@@ -270,8 +280,10 @@ export async function setOrderStatus(orderId: number, to: OrderStatus, actor: st
     }
     if (to === 'returned') {
       for (const i of order.items) await moveStock(tx, i.productId, 'return', i.qty, { reference: order.number, note: note ?? 'Order returned' });
+      await voidReferral(tx, orderId);
     }
   });
+  if (to === 'delivered' && order.referralCode) await markReferralDelivered(orderId).catch(e => console.error('referral delivered', e));
   const link = links.order(order.number, order.accessToken);
   if (to === 'shipped') {
     const s = await db.query.shipments.findFirst({ where: eq(shipments.orderId, orderId) });
@@ -326,6 +338,7 @@ export async function refundOrder(orderId: number, amount: number, reason: strin
     await tx.insert(refunds).values({ orderId, paymentId: pay.id, amount, gatewayRefundId, status, reason, initiatedBy: staffId ?? null, completedAt: status === 'processed' ? new Date() : null });
     const full = amount + already >= pay.amount;
     await tx.update(orders).set({ paymentStatus: full ? 'refunded' : 'partially_refunded' }).where(eq(orders.id, orderId));
+    if (full) await voidReferral(tx, orderId);
     await tx.insert(orderEvents).values({ orderId, status: full ? 'refunded' : 'partially_refunded', note: `${formatINR(amount)} refund ${status === 'processed' ? 'processed' : 'initiated'}: ${reason}`, actor: staffId ? `staff:${staffId}` : 'system' });
     await issueCreditNote(tx, orderId, amount);
   });
@@ -355,7 +368,9 @@ export async function runMaintenance() {
   const abandoned = await db.update(carts).set({ status: 'abandoned' })
     .where(and(inArray(carts.status, ['active', 'checkout']), lt(carts.lastActivityAt, cutoff), sql`exists (select 1 from ${cartItems} ci where ci.cart_id = ${carts.id})`))
     .returning({ id: carts.id });
+  const { releaseDueReferrals } = await import('./referrals');
+  const rewards = await releaseDueReferrals().catch(e => { console.error('referral release', e); return []; });
   const { purgeRateLimits } = await import('./security');
   await purgeRateLimits().catch(e => console.error('rate-limit purge', e));
-  return { releasedOrders: stale.length, abandonedCarts: abandoned.length, phonepeReconciled: reconciled };
+  return { releasedOrders: stale.length, abandonedCarts: abandoned.length, phonepeReconciled: reconciled, referralRewards: rewards.length };
 }

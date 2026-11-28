@@ -40,6 +40,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { group: 'Website', href: '/admin/content', label: 'Homepage & promotions', icon: 'sparkle', p: 'content' },
     { group: 'Website', href: '/admin/blog', label: 'Blog', icon: 'doc', p: 'content' },
     { group: 'Website', href: '/admin/marketing', label: 'Coupons', icon: 'coupon', p: 'marketing' },
+    { group: 'Website', href: '/admin/referrals', label: 'Referrals', icon: 'referral', p: 'marketing' },
     { group: 'Records', href: '/admin/reports', label: 'Reports & export', icon: 'chart', p: 'reports' },
     { group: 'Records', href: '/admin/notifications', label: 'Messages sent', icon: 'send', p: 'settings' },
     { group: 'Records', href: '/admin/audit', label: 'Audit log', icon: 'history', p: 'audit' },

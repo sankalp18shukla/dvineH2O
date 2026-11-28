@@ -4,6 +4,7 @@ import { Icon } from '../ui/Icon';
 import { Lockup } from '../ui/Brand';
 import { ReviewSlider } from './ReviewSlider';
 import { ReviewMarquee } from './ReviewMarquee';
+import { HOME } from '@/lib/content';
 
 export function Stars({ value, size = 'size-4' }: { value: number; size?: string }) {
   return (
@@ -20,7 +21,7 @@ type Card = { id: string | number; rating: number; title: string | null; body: s
  * customers, so they are never shown in production unless DEMO_REVIEWS=1 is set deliberately (e.g. on a staging
  * deploy). Remove them, or leave DEMO_REVIEWS unset, before launch.
  */
-const DEMO: Record<string, Omit<Card, 'id' | 'verified' | 'media'>[]> = {
+export const DEMO: Record<string, Omit<Card, 'id' | 'verified' | 'media'>[]> = {
   Crystal: [
     { rating: 5, title: 'Fits our counter perfectly', body: 'The team checked our kitchen photo before we ordered, so installation was quick. The touchscreen is easy for everyone at home.', who: 'Aarav M., Pune', when: 'Oct 2026' },
     { rating: 5, title: 'Clean, simple setup', body: 'Technician connected the water line and walked us through every mode. Took under an hour.', who: 'Priya S., Bengaluru', when: 'Oct 2026' },
@@ -41,8 +42,13 @@ const DEMO: Record<string, Omit<Card, 'id' | 'verified' | 'media'>[]> = {
     { rating: 5, title: 'Good desk companion', body: 'Sits on my desk all day without leaking. Colleagues keep asking about it.', who: 'Manav K., Gurugram', when: 'Aug 2026' },
     { rating: 5, title: 'Clear instructions', body: 'The guide explains which water to use and how long a cycle takes. Delivery was quick too.', who: 'Riya P., Ahmedabad', when: 'Jul 2026' },
   ],
+  Titan: [
+    { rating: 5, title: 'Keeps up with the whole floor', body: 'About eighty of us share one pantry and there is no queue at lunch any more. The engineer surveyed the space before quoting, so the plumbing was ready on install day.', who: 'Sourav M., Bhubaneswar', when: 'Oct 2026' },
+    { rating: 5, title: 'All five options get used', body: 'Hot water for tea, cold in the afternoon, alkaline through the day. Filter status shows on the panel, so our admin team knows when service is due.', who: 'Ipsita D., Cuttack', when: 'Sep 2026' },
+    { rating: 4, title: 'Plan the spot early', body: 'Output is steady even at peak hours. It needs a place near a drain point, which the site survey flagged early. Service visits have been on time.', who: 'Debasish P., Rourkela', when: 'Aug 2026' },
+  ],
 };
-const demoOn = process.env.NODE_ENV !== 'production' || process.env.DEMO_REVIEWS === '1';
+export const demoOn = process.env.NODE_ENV !== 'production' || process.env.DEMO_REVIEWS === '1';
 
 /**
  * `flow`: the cards move on continuously (ReviewMarquee) instead of stepping as a slider. While demo reviews are
@@ -53,6 +59,8 @@ export async function Reviews({ productId, name, flow = false }: { productId: nu
   const real: Card[] = list.map(r => ({ id: r.id, rating: r.rating, title: r.title, body: r.body, media: r.media, verified: r.verified, who: r.name.split(' ')[0], when: r.createdAt.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) }));
   const demo: Card[] = demoOn && real.length < 6 ? (DEMO[name] ?? []).map((r, k) => ({ ...r, id: `demo-${k}`, verified: false })) : [];
   const cards = [...real, ...demo];
+  // brief: no reviews block until about ten genuine ones exist (HOME.reviews.minimum); the sample set is dev-only
+  if (real.length < HOME.reviews.minimum && !demo.length) return null;
   const List = flow ? ReviewMarquee : ReviewSlider;
   return (
     <section id="reviews" className="section" aria-labelledby="reviews-title">

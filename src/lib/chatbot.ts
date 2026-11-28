@@ -7,16 +7,14 @@
  * Copy follows the brand voice: plain and factual, and never a health or medical claim.
  */
 import 'server-only';
-import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { db } from './db';
-import { pincodes } from './db/schema';
 import { getProduct } from './catalog';
 import { CRYSTAL, HOME, HYPER, SITE, searchIndex } from './content';
 import { couponInfo, couponProducts, describeCoupon } from './coupon-info';
 import { formatINR } from './money';
 import { getLiveContent } from './site-content.server';
 import { liveOffers } from './promo-codes';
+import { findPincode } from './pincodes';
 
 export type ChatLink = { href: string; label: string };
 /** `agent` messages exist only in older live-chat transcripts (Admin › Form responses). */
@@ -121,7 +119,7 @@ async function allPrices(): Promise<Reply> {
 }
 
 async function pincodeReply(pin: string): Promise<Reply> {
-  const row = await db.query.pincodes.findFirst({ where: eq(pincodes.pincode, pin) }).catch(() => null);
+  const row = await findPincode(pin).catch(() => null);
   if (!row || !row.serviceable) return {
     text: `We don’t deliver to ${pin} yet, sorry. Our team can still check what’s possible for your area.`,
     chips: ['Talk to a person', 'Check another pincode'],
@@ -219,11 +217,19 @@ const TOPICS: Topic[] = [
 
   { id: 'warranty', keys: ['warranty', 'warrenty', 'guarantee', 'guaranty'],
     answer: async ({ p }) => {
-      if (p === 'titan') return { text: 'Titan’s warranty and service terms are set out in your quotation.', links: [{ href: '/policies/warranty', label: 'Warranty policy' }] };
+      if (p === 'titan') return { text: 'Titan’s warranty policy is being finalised. Until it is published, the warranty and service terms for your unit are set out in your quotation.', links: [{ href: '/policies/warranty', label: 'Warranty policy' }] };
       const h = await product('hyper');
       const hyper = `Hyper has a ${years(h?.warrantyMonths ?? 12)} warranty from the purchase date. If it arrives damaged or not working, tell us within 48 hours of delivery.`;
-      const crystal = 'Crystal has a one-year comprehensive warranty, and its electrolysis chamber is covered for 4 years or 1,000 litres, whichever comes first.';
-      return { text: p === 'hyper' ? hyper : p === 'crystal' ? crystal : `${crystal} ${hyper}`, links: [{ href: '/policies/warranty', label: 'Warranty policy' }, { href: '/account/warranties', label: 'My warranties' }], chips: ['Raise a service request', 'Returns'] };
+      const crystal = 'Crystal has a one-year comprehensive warranty on the machine and a five-year warranty on the electrolysis chamber, for up to 1,000 litres of use.';
+      return { text: p === 'hyper' ? hyper : p === 'crystal' ? crystal : `${crystal} ${hyper}`, links: [{ href: '/warranty', label: 'Check my warranty' }, { href: '/policies/warranty', label: 'Warranty policy' }], chips: ['Raise a service request', 'Returns'] };
+    } },
+
+  { id: 'referral', keys: ['refer', 'referral', 'referrals', 'referal', 'referring', 'invite', 'friend code', 'share code'], strong: ['refer a friend', 'referral code', 'my code', 'earn reward'],
+    answer: async () => {
+      const { getReferralSettings } = await import('./referrals');
+      const s = await getReferralSettings();
+      if (!s.enabled) return { text: 'Our refer-a-friend programme is paused right now. Rewards you’ve already earned still work in your cart.', links: [{ href: '/account/referrals', label: 'My rewards' }] };
+      return { text: `After your first purchase you get a personal referral code to share. Friends get ${s.friendPercent}% off their first DVINE order${s.friendMax ? ` (up to ${formatINR(s.friendMax)})` : ''}, and once their order is delivered${s.holdDays ? ` and kept ${s.holdDays} days` : ''} you get a ${formatINR(s.rewardFlat)} code for your next order. Your code is in your account once you sign in.`, links: [{ href: '/account/referrals', label: 'Get my code' }], chips: ['Current offers', 'Price of Hyper'] };
     } },
 
   { id: 'service', keys: ['repair', 'service', 'servicing', 'broken', 'leak*', 'error', 'faulty', 'defect*', 'damage*', 'kharab', 'complaint'], strong: ['not working', 'stopped working', 'doesnt work', 'dont work', 'service request'],
@@ -233,7 +239,7 @@ const TOPICS: Topic[] = [
     answer: () => ({ text: 'You can cancel an order from your account until it’s packed. If a product arrives damaged or faulty, tell us quickly: within 48 hours of delivery for Hyper, or within 7 days of delivery or installation for Crystal. We inspect it and replace or repair it. When a refund is due, it goes back to your original payment method.', links: [{ href: '/policies/returns', label: 'Returns policy' }, { href: '/account/orders', label: 'My orders' }], chips: ['Track my order', 'Talk to a person'] }) },
 
   { id: 'compare', keys: ['compare', 'comparison', 'difference', 'different', 'recommend*', 'suggest*', 'best', 'better', 'confused', 'choose', 'which'], strong: ['which one', 'right for me', 'should i buy', 'vs', 'versus'],
-    answer: () => ({ text: 'It depends on where you drink most of your water:\n• At home: Crystal, a kitchen-counter water system with filtration and four water modes.\n• On the go: Hyper, a portable bottle that generates dissolved hydrogen in your drinking water.\n• At work: Titan, a semi-commercial system for offices and shared spaces.\nTell me which fits and I’ll share the details.', links: [{ href: '/#help-title', label: 'Help me choose' }], chips: ['Tell me about Crystal', 'Tell me about Hyper', 'Tell me about Titan'] }) },
+    answer: () => ({ text: 'It depends on where you drink most of your water:\n• At home: Crystal, a kitchen-counter water system with filtration and four water modes.\n• On the go: Hyper, a portable bottle that generates dissolved hydrogen in your drinking water.\n• At work: Titan, a semi-commercial system for offices and shared spaces.\nTell me which fits and I’ll share the details.', links: [{ href: '/#collection', label: 'Help me choose' }], chips: ['Tell me about Crystal', 'Tell me about Hyper', 'Tell me about Titan'] }) },
 
   { id: 'howHyper', keys: ['electrolysis', 'pem', 'spe', 'membrane', 'cycle', 'generate*', 'dissolved'], strong: ['how does it work', 'how it works', 'how does hyper work'],
     answer: ({ p }) => p === 'crystal'
@@ -253,7 +259,7 @@ const TOPICS: Topic[] = [
 
   { id: 'buy', keys: ['buy', 'purchase', 'order online', 'amazon', 'flipkart', 'offline', 'outlet', 'retail'], strong: ['where to buy', 'where can i buy', 'how to order', 'how do i order', 'place an order'],
     answer: ({ p }) => ({
-      text: p === 'titan' ? 'Titan is ordered through our business team after a short site discussion.' : `You can order ${p ? NAME[p] : 'Crystal and Hyper'} right here on the website, as a guest or with an account, and pay by UPI, card or EMI. We deliver to serviceable pincodes across India.`,
+      text: p === 'titan' ? 'Titan is ordered through our business team after a short site discussion.' : `You can order ${p ? NAME[p] : 'Crystal and Hyper'} right here on the website, as a guest or with an account, and pay by UPI, card or EMI. We deliver, install and service throughout Odisha.`,
       links: p === 'titan' ? [{ href: '/for-business#enquiry', label: 'Request a quote' }] : p ? [{ href: `${PAGE[p]}#buy`, label: `Buy ${NAME[p]}` }] : [{ href: '/home-water-systems#buy', label: 'Buy Crystal' }, { href: '/hydrogen-bottles#buy', label: 'Buy Hyper' }],
       chips: ['Delivery to my pincode', 'Current offers'],
     }) },
@@ -301,7 +307,7 @@ const TOPICS: Topic[] = [
     answer: () => ({ text: `You can reach us at ${SITE.phone} (toll-free) or ${SITE.email}. We’re at ${SITE.address.join(' ').replace(/,\s*$/, '')}.`, links: [{ href: `tel:${SITE.phone.replace(/\s/g, '')}`, label: 'Call us' }, { href: '/support#contact', label: 'Send an enquiry' }], chips: ['Talk to a person'] }) },
 
   { id: 'about', keys: ['dvine', 'divine', 'brand', 'founder', 'made in', 'indian'], strong: ['who are you guys', 'about dvine', 'about your company', 'what is dvine'],
-    answer: () => ({ text: HOME.about.body, links: [{ href: '/#about', label: 'Meet DVINE' }], chips: ['Which one is right for me?', 'Current offers'] }) },
+    answer: () => ({ text: `${HOME.about.body} DVINE H2O was founded by Nandini Lakhotia in Bhubaneswar, Odisha.`, links: [{ href: '/about', label: 'About us' }], chips: ['Which one is right for me?', 'Current offers'] }) },
 
   { id: 'ack', keys: ['ok', 'okay', 'okk', 'k', 'cool', 'great', 'nice', 'fine', 'got it', 'hmm', 'alright', 'sure', 'yes', 'yeah', 'no', 'nope'],
     answer: () => ({ text: pick(['Great. Anything else I can help with?', 'Got it. What else would you like to know?']), chips: ['Current offers', 'Which one is right for me?', 'Talk to a person'] }) },

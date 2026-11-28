@@ -7,7 +7,7 @@ import { SubmitButton } from './SubmitButton';
 import { ConsentText } from './ConsentText';
 
 type Variant = 'demo' | 'product' | 'consultation' | 'bulk' | 'distributorship' | 'general';
-const INTERESTS = [{ value: 'crystal', label: 'Crystal' }, { value: 'hyper', label: 'Hyper' }, { value: 'titan', label: 'Titan 111' }, { value: 'multiple', label: 'More than one' }, { value: 'not_sure', label: 'Not sure yet' }];
+const INTERESTS = [{ value: 'crystal', label: 'Crystal' }, { value: 'hyper', label: 'Hyper' }, { value: 'titan', label: 'TitanForce 111' }, { value: 'multiple', label: 'More than one' }, { value: 'not_sure', label: 'Not sure yet' }];
 
 /** Optional private photo upload (site photos for Titan, kitchen photo for Crystal). */
 function Photos({ label, hint, error }: { label: string; hint: string; error?: string }) {

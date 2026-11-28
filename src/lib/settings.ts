@@ -17,9 +17,10 @@ export type Commerce = {
 };
 
 export const DEFAULT_COMPANY: Company = {
-  legalName: 'DVINE H2O', tradeName: 'DVINE H2O', gstin: '', pan: '',
-  address: '', city: '', state: '', pincode: '',
-  phone: '1800 202 4504', email: 'reachout@dvineh2o.com', invoicePrefix: 'DVH', confirmed: false,
+  // DVINE's details (client, Nov 2026). The PAN is the one inside the GSTIN (characters 3–12).
+  legalName: 'DVINE United Private Limited', tradeName: 'DVINE H2O', gstin: '21AAKCD6664L1ZC', pan: 'AAKCD6664L',
+  address: 'Office No. 5, 1st Floor, Block 1, Bhawani Mall, Saheed Nagar', city: 'Bhubaneswar', state: 'Odisha', pincode: '751007',
+  phone: '1800 202 4504', email: 'customercare@dvineh2o.com', invoicePrefix: 'DVH', confirmed: true,
 };
 export const DEFAULT_COMMERCE: Commerce = {
   shippingFee: 0, freeShippingAbove: 0, reservationMinutes: 30, abandonmentMinutes: 60, returnWindowDays: 7, cancelBefore: 'packed',

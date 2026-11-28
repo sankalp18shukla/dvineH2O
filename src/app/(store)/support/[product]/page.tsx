@@ -7,7 +7,7 @@ import { Header } from '@/components/store/Header';
 import { SupportForm } from '@/components/forms/SupportForm';
 import { Faq } from '@/components/ui/Faq';
 import { Icon } from '@/components/ui/Icon';
-import { CRYSTAL, HYPER, SUPPORT } from '@/lib/content';
+import { BUSINESS, CRYSTAL, HYPER, SUPPORT } from '@/lib/content';
 import { getProduct } from '@/lib/catalog';
 import { Lockup, Steps } from '@/components/ui/Brand';
 import { WaveBand } from '@/components/store/WaveBand';
@@ -16,9 +16,9 @@ import { WaveBand } from '@/components/store/WaveBand';
 export const dynamic = 'force-dynamic';
 
 const GUIDES = {
-  crystal: { title: 'Crystal', sub: 'Home water system', image: '/images/crystal/duo.webp', care: ['Use only the drinking-water settings specified in the manual.', 'Replace filters as guided by the touchscreen filter status.', 'Book the annual maintenance visit to keep ionisation plates in condition.', 'Keep the drip tray clean and dry.'], faq: CRYSTAL.faq.items, shop: '/home-water-systems' },
-  hyper: { title: 'Hyper', sub: 'Hydrogen water bottle', image: '/images/hyper/duo.webp', care: ['Fill with suitable drinking water only.', 'Run Auto Clean as described in the guide.', 'Charge over USB-C; don’t charge while submerged.', 'Rinse the glass chamber and dry before storing.'], faq: HYPER.faq.items, shop: '/hydrogen-bottles' },
-  titan: { title: 'Titan', sub: 'Business water system', image: '/images/titan/front.webp', care: ['Service is arranged through your DVINE account manager.', 'Follow the configured maintenance schedule for your site.', 'Report any display warnings to support with the serial number.'], faq: [], shop: '/for-business' },
+  crystal: { title: 'Crystal', sub: 'Home water system', image: '/images/crystal/duo.webp', care: ['Use only the drinking-water settings specified in the manual.', 'Replace the sediment, carbon and nano filters together every 6 to 8 months. Each filter shows its life in bars on the display.', 'Wipe the outside weekly with a soft damp cloth, and check the inlet and drain pipes monthly for leaks.', 'Have a certified technician inspect the machine every year. Use only genuine DVINE H2O filters.'], faq: CRYSTAL.faq.groups.find(g => g.title.startsWith('Care'))!.items, shop: '/home-water-systems' },
+  hyper: { title: 'Hyper', sub: 'Hydrogen water bottle', image: '/images/hyper/duo.webp', care: ['Fill with suitable drinking water only.', 'Run Auto Clean as described in the guide.', 'Charge over USB-C; don’t charge while submerged.', 'Rinse the glass chamber and dry before storing.'], faq: HYPER.faq.groups.find(g => g.title.startsWith('Battery'))!.items, shop: '/hydrogen-bottles' },
+  titan: { title: 'Titan', sub: 'Business water system', image: '/images/titan/force-111-front.webp', care: ['Service is arranged through your DVINE account manager.', 'Follow the configured maintenance schedule for your site.', 'Report any display warnings to support with the serial number.'], faq: BUSINESS.faq.items.filter(f => /filters|warranty/.test(f.q)), shop: '/for-business' },
 } as const;
 
 /** Product colours as on the home collection. */

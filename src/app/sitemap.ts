@@ -18,6 +18,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page('/', 1, 'daily'),
     page('/hydrogen-bottles', 0.9),
     page('/home-water-systems', 0.9),
+    page('/home-water-systems/specifications', 0.6),
+    page('/home-water-systems/test-results', 0.6),
     page('/for-business', 0.8),
     page('/water-testing', 0.8),
     page('/book-demo', 0.6, 'monthly'),
@@ -25,8 +27,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...posts.map(p => page(`/blog/${p.slug}`, 0.6, 'monthly', p.updatedAt ?? p.publishedAt ?? undefined)),
     page('/support', 0.5, 'monthly'),
     ...['crystal', 'hyper', 'titan'].map(k => page(`/support/${k}`, 0.4, 'monthly')),
+    page('/about', 0.6, 'monthly'),
     page('/become-a-partner', 0.5, 'monthly'),
     page('/track', 0.3, 'yearly'),
+    page('/warranty', 0.3, 'yearly'),
     ...Object.keys(POLICIES).map(k => page(`/policies/${k}`, 0.2, 'yearly')),
   ];
 }

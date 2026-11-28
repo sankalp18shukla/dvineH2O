@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { enquiries, waterTests } from '@/lib/db/schema';
 import { requireCustomer } from '@/lib/auth';
 import { Status } from '@/components/ui/Status';
-import { ENQUIRY_LABEL } from '@/lib/enquiries';
+import { ENQUIRY_LABEL, reportReviewOf } from '@/lib/enquiries';
 
 export const metadata = { title: 'Tests and enquiries' };
 
@@ -22,7 +22,7 @@ export default async function MyBookings() {
           <ul className="mt-4 divide-y divide-line">{tests.map(t => (
             <li key={t.id} className="flex flex-wrap items-center justify-between gap-3 py-4 font-sans">
               <span><Link href={`/water-testing/booking/${t.ref}?t=${t.accessToken}`} className="link">{t.ref}</Link> · {t.option?.name}<span className="block text-sm text-muted">{t.preferredDate} · {t.slot}</span>{t.recommendedProduct && <span className="block text-sm">Recommended: <b>{t.recommendedProduct}</b></span>}</span>
-              <span className="flex gap-2"><Status value={t.status} /><Status value={t.paymentStatus} /></span>
+              <span className="flex flex-wrap items-center gap-2">{t.reportPath && <a href={`/api/admin/files/wt-${t.ref}?t=${t.accessToken}`} target="_blank" rel="noopener" className="btn btn-outline btn-sm">Open report</a>}<Status value={t.status} /><Status value={t.paymentStatus} /></span>
             </li>
           ))}</ul>
         )}
@@ -31,7 +31,7 @@ export default async function MyBookings() {
         <h2 className="font-sans text-lg font-semibold">Enquiries and demos</h2>
         {enq.length === 0 ? <p className="mt-3 text-muted">Nothing here yet.</p> : (
           <ul className="mt-4 divide-y divide-line">{enq.map(e => (
-            <li key={e.id} className="flex flex-wrap items-center justify-between gap-3 py-4 font-sans"><span><b>{e.ref}</b> · {ENQUIRY_LABEL[e.type]}<span className="block text-sm text-muted">{e.createdAt.toLocaleDateString('en-IN')}{e.message ? ` · ${e.message.slice(0, 80)}` : ''}</span></span><Status value={e.status} /></li>
+            <li key={e.id} className="flex flex-wrap items-center justify-between gap-3 py-4 font-sans"><span><b>{e.ref}</b> · {(e.data as { reportUpload?: boolean } | null)?.reportUpload ? 'Report you shared' : ENQUIRY_LABEL[e.type]}<span className="block text-sm text-muted">{e.createdAt.toLocaleDateString('en-IN')}{e.message ? ` · ${e.message.slice(0, 80)}` : ''}</span></span><span className="flex items-center gap-2">{(() => { const r = reportReviewOf(e.data); return r.review?.sentAt && r.token ? <Link href={`/water-testing/review/${e.ref}?t=${r.token}`} className="btn btn-outline btn-sm">Read our review</Link> : null; })()}<Status value={e.status} /></span></li>
           ))}</ul>
         )}
       </section>

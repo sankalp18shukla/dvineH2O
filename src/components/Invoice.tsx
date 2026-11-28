@@ -57,7 +57,7 @@ export function InvoiceDoc({ o, company, kind = 'invoice', creditNumber }: { o: 
       </section>
       <footer className="mt-12 border-t border-line pt-4 text-[11px] text-muted">
         <p>Prices are inclusive of GST. This is a computer-generated document and does not require a signature.</p>
-        <p className="mt-1">Warranty: DVINE Assured Care. Keep this invoice for warranty and service.</p>
+        <p className="mt-1">Keep this invoice: it is needed for warranty and service. Customer care 1800 202 4504 · customercare@dvineh2o.com</p>
       </footer>
     </article>
   );

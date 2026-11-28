@@ -6,13 +6,13 @@ import { Icon } from '@/components/admin/AdminIcon';
 import { Markdown } from '@/components/ui/Markdown';
 import { CATEGORIES, POST_PRODUCTS, readMinutes, slugify, type Category, type PostProduct } from '@/lib/blog';
 import { deletePost, savePost } from '@/app/actions/blog';
-import { Area, Label, Pill, Segmented, Text, Toggle } from './content/fields';
+import { Area, Label, Pill, Segmented, Text } from './content/fields';
 import { MediaField, uploadMedia } from './content/MediaField';
 
 export type PostDraft = {
   id?: number; title: string; slug: string; excerpt: string; category: Category; product: PostProduct | null;
   coverImage: string; coverAlt: string; body: string; external: boolean; externalUrl: string; source: string;
-  author: string; seoDescription: string; featured: boolean; publishedAt: string; status: 'draft' | 'published';
+  author: string; seoDescription: string; featured: boolean; featureOrder: number; publishedAt: string; status: 'draft' | 'published';
 };
 
 const toast = (ok: boolean, message: string) => window.dispatchEvent(new CustomEvent('dvine-admin-toast', { detail: { ok, message } }));
@@ -190,7 +190,14 @@ export function PostEditor({ initial, siteImages }: { initial: PostDraft; siteIm
               <p className="mt-1.5 font-sans text-[12.5px] text-muted">{d.external ? 'Linked articles show on the blog page only.' : d.product ? `Also offered on the ${POST_PRODUCTS.find(p => p.key === d.product)!.label} page, under “Worth reading”.` : 'Pick a product to offer this post on its page.'}</p>
             </div>
             {priceSpot && <p className="flex items-start gap-2 rounded-xl bg-[#E9F8EE] px-3.5 py-2.5 font-sans text-[13px] text-[#14532D]"><Icon name="tag" className="mt-0.5 size-4 shrink-0" />The newest published “Price and value” post for {POST_PRODUCTS.find(p => p.key === d.product)!.label} opens from the “{d.product === 'titan' ? 'How quotations work' : 'Why this price?'}” button under its price.</p>}
-            {!d.external && <Toggle checked={d.featured} onChange={v => set('featured', v)} label="Feature at the top of the blog" sub="One post at a time. Choosing this one replaces the current one." />}
+            {!d.external && (
+              <div>
+                <Segmented label="Featured on the homepage" value={String(d.featureOrder) as '0' | '1' | '2' | '3' | '4'}
+                  onChange={v => setD(x => ({ ...x, featureOrder: Number(v), featured: v !== '0' }))}
+                  options={[{ value: '0', label: 'No' }, { value: '1', label: '1st' }, { value: '2', label: '2nd' }, { value: '3', label: '3rd' }, { value: '4', label: '4th' }]} />
+                <p className="mt-1.5 font-sans text-[12.5px] text-muted">Four tiles at most, in this order. Taking a place that another post holds moves that post off the homepage. The 1st also leads the blog page.</p>
+              </div>
+            )}
           </Box>
 
           {!d.external && (

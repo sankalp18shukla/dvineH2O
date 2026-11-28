@@ -3,12 +3,13 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { orders, pincodes } from '@/lib/db/schema';
+import { orders } from '@/lib/db/schema';
 import { getCartRow } from '@/lib/cart';
 import { getCustomer } from '@/lib/auth';
 import { createOrderFromCart, CheckoutError } from '@/lib/orders';
 import { address, email, formToObject, phone, zodErrors, type FormState } from '@/lib/validators';
 import { safeEqual } from '@/lib/security';
+import { findPincode } from '@/lib/pincodes';
 
 const schema = z.object({
   email, phone, name: z.string().trim().min(2, 'Enter your name'),
@@ -35,7 +36,7 @@ export async function placeOrder(_: FormState, fd: FormData): Promise<FormState>
   const d = parsed.data;
   if (d.gstin && !/^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(d.gstin)) return { errors: { gstin: 'Enter a valid GSTIN' }, data: o };
 
-  const pin = await db.query.pincodes.findFirst({ where: eq(pincodes.pincode, d.ship.pincode) });
+  const pin = await findPincode(d.ship.pincode);
   if (!pin || !pin.serviceable) return { errors: { 'ship.pincode': `We don't deliver to ${d.ship.pincode} yet.` }, data: o };
 
   if (!d.sameBilling) {

@@ -4,7 +4,7 @@ import { asc, eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { enquiries, enquiryNotes, reportUploads, staff, orders, products, ENQUIRY_STATUSES, INTERESTS } from '@/lib/db/schema';
 import { requireStaff } from '@/lib/auth';
-import { INTEREST_LABEL } from '@/lib/enquiries';
+import { INTEREST_LABEL, reportReviewOf } from '@/lib/enquiries';
 import { formOf } from '@/lib/form-responses';
 import type { ChatMsg } from '@/lib/chatbot';
 import { PageHead, Panel, dt } from '@/components/admin/ui';
@@ -12,7 +12,7 @@ import { AdminForm, AdminError } from '@/components/admin/AdminForm';
 import { SubmitButton } from '@/components/forms/SubmitButton';
 import { Status, humanize } from '@/components/ui/Status';
 import { AutoRefresh } from '@/components/admin/AutoRefresh';
-import { updateEnquiry, createPaymentLink } from '@/app/actions/admin';
+import { updateEnquiry, createPaymentLink, saveReportReview } from '@/app/actions/admin';
 import { CopyButton } from '@/components/CopyButton';
 import { INDIAN_STATES } from '@/lib/gst';
 import { formatINR } from '@/lib/money';
@@ -37,6 +37,8 @@ export default async function Enquiry({ params }: { params: Promise<{ id: string
   const data = (e.data ?? {}) as Record<string, unknown> & { transcript?: ChatMsg[] };
   const extra = Object.entries(data).filter(([k, v]) => LABELS[k] && v);
   const sel = 'input min-h-10 text-sm';
+  const isUpload = e.type === 'water_test' && (!!data.reportUpload || files.length > 0);
+  const rv = reportReviewOf(e.data);
   const wa = e.phone ? `https://wa.me/91${e.phone}?text=${encodeURIComponent(`Hi ${e.name.split(' ')[0]}, this is DVINE H2O about your enquiry ${e.ref}.`)}` : null;
   return (
     <>
@@ -57,6 +59,23 @@ export default async function Enquiry({ params }: { params: Promise<{ id: string
             {e.message && e.type !== 'chat' && <p className="mt-5 rounded-xl bg-paper p-4 font-sans text-sm whitespace-pre-line">{e.message}</p>}
             {files.map(f => <a key={f.id} href={`/api/admin/files/${f.id}`} target="_blank" className="btn btn-outline btn-sm mt-4">Open uploaded file: {f.fileName}</a>)}
           </Panel>
+
+          {isUpload && (
+            <Panel title="Report review" actions={rv.review?.sentAt ? <Status value="completed" label={`Sent ${dt(new Date(rv.review.sentAt))}`} /> : rv.review ? <Status value="draft" label="Draft" /> : undefined}>
+              <p className="font-sans text-[13px] text-muted">Open the customer’s file above, then write what it shows in plain words: which parameters are within the reference range printed on their report, which are outside it, and what you suggest as a next step. Quote their report’s own numbers and ranges; don’t give the water a single overall score.</p>
+              <AdminForm action={saveReportReview} className="mt-4 grid gap-3">
+                <input type="hidden" name="id" value={e.id} />
+                <textarea name="review" rows={9} defaultValue={rv.review?.text ?? ''} className="input min-h-40 py-3 font-sans text-sm leading-relaxed" placeholder={'Thank you for sharing your report dated …\n\nWithin the range on your report: pH 7.4, chloride 48 mg/L …\nAbove the range: TDS 640 mg/L (the report’s limit is 500 mg/L) …\n\nWhat we suggest: …'} maxLength={6000} />
+                <AdminError name="review" />
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  {rv.review?.sentAt && rv.token && <a href={links.reportReview(e.ref, rv.token)} target="_blank" rel="noopener" className="btn btn-outline btn-sm mr-auto">See what the customer sees</a>}
+                  <SubmitButton name="intent" value="draft" className="btn btn-outline btn-sm min-h-10" pendingLabel="Saving…">Save draft</SubmitButton>
+                  <SubmitButton name="intent" value="send" className="btn btn-primary btn-sm min-h-10" pendingLabel="Sending…">{rv.review?.sentAt ? 'Send updated review' : `Send to ${e.name.split(' ')[0]}`}</SubmitButton>
+                </div>
+                <p className="font-sans text-[12px] text-muted">Sending puts the review on {e.name.split(' ')[0]}’s private page and messages them{e.phone ? ` on WhatsApp (${e.phone})` : ''}{e.email ? `${e.phone ? ' and' : ''} by email (${e.email})` : ''}.</p>
+              </AdminForm>
+            </Panel>
+          )}
 
           {e.type === 'chat' && data.transcript && (
             <Panel title="Chat transcript">

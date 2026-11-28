@@ -15,11 +15,13 @@ import s from './MobileMenu.module.css';
 const PRODUCTS = [
   { href: '/home-water-systems', name: 'Crystal', sub: 'For the home', img: '/images/crystal/ivory.webp', tone: 'var(--color-glacier)', h: '74%' },
   { href: '/hydrogen-bottles', name: 'Hyper', sub: 'On the go', img: '/images/hyper/rose.webp', tone: 'var(--color-flash)', h: '62%' },
-  { href: '/for-business', name: 'Titan 111', sub: 'For offices', img: '/images/titan_product.png', tone: 'var(--color-voltage)', h: '98%' },
+  { href: '/for-business', name: 'Titan', sub: 'For offices', img: '/images/titan/force-111-cut.webp', tone: 'var(--color-voltage)', h: '98%' },
 ];
 const LINKS = [
   { href: '/water-testing', label: 'Water Testing' },
+  { href: '/blog', label: 'Blog' },
   { href: '/become-a-partner', label: 'Become a Partner' },
+  { href: '/about', label: 'About Us' },
   { href: '/support', label: 'Support' },
 ];
 /** Routes warmed (fully prefetched) as the menu opens, so the tap that follows lands at once. */
@@ -69,7 +71,7 @@ export function MobileMenu({ signedIn }: { signedIn: boolean }) {
   const st = () => ({ ['--i' as string]: i++ });
 
   const menu = armed && createPortal(
-    <div className={`${s.root} on-dark xl:hidden`} data-open={open} role="dialog" aria-modal="true" aria-label="Menu" inert={!open}>
+    <div className={`${s.root} on-dark min-[1440px]:hidden`} data-open={open} role="dialog" aria-modal="true" aria-label="Menu" inert={!open}>
       <div className={s.sheet}>
         <span className={`wave-lines ${s.pattern}`} aria-hidden="true" />
         <div className={`${s.bar} frame-x`}>
@@ -105,6 +107,7 @@ export function MobileMenu({ signedIn }: { signedIn: boolean }) {
             <div className={`${s.minor} ${s.item}`} style={st()}>
               <Link href={signedIn ? '/account' : '/account/login'} onClick={shut}><Icon name="user" className="size-[18px]" />{signedIn ? 'My account' : 'Sign in'}</Link>
               <Link href="/track" onClick={shut}><Icon name="truck" className="size-[18px]" />Track my order</Link>
+              <Link href="/warranty" onClick={shut}><Icon name="shield" className="size-[18px]" />Check warranty</Link>
             </div>
           </nav>
         </div>
@@ -123,7 +126,7 @@ export function MobileMenu({ signedIn }: { signedIn: boolean }) {
 
   return (
     <>
-      <button ref={burger} type="button" className="grid size-11 place-items-center rounded-full hover:bg-current/10 xl:hidden" aria-label="Open menu" aria-expanded={open} onClick={show}
+      <button ref={burger} type="button" className="grid size-11 place-items-center rounded-full hover:bg-current/10 min-[1440px]:hidden" aria-label="Open menu" aria-expanded={open} onClick={show}
         // mount the menu as soon as a finger lands, so the curtain is ready by the time the tap completes
         onPointerDown={() => setArmed(true)}>
         <Icon name="menu" />

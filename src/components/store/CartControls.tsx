@@ -27,13 +27,13 @@ export function CodeForm({ applied, error, isReferral }: { applied: string | nul
   const router = useRouter();
   if (applied && !error) return (
     <div className="flex items-center justify-between rounded-xl bg-[#DFF5E3] px-4 py-3 font-sans text-sm text-[#14532D]">
-      <span><b>{applied}</b> code applied</span>
+      <span><b>{applied}</b> {isReferral ? 'referral code applied: welcome to DVINE' : 'code applied'}</span>
       <button className="font-semibold underline" disabled={rp} onClick={() => start(async () => { await removeCode(); router.refresh(); })}>Remove</button>
     </div>
   );
   return (
     <form action={action} className="font-sans">
-      <label htmlFor="code" className="label">Coupon code</label>
+      <label htmlFor="code" className="label">Coupon or referral code</label>
       <div className="mt-1.5 flex gap-2">
         <input id="code" name="code" className="input uppercase" defaultValue={applied ?? ''} autoComplete="off" aria-invalid={!!error} aria-describedby={error ? 'code-e' : undefined} />
         <button className="btn btn-outline min-h-12" disabled={pending}>Apply</button>

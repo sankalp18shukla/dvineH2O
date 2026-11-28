@@ -12,3 +12,9 @@ export function productJsonLd(p: Product, path: string) {
 
 /** JSON for a <script type="application/ld+json"> block: `<` escaped so text can never close the tag. */
 export const jsonLd = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
+
+/** FAQPage structured data, so the answers can show in search results. Plain text only, as on the page. */
+export const faqJsonLd = (items: { q: string; a: string; list?: string[] }[]) => ({
+  '@context': 'https://schema.org', '@type': 'FAQPage',
+  mainEntity: items.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: [f.a, ...(f.list ?? [])].join(' ') } })),
+});

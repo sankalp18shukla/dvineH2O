@@ -61,6 +61,7 @@ export const PAGE_KEYWORDS: Record<string, string[]> = {
   ],
   '/support': ['DVINE H2O customer care', 'Divine H2O support', 'water ionizer service', 'product warranty', 'user manual'],
   '/book-demo': ['alkaline water machine demo', 'water ionizer home demo', 'Crystal demo', 'Titan 111 demo'],
+  '/about': ['about DVINE H2O', 'Divine H2O founder', 'Nandini Lakhotia', 'DVINE United Private Limited', 'water ionizer company Bhubaneswar', 'Odisha water startup'],
   '/become-a-partner': [
     'water purifier dealership', 'water ionizer distributor India', 'hydrogen water bottle distributor',
     'health product franchise India', 'Divine H2O dealer',
@@ -73,7 +74,7 @@ const unique = (xs: string[]) => [...new Set(xs)];
 /** The site-wide description: names the brand, says how it is pronounced, lists what it makes. */
 export const SITE_DESCRIPTION =
   'DVINE H2O (said "divine") makes functional hydration systems in India: Crystal alkaline water system for the home, ' +
-  'the Hyper hydrogen water bottle for the day, Titan 111 for shared spaces, and water testing at home.';
+  'the Hyper hydrogen water bottle for the day, TitanForce 111 for shared spaces, and water testing at home.';
 
 /**
  * A page's metadata with its keywords and canonical URL filled in. Use it on every indexable page:
@@ -96,15 +97,15 @@ export function siteSchema() {
     '@graph': [
       {
         '@type': 'Organization', '@id': `${url}/#org`, name: SITE.name, alternateName: BRAND_NAMES.filter(n => n !== SITE.name),
-        url, logo: `${url}/brand/logo.svg`, description: SITE_DESCRIPTION, slogan: SITE.tagline, email: SITE.email,
+        legalName: SITE.legalName, taxID: SITE.gstin, foundingDate: '2024-02-23', founder: { '@type': 'Person', name: 'Nandini Lakhotia', jobTitle: 'Founder' }, url, logo: `${url}/brand/logo.svg`, description: SITE_DESCRIPTION, slogan: SITE.tagline, email: SITE.email,
         sameAs: SOCIAL.map(s => s.href),
-        contactPoint: [{ '@type': 'ContactPoint', telephone: SITE.phone, contactType: 'customer service', areaServed: 'IN', availableLanguage: ['en', 'hi', 'or'] }],
+        contactPoint: [{ '@type': 'ContactPoint', telephone: SITE.phone, email: SITE.careEmail, contactType: 'customer service', areaServed: 'IN', availableLanguage: ['en', 'hi', 'or'] }],
         knowsAbout: ['Hydrogen water', 'Alkaline water', 'Water ionizers', 'Drinking water quality', 'Water testing', 'Hydration'],
       },
       {
         '@type': 'Store', '@id': `${url}/#store`, name: SITE.name, alternateName: 'Divine H2O', url, image: `${url}/images/collection.webp`,
-        telephone: SITE.phone, email: SITE.email, parentOrganization: { '@id': `${url}/#org` }, areaServed: { '@type': 'Country', name: 'India' },
-        address: { '@type': 'PostalAddress', streetAddress: '1st Floor, Block 1, Bhawani Mall, Sahid Nagar', addressLocality: 'Bhubaneswar', addressRegion: 'Odisha', postalCode: '751007', addressCountry: 'IN' },
+        telephone: SITE.phone, email: SITE.email, parentOrganization: { '@id': `${url}/#org` }, areaServed: { '@type': 'State', name: 'Odisha' },
+        address: { '@type': 'PostalAddress', streetAddress: 'Office No. 5, 1st Floor, Block 1, Bhawani Mall, Saheed Nagar', addressLocality: 'Bhubaneswar', addressRegion: 'Odisha', postalCode: '751007', addressCountry: 'IN' },
         hasMap: SITE.mapsUrl,
       },
       {

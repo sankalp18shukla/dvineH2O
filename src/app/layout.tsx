@@ -3,6 +3,7 @@ import localFont from 'next/font/local';
 import { SITE } from '@/lib/content';
 import { SITE_DESCRIPTION, SITE_KEYWORDS, PAGE_KEYWORDS } from '@/lib/seo-keywords';
 import { ButtonRoll } from '@/components/ui/ButtonRoll';
+import { testPaymentsAllowed } from '@/lib/payments-mode';
 import './globals.css';
 
 // Self-hosted stand-ins (OFL) for the brand fonts. When DVINE supplies the licensed Apple Garamond and
@@ -25,8 +26,12 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   keywords: [...new Set([...PAGE_KEYWORDS['/'], ...SITE_KEYWORDS])],
   applicationName: SITE.name,
+  // not indexed while the site takes test payments (a demo or staging deploy); see src/app/robots.ts
+  ...(testPaymentsAllowed() ? { robots: { index: false, follow: false } } : {}),
   openGraph: { type: 'website', siteName: SITE.name, locale: 'en_IN', images: ['/images/collection.webp'] },
-  icons: { icon: '/icon.svg' },
+  icons: { icon: '/icon.svg', apple: '/apple-icon.png' },
+  // Google Search Console ownership check (the HTML-tag method); set once the client's Search Console property exists
+  ...(process.env.GOOGLE_SITE_VERIFICATION ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } } : {}),
 };
 export const viewport: Viewport = { themeColor: '#06195A', width: 'device-width', initialScale: 1, viewportFit: 'cover' };
 

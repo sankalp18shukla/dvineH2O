@@ -2,11 +2,16 @@ import type { Metadata } from 'next';
 import { seo } from '@/lib/seo-keywords';
 import { Header } from '@/components/store/Header';
 import { HeroShowcase } from '@/components/store/hero/HeroShowcase';
-import { HOME, HERO_SLIDES } from '@/lib/content';
+import { HOME, HERO_SLIDES, TEST_NOTE } from '@/lib/content';
 import { WaterTestScroll } from '@/components/store/WaterTestScroll';
 import { FitShowcase, type FitItem } from '@/components/store/FitShowcase';
 import { InsideScroll } from '@/components/store/InsideScroll';
-import { HelpChoosing } from '@/components/store/HelpChoosing';
+import { Benefits } from '@/components/store/Benefits';
+import { Certifications } from '@/components/store/Certifications';
+import { HomeReviews } from '@/components/store/HomeReviews';
+import { HomeBlog } from '@/components/store/HomeBlog';
+import { getHomePosts } from '@/lib/blog.server';
+import { withLiveRefs } from '@/lib/research';
 import { AboutBand } from '@/components/store/AboutBand';
 import { AssistBand } from '@/components/store/AssistBand';
 import { SmoothScroll } from '@/components/store/SmoothScroll';
@@ -26,18 +31,14 @@ const fitItems = (): FitItem[] => HOME.collection.cards.map(c => {
   return { ...c, src: cutout ? c.cutout : c.image, cutout };
 });
 
-/** Help-choosing cards: the section photo once it is in public/, otherwise the fallback. */
-const helpOptions = HOME.helpChoosing.options.map(({ image, fallback, ...o }) => ({
-  ...o, src: existsSync(join(process.cwd(), 'public', image)) ? image : fallback,
-}));
-
 const [, aboutLead, aboutTail] = HOME.about.title.match(/^\*([^*]+)\*\s*(.*)$/)!;
 
 /** Rendered per request: the promotions (Admin › Homepage & promotions) run on dates, and staff can preview the draft. */
 export const dynamic = 'force-dynamic';
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ preview?: string }> }) {
-  const c = await getContent((await searchParams).preview);
+  const { preview } = await searchParams;
+  const [c, posts] = await Promise.all([getContent(preview), getHomePosts(4)]);
   const today = todayIST();
   const promos = c.slides.filter(x => isLive(x, today) && (x.title || x.tag || x.media?.src));
   const cards = c.promo.enabled ? c.promo.cards.filter(x => isLive(x, today)) : [];
@@ -64,15 +65,24 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
         <FitShowcase title={HOME.collection.title} body={HOME.collection.body} items={fitItems()} />
 
         {/* 04 · Technology: scroll-scrubbed walk through the machine, one step of copy per part of the clip */}
-        <InsideScroll title={HOME.technology.title} steps={HOME.technology.labels} cta={{ label: 'Explore Crystal Technology', href: '/home-water-systems#technology' }} />
+        <InsideScroll title={HOME.technology.title} steps={withLiveRefs(HOME.technology.labels)} cta={{ label: 'Explore Crystal Technology', href: '/home-water-systems#technology' }} />
 
-        {/* 05 · Help choosing: a 3D deck of the three options, each typed in and stacked over the last as you scroll */}
-        <HelpChoosing title={HOME.helpChoosing.title} body={HOME.helpChoosing.body} options={helpOptions} />
+        {/* 05 · Benefits: six photo cards, each saying how we know (takes the place of "A few details can help you choose") */}
+        <Benefits id="benefits-title" title={HOME.benefits.title} cards={HOME.benefits.cards} note={<>{TEST_NOTE} <a href="/home-water-systems/test-results" className="link whitespace-nowrap">See the test results</a></>} />
 
-        {/* 06 · About: "Meet [water as intended] DVINE." over the Glacier wave band, the copy glowing up, then the buttons */}
+        {/* 06 · Certifications: one row of marks, each opening what it covers */}
+        <Certifications title={HOME.certs.title} body={HOME.certs.body} items={HOME.certs.items} />
+
+        {/* 07 · Reviews: hidden on the live site until ten real ones are approved */}
+        <HomeReviews title={HOME.reviews.title} minimum={HOME.reviews.minimum} preview={preview === 'reviews'} />
+
+        {/* 08 · Blog: the three articles chosen in Admin › Blog */}
+        <HomeBlog title={HOME.blog.title} posts={posts} />
+
+        {/* 09 · About: "Meet [water as intended] DVINE." over the Glacier wave band, the copy glowing up, then the buttons */}
         <AboutBand lead={aboutLead} tail={aboutTail} body={HOME.about.body} />
 
-        {/* 07 · Assistance: the handover photo under moving wave lines, the copy, the buttons, then the sticker */}
+        {/* 10 · Assistance: the handover photo under moving wave lines, the copy, the buttons, then the sticker */}
         <AssistBand title={HOME.assistance.title} body={HOME.assistance.body} />
       </main>
     </>

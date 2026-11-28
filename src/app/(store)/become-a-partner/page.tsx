@@ -39,7 +39,7 @@ export default async function PartnerPage({ searchParams }: { searchParams: Prom
         {/* 01 · Hero: copy and actions left, a hand of three photos right (FanHero); the front one is the admin's photo or film */}
         <FanHero id="p-title" title={p.title} tone="volt" body={p.body || undefined}
           front={m ? (m.type === 'video' ? <AutoVideo src={m.src} poster={m.poster} className="size-full object-cover" label={m.alt || undefined} /> : <img src={m.src} alt={m.alt} />) : <img src="/images/collection.webp" alt="Crystal, Titan and Hyper together" />}
-          back={[{ src: '/images/titan_sec.png', alt: 'Colleagues at TitanForce 111 in an office' }, { src: '/images/brand-handover.webp', alt: 'A Hyper bottle passed from one hand to another' }]}
+          back={[{ src: '/images/titan-office.webp', alt: 'Colleagues at TitanForce 111 in an office' }, { src: '/images/brand-handover.webp', alt: 'A Hyper bottle passed from one hand to another' }]}
           sticker={<DieCut text={'Let’s Grow\nTogether.'} tone="red" />}>
           <div className="flex flex-col gap-6" data-rise>
             <div id="hero-actions" className="cta-row border-t-2 border-ink pt-6">

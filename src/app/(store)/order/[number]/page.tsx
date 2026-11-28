@@ -8,6 +8,7 @@ import { Icon } from '@/components/ui/Icon';
 import { loadOrder } from '@/lib/order-view';
 import { getCustomer } from '@/lib/auth';
 import { safeEqual } from '@/lib/security';
+import { PurchaseEvent } from '@/components/seo/Analytics';
 
 export const metadata: Metadata = { title: 'Your order', robots: { index: false } };
 export const dynamic = 'force-dynamic';
@@ -24,6 +25,7 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
       <main id="main" className="container-x py-12">
         {justPaid ? (
           <div className="surface-blue on-dark relative mb-10 overflow-hidden p-8 sm:p-12">
+            <PurchaseEvent number={o.number} total={o.total} tax={o.taxTotal} coupon={o.couponCode} items={o.items.map(i => ({ sku: i.sku, name: i.name, qty: i.qty, unitPrice: i.unitPrice }))} />
             <div className="relative">
               <span className="grid size-14 place-items-center rounded-full bg-glacier text-ink"><Icon name="check" className="size-7" strokeWidth={2.4} /></span>
               <Lockup as="h1" title={`*Thank you,* ${o.contactName.split(' ')[0]}.`} tone="glacier" size="sm" className="mt-8" />

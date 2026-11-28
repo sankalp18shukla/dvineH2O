@@ -1,5 +1,5 @@
 .topics { display: flex; flex-wrap: wrap; gap: 8px; }
-.topics :global(.pill) { min-height: 40px; padding-inline: 16px; font-size: 14px; transition: border-color .25s, background-color .25s, color .25s; }
+.topics :global(.pill) { min-height: 40px; padding-inline: 16px; font-size: 14px; }
 .on:global(.pill) { background: var(--color-ink); border-color: var(--color-ink); color: #fff; }
 @media (hover: hover) { .topics :global(.pill):hover { border-color: var(--color-deep-current); } }
 /* phones: one swipeable line of topics instead of a wrapped block */
@@ -13,9 +13,9 @@
 .kind { position: absolute; left: 12px; bottom: 12px; font-size: 16px; }
 .kind::before, .kind::after { content: none; }
 
-.go { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--color-ink); color: #fff; transition: background-color .3s, color .3s, transform .3s var(--ease-out-soft); }
+.go { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--color-ink); color: #fff; }
 @media (hover: hover) {
-  :global(.group):hover .go { background: var(--color-glacier); color: var(--color-ink); transform: translateX(3px); }
+  :global(.group):hover .go { background: var(--color-glacier); color: var(--color-ink); }
 }
 :global(.group):active .go { background: var(--color-glacier); color: var(--color-ink); }
 

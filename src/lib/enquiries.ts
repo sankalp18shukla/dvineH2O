@@ -13,7 +13,22 @@ export const ENQUIRY_LABEL: Record<EnquiryType, string> = {
   product: 'Product enquiry', demo: 'Demo', water_test: 'Water test', consultation: 'Titan consultation', distributorship: 'Distributorship',
   bulk: 'Bulk / gifting', support: 'Support', general: 'General', chat: 'Chat',
 };
+/** "Thank you for contacting DVINE H2O about …" */
+const ENQUIRY_ABOUT: Record<EnquiryType, string> = {
+  product: 'our products', demo: 'a demo', water_test: 'a water test', consultation: 'a Titan consultation', distributorship: 'a distributorship',
+  bulk: 'a bulk or gifting order', support: 'support', general: 'your question', chat: 'your question',
+};
 export const INTEREST_LABEL: Record<Interest, string> = { hyper: 'Hyper', crystal: 'Crystal', titan: 'Titan 111', multiple: 'Multiple', not_sure: 'Not sure' };
+
+/**
+ * A report the customer uploaded (water_test enquiry with data.reportUpload), reviewed by the DVINE team.
+ * Kept in the enquiry's data, so the customer's private page (/water-testing/review/EQ-…?t=token) needs no new table.
+ */
+export type ReportReview = { text: string; sentAt: string | null; savedAt: string; by: string };
+export const reportReviewOf = (data: unknown) => {
+  const d = (data ?? {}) as { review?: ReportReview; reviewToken?: string };
+  return { review: d.review && typeof d.review.text === 'string' ? d.review : null, token: typeof d.reviewToken === 'string' ? d.reviewToken : null };
+};
 
 type EnquiryInput = {
   type: EnquiryType; interest?: Interest; name: string; email?: string; phone?: string; company?: string; city?: string; pincode?: string;
@@ -32,7 +47,10 @@ export async function createEnquiry(input: EnquiryInput, opts: { silent?: boolea
     message: input.message || null, preferredAt: input.preferredAt || null, data: input.data ?? null, source: input.source ?? null, consent: input.consent,
   }).returning();
   queueSheetSync(`form:${input.type}`);
-  if (!opts.silent) await notify({ email: row.email }, templates.enquiryReceived({ ref, name: input.name.split(' ')[0], what: ENQUIRY_LABEL[input.type].toLowerCase() }));
+  if (!opts.silent) {
+    const what = input.type === 'water_test' && input.data?.reportUpload ? 'your water report' : ENQUIRY_ABOUT[input.type];
+    await notify({ email: row.email, phone: input.type === 'chat' ? null : row.phone }, templates.enquiryReceived({ ref, name: input.name.split(' ')[0], what }));
+  }
   return row;
 }
 

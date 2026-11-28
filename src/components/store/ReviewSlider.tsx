@@ -64,12 +64,13 @@ export function ReviewSlider({ children, label }: { children: ReactNode[]; label
             <button type="button" onClick={() => go(i + 1)} aria-label="Next reviews"
               className="grid size-12 place-items-center rounded-full bg-ink text-glacier transition hover:bg-deep-current"><Icon name="arrow" className="size-5" /></button>
           </div>
-          <div className="flex items-center gap-1.5" aria-hidden="true">
+          {/* dots only while they fit: with many reviews on a phone the count alone says where you are */}
+          <div className={`items-center gap-1.5 ${last + 1 > 8 ? 'hidden md:flex' : 'flex'}`} aria-hidden="true">
             {Array.from({ length: last + 1 }, (_, k) => (
               <span key={k} className={`h-1.5 rounded-full transition-all duration-500 ${k === i ? 'w-6 bg-ink' : 'w-1.5 bg-ink/20'}`} />
             ))}
           </div>
-          <p className="ml-auto font-sans text-[13px] text-muted" aria-live="polite">{Math.min(i + per, n)} of {n}</p>
+          <p className="ml-auto font-sans text-[13px] whitespace-nowrap text-muted" aria-live="polite">{Math.min(i + per, n)} of {n}</p>
         </div>
       )}
     </div>

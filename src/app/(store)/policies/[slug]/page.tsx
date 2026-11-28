@@ -12,7 +12,11 @@ const LOCKUP: Record<string, string> = {
 };
 
 export function generateStaticParams() { return Object.keys(POLICIES).map(slug => ({ slug })); }
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> { const p = POLICIES[(await params).slug]; return { title: p?.title ?? 'Policy' }; }
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params; const p = POLICIES[slug];
+  if (!p) return { title: 'Policy' };
+  return { title: p.title, description: `${p.title} for DVINE H2O: Crystal, Hyper and TitanForce 111.`, alternates: { canonical: `/policies/${slug}` } };
+}
 
 const Block = ({ b }: { b: PolicyBlock }) => Array.isArray(b) ? <ul>{b.map(x => <li key={x}>{x}</li>)}</ul> : <p>{b}</p>;
 const Section = ({ s, sub }: { s: PolicySection; sub?: boolean }) => (

@@ -3,6 +3,9 @@ import type { NextConfig } from 'next';
 const dev = process.env.NODE_ENV !== 'production';
 const supabaseOrigin = (() => { try { return new URL(process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').origin; } catch { return ''; } })();
 const supabase = [supabaseOrigin, 'https://*.supabase.co'].filter(Boolean).join(' ');
+// Google Analytics / Meta Pixel (src/components/seo/Analytics.tsx): their domains are allowed only once an ID is set
+const ga = process.env.NEXT_PUBLIC_GA_ID ? { script: ' https://www.googletagmanager.com', connect: ' https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com' } : { script: '', connect: '' };
+const pixel = process.env.NEXT_PUBLIC_META_PIXEL_ID ? { script: ' https://connect.facebook.net', connect: ' https://www.facebook.com https://connect.facebook.net' } : { script: '', connect: '' };
 
 /**
  * Content-Security-Policy. Next.js injects inline bootstrap scripts, so script-src keeps 'unsafe-inline'
@@ -14,12 +17,12 @@ const supabase = [supabaseOrigin, 'https://*.supabase.co'].filter(Boolean).join(
  */
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${dev ? " 'unsafe-eval'" : ''} https://checkout.razorpay.com`,
+  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${dev ? " 'unsafe-eval'" : ''} https://checkout.razorpay.com${ga.script}${pixel.script}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "media-src 'self' blob: https:",
   "font-src 'self' data:",
-  `connect-src 'self' blob: data: ${supabase} https://*.razorpay.com${dev ? ' ws: http://localhost:*' : ''}`,
+  `connect-src 'self' blob: data: ${supabase} https://*.razorpay.com${ga.connect}${pixel.connect}${dev ? ' ws: http://localhost:*' : ''}`,
   "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com",
   "worker-src 'self' blob:",
   "frame-ancestors 'self'",
@@ -38,6 +41,8 @@ const nextConfig: NextConfig = {
   },
   images: {
     formats: ['image/avif', 'image/webp'],
+    // no 3840 px variant (brief: the home page asked for every image at 3840 px wide); 2048 covers a 1024 px slot at 2x
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
     remotePatterns: [{ protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/public/**' }],
   },
   // The home page checks public/ for product cutouts and section photos at request time.

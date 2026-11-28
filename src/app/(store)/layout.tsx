@@ -11,8 +11,10 @@ import { ChatWidget } from '@/components/store/ChatWidget';
 import { CartDrawer } from '@/components/store/CartDrawer';
 import { OfferNotice } from '@/components/store/OfferNotice';
 import { IntentPrefetch } from '@/components/store/IntentPrefetch';
+import { NavProgress } from '@/components/store/NavProgress';
 import { SITE } from '@/lib/content';
 import { SiteSchema } from '@/components/seo/SiteSchema';
+import { Analytics } from '@/components/seo/Analytics';
 
 export default function StoreLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -34,6 +36,8 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
       <ScrollCopy />
       <Glare />
       <IntentPrefetch />
+      <NavProgress />
+      <Analytics />
     </>
   );
 }

@@ -11,6 +11,8 @@ import { waterTests } from '@/lib/db/schema';
 import { formatINR } from '@/lib/money';
 import { activeGateway, testPaymentsAllowed } from '@/lib/payments-mode';
 import { safeEqual } from '@/lib/security';
+import { SITE } from '@/lib/content';
+import { Icon } from '@/components/ui/Icon';
 
 export const metadata: Metadata = { title: 'Your water test', robots: { index: false } };
 
@@ -19,13 +21,14 @@ export default async function BookingPage({ params, searchParams }: { params: Pr
   const w = await db.query.waterTests.findFirst({ where: eq(waterTests.ref, ref), with: { option: true } });
   if (!w || !safeEqual(t, w.accessToken)) notFound();
   const needsPay = w.paymentStatus === 'pending' && w.price > 0 && w.status !== 'cancelled';
+  const report = w.reportPath ? `/api/admin/files/wt-${w.ref}?t=${w.accessToken}` : null;
   return (
     <>
       <Header framed />
       <main id="main" className="container-x py-12">
         <p className="eyebrow">Water test · {w.ref}</p>
-        <Lockup as="h1" title={needsPay ? '*One step left:* payment.' : '*Your water test* is requested.'} tone="glacier" size="sm" className="mt-8" />
-        <p className="lede mt-8">{needsPay ? 'Complete payment to confirm your booking. We’ll then confirm your collection slot.' : 'We’ll confirm your collection slot by phone or message. Keep this reference handy.'}</p>
+        <Lockup as="h1" title={report ? '*Your report* is ready.' : needsPay ? '*One step left:* payment.' : '*Your water test* is requested.'} tone="glacier" size="sm" className="mt-8" />
+        <p className="lede mt-8">{report ? 'Read each result alongside the sample date, the unit and the reference range printed in the report. If something is unclear, ask us.' : needsPay ? 'Complete payment to confirm your booking. We’ll then confirm your collection slot.' : 'We’ll confirm your collection slot by phone or message. Keep this reference handy.'}</p>
         <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_420px]">
           <div className="card p-6 font-sans">
             <div className="flex flex-wrap gap-2"><Status value={w.status} /><Status value={w.paymentStatus} /></div>
@@ -37,6 +40,12 @@ export default async function BookingPage({ params, searchParams }: { params: Pr
               <div className="sm:col-span-2"><dt className="text-sm text-muted">Collection address</dt><dd>{w.address}, {w.city} {w.pincode}</dd></div>
               {w.option && <div className="sm:col-span-2"><dt className="text-sm text-muted">Measures</dt><dd>{w.option.parameters.join(', ')}</dd></div>}
             </dl>
+            {report && (
+              <div className="mt-6 flex flex-wrap gap-3">
+                <a href={report} target="_blank" rel="noopener" className="btn btn-primary"><Icon name="doc" className="size-4" /> Open Lab Report</a>
+                <a href={`${SITE.whatsappUrl}?text=${encodeURIComponent(`Hi DVINE, I have a question about my water test report ${w.ref}.`)}`} target="_blank" rel="noopener noreferrer" className="btn btn-outline"><Icon name="whatsapp" className="size-4" /> Ask About My Report</a>
+              </div>
+            )}
             <p className="mt-6 text-sm text-muted">Need to change something? <Link href="/support#contact" className="link">Contact us</Link> with reference {w.ref}.</p>
           </div>
           {needsPay && <PayPanel kind="water_test" ref_={w.ref} token={w.accessToken} amount={w.price} prefill={{ name: w.name, email: w.email, phone: w.phone }} successHref={`/water-testing/booking/${w.ref}?t=${w.accessToken}`} testAllowed={testPaymentsAllowed()} gateway={activeGateway()} />}

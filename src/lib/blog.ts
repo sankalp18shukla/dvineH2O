@@ -17,14 +17,16 @@ export const categoryLabel = (k: string) => CATEGORIES.find(c => c.key === k)?.l
 export const POST_PRODUCTS = [
   { key: 'crystal', label: 'Crystal', page: '/home-water-systems', tone: 'glacier' },
   { key: 'hyper', label: 'Hyper', page: '/hydrogen-bottles', tone: 'flash' },
-  { key: 'titan', label: 'Titan 111', page: '/for-business', tone: 'volt' },
+  { key: 'titan', label: 'TitanForce 111', page: '/for-business', tone: 'volt' },
 ] as const;
 export type PostProduct = (typeof POST_PRODUCTS)[number]['key'];
 
 export type Post = {
   id: number; slug: string; title: string; excerpt: string; category: Category; product: PostProduct | null;
   coverImage: string | null; coverAlt: string | null; body: string; externalUrl: string | null; source: string | null;
-  author: string; seoDescription: string | null; featured: boolean; status: 'draft' | 'published';
+  author: string; seoDescription: string | null; featured: boolean;
+  /** 1–4: its tile on the homepage, in that order; 0 when not featured */
+  featureOrder: number; status: 'draft' | 'published';
   publishedAt: Date | null; updatedAt: Date;
 };
 

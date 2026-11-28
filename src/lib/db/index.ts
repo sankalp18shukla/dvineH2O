@@ -20,7 +20,8 @@ function make() {
   const client = postgres(url || 'postgres://unset@127.0.0.1:1/unset', {
     prepare: false,
     max: Number(process.env.DATABASE_POOL_MAX ?? 5),
-    idle_timeout: 20,
+    // dev reaches the Mumbai pooler from afar, where a fresh TLS + auth handshake can take seconds; keep connections warm
+    idle_timeout: process.env.NODE_ENV === 'production' ? 20 : 600,
     connect_timeout: 10,
     ssl: url && !/@(localhost|127\.0\.0\.1)[:/]/.test(url) ? 'require' : false,
     connection: { application_name: 'dvine-web' },

@@ -5,10 +5,11 @@
  * ⚠ Prices, stock and test prices are PLACEHOLDERS. Confirm with DVINE and edit in Admin before launch.
  */
 import type * as schema from './db/schema';
+import { PRODUCT_UPDATES, TEST_UPDATES } from './catalog-update';
 
 const P = (rupees: number) => rupees * 100;
 
-export const SEED_PRODUCTS: (typeof schema.products.$inferInsert)[] = [
+const BASE_PRODUCTS: (typeof schema.products.$inferInsert)[] = [
   {
     sku: 'DVH-HYP-01', slug: 'hyper', name: 'Hyper Hydrogen Water Bottle', shortName: 'Hyper', saleMode: 'cart',
     mrp: P(16999), price: P(14999), priceConfirmed: false, gstRate: 1800, hsn: '85167990',
@@ -46,7 +47,7 @@ export const SEED_PRODUCTS: (typeof schema.products.$inferInsert)[] = [
       { label: 'Interface', value: 'SmartFlow Touchscreen Display™ — pH, ORP and filter status' },
       { label: 'Installation', value: 'By DVINE-trained technician' },
       // DVINE warranty policy (public/docs/policies/crystal-warranty-policy.pdf)
-      { label: 'Warranty', value: '1 year comprehensive; electrolysis chamber 4 years or 1,000 litres' },
+      { label: 'Warranty', value: '1 year comprehensive on the machine; electrolysis chamber 5 years (up to 1,000 litres)' },
       { label: 'Service', value: 'Within 48 hours of a complaint, across Odisha' },
     ],
     boxContents: ['Crystal unit', 'Filter cartridges (fitted)', 'Installation kit', 'User manual and warranty card'],
@@ -65,15 +66,19 @@ export const SEED_PRODUCTS: (typeof schema.products.$inferInsert)[] = [
       { label: 'Water modes', value: 'Multiple alkaline, Neutral, Functional' },
       { label: 'Interface', value: 'SmartFlow Multi-Mode Display™' },
       { label: 'Build', value: 'Semi-commercial grade, floor-standing' },
-      { label: 'Warranty', value: '5 years, DVINE Assured Care' },
+      { label: 'Warranty', value: 'Set out in your quotation' },
       { label: 'Best for', value: 'Offices, large residences, hospitality' },
     ],
-    images: ['/images/titan/front.webp', '/images/titan/display.webp'],
+    images: ['/images/titan/force-111-front.webp', '/images/titan/force-111-angle-right.webp', '/images/titan/force-111-side.webp'],
   },
 ];
 
-export const SEED_TESTS: (typeof schema.testOptions.$inferInsert)[] = [
+const BASE_TESTS: (typeof schema.testOptions.$inferInsert)[] = [
   { name: 'Essential drinking water test', summary: 'A quick check of the basics for household drinking water.', parameters: ['pH', 'TDS', 'Hardness', 'Chlorine'], collectionMethod: 'On-site test by a DVINE technician', turnaround: 'Same visit', price: P(0), sort: 1 },
   { name: 'Standard lab test', summary: 'A sample collected from your home and tested in a partner laboratory.', parameters: ['pH', 'TDS', 'Total hardness', 'Alkalinity', 'Chloride', 'Iron', 'Nitrate', 'Fluoride', 'Turbidity'], collectionMethod: 'Home sample collection', turnaround: '3–5 working days', price: P(999), sort: 2 },
   { name: 'Comprehensive lab test', summary: 'An extended panel including microbiological and heavy-metal parameters.', parameters: ['Everything in Standard', 'Total coliform', 'E. coli', 'Arsenic', 'Lead', 'Mercury', 'Sulphate', 'Manganese'], collectionMethod: 'Home sample collection (sterile kit)', turnaround: '5–7 working days', price: P(2499), sort: 3 },
 ];
+
+/** With the website update brief's prices, specs and tests (src/lib/catalog-update.ts) applied. */
+export const SEED_PRODUCTS = BASE_PRODUCTS.map(p => ({ ...p, ...PRODUCT_UPDATES[p.slug] }));
+export const SEED_TESTS = BASE_TESTS.map(t => ({ ...t, ...TEST_UPDATES.find(u => u.name === t.name) })).filter(t => t.active !== false);

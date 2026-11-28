@@ -1,0 +1,17 @@
+.wrap { position: relative; display: inline; }
+.term { display: inline; padding: 0; font: inherit; color: inherit; letter-spacing: inherit; text-align: inherit; cursor: help; background: none;
+  text-decoration: underline dotted; text-decoration-thickness: 1.5px; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, currentColor 55%, transparent); }
+.term:hover, .term[aria-expanded='true'] { text-decoration-color: currentColor; }
+.term:focus-visible { outline: 2px solid var(--color-deep-current); outline-offset: 2px; border-radius: 3px; }
+.dark .term:focus-visible { outline-color: var(--color-voltage); }
+
+/* the panel, fixed to the screen at the term (Term.tsx places it): above, or below when the term is near the top */
+.tip { position: fixed; z-index: 80; left: 0; top: 0; width: max-content; max-width: min(17.5rem, calc(100vw - 24px));
+  translate: -50% calc(-100% + 4px); padding: 9px 12px; border-radius: 10px; background: var(--color-ink); color: #fff;
+  font-family: var(--font-sans); font-size: 13.5px; font-weight: 500; font-style: normal; line-height: 1.4; letter-spacing: 0; text-transform: none; text-align: left; white-space: normal;
+  box-shadow: 0 14px 30px -14px rgb(4 22 74 / .55); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .2s, translate .2s, visibility 0s .2s; }
+.tip[data-below='1'] { translate: -50% -4px; }
+.tipDark { background: #fff; color: var(--color-ink); }
+.tip.open { opacity: 1; visibility: visible; translate: -50% -100%; transition: opacity .2s, translate .2s; }
+.tip.open[data-below='1'] { translate: -50% 0; }
+@media (prefers-reduced-motion: reduce) { .tip, .tip.open { transition: none; } }

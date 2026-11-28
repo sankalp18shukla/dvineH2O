@@ -29,7 +29,9 @@ export function PinFrames() {
         set(f, 0);
         const o = { v: 0 };
         gsap.to(o, { v: 1, ease: 'power3.inOut', onUpdate: () => set(f, o.v),
-          scrollTrigger: { id: ENTER, trigger: f, start: 'top 92%', end: 'top 38%', scrub: .8 } });
+          // measured after the pinned sections (home's collection and inside clip add scroll length above the frames
+          // below them), so a frame opens where it really is on the page
+          scrollTrigger: { id: ENTER, trigger: f, start: 'top 92%', end: 'top 38%', scrub: .8, refreshPriority: -1 } });
       });
       return () => frames.forEach(f => { f.style.removeProperty('--open'); f.classList.remove('is-opening'); });
     });

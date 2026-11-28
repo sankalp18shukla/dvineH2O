@@ -10,6 +10,7 @@ import { limitRequest, TOO_MANY } from '@/lib/security';
 import { cancelOrder } from '@/lib/orders';
 import { createTicket } from '@/lib/enquiries';
 import { getCommerce } from '@/lib/settings';
+import { cancelDeadline, returnDays } from '@/lib/order-rules';
 import { address, formToObject, name, password, phone, zodErrors, type FormState } from '@/lib/validators';
 import { saveUpload, UploadError } from '@/lib/uploads';
 import { queueSheetSync } from '@/lib/sheet-queue';
@@ -26,6 +27,8 @@ export async function cancelMyOrder(_: FormState, fd: FormData): Promise<FormSta
   const commerce = await getCommerce();
   const blocked = commerce.cancelBefore === 'packed' ? ['packed', 'shipped', 'delivered'] : ['shipped', 'delivered'];
   if (blocked.includes(o.status) || ['cancelled', 'returned'].includes(o.status)) return { message: 'This order can no longer be cancelled online. Contact support and we’ll help.' };
+  const until = cancelDeadline(o);
+  if (until && Date.now() > until.getTime()) return { message: 'Hyper orders can be cancelled only within 24 hours of being placed. Contact support and we’ll help.' };
   const reason = String(fd.get('reason') || 'Changed my mind').slice(0, 200);
   await cancelOrder(o.id, 'customer', reason);
   revalidatePath(`/account/orders/${o.number}`);
@@ -38,11 +41,13 @@ export async function requestReturn(_: FormState, fd: FormData): Promise<FormSta
   const commerce = await getCommerce();
   const ev = await db.query.orderEvents.findFirst({ where: and(eq(orderEvents.orderId, o.id), eq(orderEvents.status, 'delivered')), orderBy: (e, { desc }) => desc(e.createdAt) });
   const deliveredAt = ev?.createdAt ?? o.updatedAt;
-  if (Date.now() - deliveredAt.getTime() > commerce.returnWindowDays * 86400_000) return { message: `The ${commerce.returnWindowDays}-day return window for this order has closed. Raise a service request instead.` };
   const reason = String(fd.get('reason') ?? '').trim();
   const itemId = Number(fd.get('itemId'));
   if (reason.length < 5) return { errors: { reason: 'Tell us why you’re returning it.' } };
   const item = o.items.find(i => i.id === itemId) ?? o.items[0];
+  // each product has its own window: Crystal 30 days, others the store's (Admin › Settings)
+  const days = returnDays(item, commerce);
+  if (Date.now() - deliveredAt.getTime() > days * 86400_000) return { message: `The ${days}-day return window for ${item.name} has closed. Raise a service request instead.` };
   const open = await db.query.returns.findFirst({ where: and(eq(returns.orderId, o.id), eq(returns.orderItemId, item.id)) });
   if (open) return { message: 'A return is already open for this item.' };
   await db.insert(returns).values({ orderId: o.id, orderItemId: item.id, qty: item.qty, reason });

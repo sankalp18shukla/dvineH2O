@@ -5,6 +5,7 @@ import { reviews } from '@/lib/db/schema';
 import { requireCustomer } from '@/lib/auth';
 import { loadOrder } from '@/lib/order-view';
 import { getCommerce } from '@/lib/settings';
+import { cancelDeadline } from '@/lib/order-rules';
 import { OrderDetail } from '@/components/store/OrderDetail';
 import { CancelOrder, ReturnRequest, ReviewForm, InstallationPreference } from '@/components/forms/OrderActions';
 import { Status } from '@/components/ui/Status';
@@ -17,7 +18,9 @@ export default async function MyOrder({ params }: { params: Promise<{ number: st
   if (!o || o.customerId !== c.id) notFound();
   const commerce = await getCommerce();
   const blocked = commerce.cancelBefore === 'packed' ? ['packed', 'shipped', 'delivered', 'cancelled', 'returned'] : ['shipped', 'delivered', 'cancelled', 'returned'];
-  const canCancel = !blocked.includes(o.status);
+  // Hyper: only within 24 hours of placing the order
+  const until = cancelDeadline(o);
+  const canCancel = !blocked.includes(o.status) && (!until || Date.now() <= until.getTime());
   const mine = await db.query.reviews.findMany({ where: and(eq(reviews.customerId, c.id), eq(reviews.orderId, o.id)) });
   const uniqueProducts = [...new Map(o.items.map(i => [i.productId, i])).values()];
   const inst = o.installations[0];

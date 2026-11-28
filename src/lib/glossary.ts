@@ -1,0 +1,31 @@
+/** One-line definitions for every parameter and unit on the page, the report guide and the booking form (Term.tsx).
+ *  Plain language, 20 words at most, no health claims beyond what the term needs. `also` are other spellings. */
+export const GLOSSARY: { term: string; def: string; also?: string[] }[] = [
+  { term: 'pH', def: 'A 0 to 14 scale of how acidic or alkaline water is. 7 is neutral.' },
+  { term: 'TDS', def: 'Total dissolved solids: the minerals and salts dissolved in water, in mg/L. It shapes taste.' },
+  { term: 'Total hardness', def: 'The combined calcium and magnesium in the water, in mg/L as calcium carbonate.' },
+  { term: 'Hardness', def: 'How much calcium and magnesium the water carries. Hard water leaves scale on kettles and taps.' },
+  { term: 'Chlorine', also: ['Free chlorine'], def: 'The disinfectant added to municipal water. Too much gives a chlorine taste and smell.' },
+  { term: 'Alkalinity', def: 'How well water resists a drop in pH. It is not the same as pH.' },
+  { term: 'Chloride', def: 'A salt in water. High levels taste salty and can corrode pipes.' },
+  { term: 'Iron', def: 'A metal common in borewell water. It gives a reddish colour and a metallic taste.' },
+  { term: 'Nitrate', def: 'A nutrient that can seep into groundwater from fertiliser and sewage. High levels matter most for infants.' },
+  { term: 'Fluoride', def: 'A mineral found naturally in some groundwater. Small amounts protect teeth, high levels harm teeth and bones.' },
+  { term: 'Turbidity', def: 'How cloudy the water is from tiny suspended particles, measured in NTU.' },
+  { term: 'Total coliform', def: 'A group of bacteria used as an indicator. Their presence means the water may not be microbiologically clean.' },
+  { term: 'E. coli', def: 'A bacterium from human or animal waste. Finding it means recent faecal contamination.' },
+  { term: 'Arsenic', def: 'A natural element in some groundwater. Long-term intake above safe limits harms health.' },
+  { term: 'Lead', def: 'A metal that can reach water from old pipes and fittings. Safe limits are very low.' },
+  { term: 'Mercury', def: 'A metal from industrial pollution. Safe limits are very low.' },
+  { term: 'Sulphate', def: 'A mineral salt found in groundwater. High levels give a bitter taste.' },
+  { term: 'Manganese', def: 'A metal found in groundwater. It stains and gives a dark colour and metallic taste.' },
+  { term: 'ORP', def: 'A millivolt reading of whether water tends to gain or lose electrons. It changes as water stands.' },
+  { term: 'EC', def: 'Electrical conductivity: how well water carries current. It rises with dissolved salts, in µS/cm.' },
+  { term: 'IS 10500', def: 'India’s drinking-water standard from BIS, with acceptable and permissible limits.' },
+  { term: 'Reference range', def: 'The range a value should sit in for the water to meet the standard.' },
+  { term: 'mg/L', def: 'Milligrams per litre. The same as parts per million (ppm) in water.' },
+  { term: 'CFU', def: 'Colony-forming units: a count of bacteria that grew from a sample.' },
+  // not in the brief's table, but used in the report guide: added in the same style
+  { term: 'as CaCO₃', def: 'Hardness given as if it were all calcium carbonate, so results from different labs compare.' },
+  { term: 'NTU', def: 'Nephelometric turbidity units: how much light the particles in water scatter. Higher means cloudier.' },
+];

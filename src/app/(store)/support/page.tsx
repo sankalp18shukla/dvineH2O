@@ -67,7 +67,7 @@ export default function SupportPage() {
           <div className="container-x grid grid-cols-1 items-center gap-14 lg:grid-cols-2 lg:gap-20">
             <div data-reveal>
               <Lockup id="m-title" title={SUPPORT.manuals.title} tone="blue" size="md" /><p className="lede mt-9">{SUPPORT.manuals.body}</p>
-              <div className="mt-9 flex flex-wrap gap-3"><a href={DOCS.crystalManual.href} target="_blank" rel="noopener" className="btn btn-primary"><Icon name="doc" className="size-4" /> Crystal Manual</a><a href={DOCS.hyperManual.href} target="_blank" rel="noopener" className="btn btn-primary"><Icon name="doc" className="size-4" /> Hyper Guide</a><Link href="/policies/warranty" className="btn btn-outline">Read Warranty</Link><a href="#contact" className="btn btn-outline">Request Service</a></div>
+              <div className="mt-9 flex flex-wrap gap-3"><a href={DOCS.crystalManual.href} target="_blank" rel="noopener" className="btn btn-primary"><Icon name="doc" className="size-4" /> Crystal Manual</a><a href={DOCS.hyperManual.href} target="_blank" rel="noopener" className="btn btn-primary"><Icon name="doc" className="size-4" /> Hyper Guide</a><Link href="/warranty" className="btn btn-outline">Check My Warranty</Link><Link href="/policies/warranty" className="btn btn-outline">Read Warranty</Link><a href="#contact" className="btn btn-outline">Request Service</a></div>
             </div>
             <div className="relative mx-auto w-full max-w-[420px]" data-reveal>
               <Squiggle className="pointer-events-none absolute -top-16 -left-14 z-[3] hidden w-52 text-voltage lg:block" />

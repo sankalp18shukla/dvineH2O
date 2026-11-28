@@ -51,6 +51,7 @@
 }
 .tagline { font-family: var(--font-sans); font-size: clamp(13px, 1.3vw, 15px); font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: rgb(240 242 247 / .62); }
 .tagline em { font-family: var(--font-serif); font-size: 1.2em; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--color-glacier); }
+.sub { display: block; min-height: 1.3em; margin-top: clamp(14px, 2vw, 22px); font-family: var(--font-serif); font-style: italic; font-size: clamp(22px, 2.6vw, 32px); line-height: 1.2; color: var(--color-mist); opacity: 0; translate: 0 12px; }
 .count { font-family: var(--font-sans); font-size: clamp(14px, 1.4vw, 16px); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: .08em; color: var(--color-mist); }
 
 /* the bowed bottom edge the curtain trails as it lifts */

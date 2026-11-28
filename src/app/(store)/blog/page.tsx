@@ -21,9 +21,9 @@ function Meta({ p }: { p: Post }) {
 
 function Card({ p, i }: { p: Post; i: number }) {
   return (
-    <Link href={`/blog/${p.slug}`} className={`${css.card} group flex flex-col`} data-reveal style={{ transitionDelay: `${(i % 3) * 80}ms` }}>
+    <Link href={`/blog/${p.slug}`} className={`${css.card} group flex flex-col`}>
       <div className="relative aspect-[4/3] overflow-hidden bg-fog">
-        {p.coverImage && <Image src={p.coverImage} alt="" fill sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw" className="object-cover transition duration-700 ease-out group-hover:scale-105" />}
+        {p.coverImage && <Image src={p.coverImage} alt="" fill sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw" className="object-cover" />}
         <span className={`${css.kind} label-box is-blue`}><span className="lb-txt">{categoryLabel(p.category)}</span></span>
       </div>
       <h3 className="mt-5 font-sans text-[23px] leading-[1.12] font-bold tracking-[-0.03em] text-balance">{p.title}</h3>
@@ -40,13 +40,14 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
   const used = CATEGORIES.filter(c => ours.some(p => p.category === c.key));
   const topic = used.find(c => c.key === sp.topic);
   const list = topic ? ours.filter(p => p.category === topic.key) : ours;
-  const lead = topic ? null : (ours.find(p => p.featured) ?? ours[0] ?? null);
+  // the post in homepage slot 1 leads the blog too
+  const lead = topic ? null : ([...ours].filter(p => p.featured).sort((a, b) => (a.featureOrder || 9) - (b.featureOrder || 9))[0] ?? ours[0] ?? null);
   const rest = list.filter(p => p.id !== lead?.id);
 
   return (
     <>
       <Header framed page="blog" />
-      <main id="main" data-still-tags>
+      <main id="main" data-still data-still-tags>
         <section className="section pb-10 sm:pb-14" aria-labelledby="blog-title">
           <div className="container-x">
             <Lockup id="blog-title" as="h1" title="*Worth knowing* about water." tone="glacier" />
@@ -64,15 +65,15 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
         {lead && (
           <section className="pb-16 sm:pb-20" aria-label="Featured article">
             <div className="container-x">
-              <Link href={`/blog/${lead.slug}`} className="group grid grid-cols-1 items-center gap-8 lg:grid-cols-[1.15fr_1fr] lg:gap-16" data-reveal>
+              <Link href={`/blog/${lead.slug}`} className="group grid grid-cols-1 items-center gap-8 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
                 <div className="pin-frame relative aspect-[16/11]" style={{ ['--pin' as string]: 'var(--color-flash)' }}>
-                  <div className="absolute inset-0 overflow-hidden bg-fog">{lead.coverImage && <Image src={lead.coverImage} alt={lead.coverAlt ?? ''} fill priority sizes="(min-width:1024px) 55vw, 100vw" className="object-cover transition duration-[1.2s] ease-out group-hover:scale-105" />}</div>
+                  <div className="absolute inset-0 overflow-hidden bg-fog">{lead.coverImage && <Image src={lead.coverImage} alt={lead.coverAlt ?? ''} fill priority sizes="(min-width:1024px) 55vw, 100vw" className="object-cover" />}</div>
                 </div>
                 <div>
                   <span className="label-box is-glacier"><span className="pin" aria-hidden="true" /><span className="lb-txt">{categoryLabel(lead.category)}</span><span className="pin-end" aria-hidden="true" /></span>
                   <h2 className="mt-7 font-sans text-[clamp(30px,3.6vw,48px)] leading-[1.02] font-bold tracking-[-0.035em] text-balance">{lead.title}</h2>
                   <p className="lede mt-5">{lead.excerpt}</p>
-                  <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3"><span className="link inline-flex items-center gap-2">Read the article <Icon name="arrow" className="size-4 transition group-hover:translate-x-1" /></span><Meta p={lead} /></div>
+                  <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3"><span className="link inline-flex items-center gap-2">Read the article <Icon name="arrow" className="size-4" /></span><Meta p={lead} /></div>
                 </div>
               </Link>
             </div>

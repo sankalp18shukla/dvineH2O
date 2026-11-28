@@ -8,10 +8,13 @@ const TEXT: Record<string, (code: string) => string> = {
   ended: code => `Sorry, the ${code} offer has ended.`,
   soon: code => `The ${code} offer hasn’t started yet. Check back soon.`,
   invalid: code => `${code} isn’t a valid code.`,
+  referral: code => `Your friend’s code ${code} is on your cart. Your welcome discount shows at checkout on your first order.`,
+  paused: () => 'Referral codes are paused right now. Check back soon.',
 };
+const GOOD = new Set(['applied', 'referral']);
 
 /**
- * After an offer link (/offer/CODE, the ribbon's code) lands a visitor on a page with ?offer=applied:CODE: a short
+ * After an offer link (/offer/CODE, the ribbon's code, a friend's /r/CODE) lands a visitor on a page with ?offer=applied:CODE: a short
  * note that the code is on their cart, or why it is not. The note clears the parameter from the address bar, so
  * a refresh or a shared link does not repeat it, and leaves after a few seconds.
  */
@@ -25,7 +28,7 @@ export function OfferNotice() {
     url.searchParams.delete('offer');
     history.replaceState(history.state, '', url.pathname + url.search + url.hash);
     if (!TEXT[kind] || !/^[A-Z0-9-]{3,24}$/.test(code)) return;
-    setNote({ ok: kind === 'applied', text: TEXT[kind](code) });
+    setNote({ ok: GOOD.has(kind), text: TEXT[kind](code) });
     const t = window.setTimeout(() => setNote(null), 7000);
     return () => window.clearTimeout(t);
   }, []);

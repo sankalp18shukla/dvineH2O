@@ -1,0 +1,24 @@
+.score { display: flex; align-items: center; gap: 18px; }
+.num { font-family: var(--font-sans); font-size: clamp(64px, 8vw, 96px); font-weight: 800; line-height: .85; letter-spacing: -.05em; color: var(--color-ink); }
+
+/* product tabs: text on one rule, the chosen one underlined in its product's colour */
+.tabs { display: flex; gap: 4px clamp(18px, 3vw, 36px); margin-top: 48px; border-bottom: 1px solid var(--color-line); overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { position: relative; display: inline-flex; align-items: baseline; gap: 6px; flex: none; padding: 12px 0 14px; font-family: var(--font-sans); font-size: 16px; font-weight: 600; color: var(--color-muted); transition: color .3s; }
+.tab::after { content: ""; position: absolute; inset: auto 0 -1px; height: 4px; background: var(--c); transform-origin: left; scale: 0 1; transition: scale .45s var(--ease-out-soft); }
+.tab[aria-pressed='true'] { color: var(--color-ink); }
+.tab[aria-pressed='true']::after { scale: 1 1; }
+@media (hover: hover) { .tab:hover { color: var(--color-ink); } }
+.count { font-family: var(--font-serif); font-size: 15px; font-style: italic; font-weight: 400; color: var(--color-deep-current); }
+
+/* a ruled quote card: the rule thickens on hover, as the ruled tiles */
+.card { position: relative; display: flex; flex-direction: column; height: 100%; padding: 26px 4px 8px; }
+.card::before { content: ""; position: absolute; inset: 0 0 auto; height: 2px; background: var(--color-ink); transition: height .4s var(--ease-out-soft); }
+@media (hover: hover) { .card:hover::before { height: 4px; } }
+.quote { position: absolute; top: 6px; right: 6px; font-family: var(--font-serif); font-size: 88px; line-height: 1; color: var(--color-flash); opacity: .9; }
+.text { flex: 1; margin-top: 16px; padding-right: 28px; font-family: var(--font-serif); font-size: 21px; font-style: italic; line-height: 1.32; color: var(--color-ink); }
+@media (min-width: 1024px) { .text { font-size: 22px; } }
+.foot { display: flex; align-items: center; gap: 12px; margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--color-line); }
+.sq { flex: none; width: 14px; height: 14px; background: var(--c); box-shadow: 0 0 0 1px rgb(4 22 74 / .2); }
+.verified { margin-left: auto; display: inline-flex; flex: none; align-items: center; gap: 5px; padding: 3px 8px; background: #DFF5E3; font-family: var(--font-sans); font-size: 12px; font-weight: 600; color: #1B6B2C; }
+@media (prefers-reduced-motion: reduce) { .tab::after, .card::before { transition: none; } }
